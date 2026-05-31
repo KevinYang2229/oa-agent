@@ -1,0 +1,34 @@
+@reference "tailwindcss";
+
+.sortable-table tbody tr {
+  @apply transition-colors;
+}
+
+.sortable-table-row--clickable {
+  @apply cursor-pointer hover:bg-(--nav-hover);
+}
+
+.sortable-table-drag-handle {
+  @apply w-9 cursor-grab select-none text-center text-(--text-secondary);
+}
+.sortable-table-drag-handle:active {
+  @apply cursor-grabbing;
+}
+.sortable-table-drag-handle i {
+  @apply opacity-60 transition-opacity;
+}
+.sortable-table-drag-handle:hover i {
+  @apply opacity-100;
+}
+
+.sortable-table-row--dragging {
+  @apply opacity-40;
+}
+
+.sortable-table-row--drop-target > td {
+  box-shadow: inset 0 2px 0 0 var(--primary-color);
+}
+
+.sortable-table-empty-cell {
+  @apply py-8 text-center text-(--text-secondary);
+}

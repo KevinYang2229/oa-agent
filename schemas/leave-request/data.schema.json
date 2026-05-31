@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "formId": "leave-request",
+  "title": "請假單",
+  "type": "object",
+  "properties": {
+    "leaveType": {
+      "type": "string",
+      "enum": ["annual", "personal", "sick", "official", "funeral", "marriage"],
+      "description": "請假類型 / leave type"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "開始日期 YYYY-MM-DD"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "description": "結束日期 YYYY-MM-DD"
+    },
+    "startTime": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "開始時間 HH:mm（選填）"
+    },
+    "endTime": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "結束時間 HH:mm（選填）"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "請假事由"
+    }
+  },
+  "additionalProperties": false
+}

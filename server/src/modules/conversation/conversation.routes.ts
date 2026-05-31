@@ -1,0 +1,41 @@
+import { Router } from 'express';
+import { validate } from '@/middlewares/validate';
+import { asyncHandler } from '@/utils/async-handler';
+import { conversationController } from './conversation.controller';
+import {
+  idParamSchema,
+  messageSchema,
+  startSchema,
+  updateFieldsSchema,
+} from './conversation.schema';
+
+const router = Router();
+
+// MVP：未掛 requireAuth，userId 取自 x-user-id header（方便 curl demo）
+router.post('/', validate({ body: startSchema }), asyncHandler(conversationController.start));
+
+router.get(
+  '/:id',
+  validate({ params: idParamSchema }),
+  asyncHandler(conversationController.get),
+);
+
+router.post(
+  '/:id/messages',
+  validate({ params: idParamSchema, body: messageSchema }),
+  asyncHandler(conversationController.sendMessage),
+);
+
+router.patch(
+  '/:id/fields',
+  validate({ params: idParamSchema, body: updateFieldsSchema }),
+  asyncHandler(conversationController.updateFields),
+);
+
+router.post(
+  '/:id/cancel',
+  validate({ params: idParamSchema }),
+  asyncHandler(conversationController.cancel),
+);
+
+export const conversationRouter = router;

@@ -1,0 +1,83 @@
+@reference "tailwindcss";
+
+/*
+ * TextLink 文字連結元件
+ * - 對齊既有設計系統（使用 --link-color / --link-hover-color / --status-danger）
+ * - 支援淺色 / 深色主題
+ */
+
+.text-link {
+  @apply inline-flex cursor-pointer items-center gap-1.5 font-medium text-[var(--link-color)]! underline-offset-[3px] decoration-[1.5px] transition-colors duration-200 outline-none;
+}
+
+.text-link:hover {
+  @apply text-[var(--link-hover-color)]!;
+}
+
+.text-link:focus-visible {
+  @apply rounded-sm ring-2 ring-[rgba(var(--primary-color-rgb),0.35)] ring-offset-1 ring-offset-[var(--card-bg)];
+}
+
+/* 變體：subtle（次要、低飽和） */
+.text-link-subtle {
+  @apply text-[var(--text-secondary)];
+}
+
+.text-link-subtle:hover {
+  @apply text-[var(--link-color)];
+}
+
+/* 變體：danger（破壞性操作） */
+.text-link-danger {
+  @apply text-[var(--status-danger)];
+}
+
+.text-link-danger:hover {
+  @apply brightness-110 text-[var(--status-danger)];
+}
+
+/* 底線控制（使用原生 !important 覆寫 index.css 中的全域 a { no-underline } 規則） */
+.text-link-underline-hover {
+  text-decoration-line: none !important;
+}
+
+.text-link-underline-hover:hover {
+  text-decoration-line: underline !important;
+}
+
+.text-link-underline-always,
+.text-link-underline-always:hover,
+.text-link-underline-always:focus {
+  text-decoration-line: underline !important;
+}
+
+.text-link-underline-none,
+.text-link-underline-none:hover,
+.text-link-underline-none:focus {
+  text-decoration-line: none !important;
+}
+
+/* 尺寸 */
+.text-link-sm {
+  @apply text-[0.8125rem];
+}
+
+.text-link-md {
+  @apply text-sm;
+}
+
+.text-link-lg {
+  @apply text-base;
+}
+
+/* Icon 大小跟隨字級 */
+.text-link i,
+.text-link .material-symbols-outlined {
+  @apply text-[1.05em];
+}
+
+/* 禁用狀態 */
+.text-link-disabled,
+.text-link[aria-disabled="true"] {
+  @apply pointer-events-none cursor-not-allowed opacity-50;
+}

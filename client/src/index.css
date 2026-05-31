@@ -1,0 +1,169 @@
+@import 'tailwindcss';
+/* 設計系統共用樣式（token + base + 共用 class），由 @oa-agent/ui 提供 */
+@import '@oa-agent/ui/index.css';
+
+@theme {
+  --font-sans: -apple-system, 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    /* 用設計系統 token，隨 data-theme 切換深/淺色 */
+    @apply bg-[var(--bg-color)] font-sans text-[var(--text-primary)] antialiased;
+  }
+}
+
+@layer components {
+  /* ---- 版面 ---- */
+  .app-shell {
+    @apply flex h-screen flex-col;
+  }
+  .app-header {
+    @apply flex flex-wrap items-center gap-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3;
+  }
+  .app-title {
+    @apply text-base font-semibold text-[var(--text-primary)];
+  }
+  .app-meta {
+    @apply flex min-w-0 flex-wrap items-center gap-3 text-xs text-[var(--text-secondary)];
+  }
+  .app-header-actions {
+    @apply ml-auto flex shrink-0 items-center gap-2;
+  }
+  .app-body {
+    @apply flex min-h-0 flex-1;
+  }
+  .chat-pane {
+    @apply flex min-w-0 flex-1 flex-col;
+  }
+
+  /* ---- 訊息串 ---- */
+  .msg-list {
+    @apply flex flex-1 flex-col gap-3 overflow-y-auto p-5;
+  }
+  .bubble {
+    @apply max-w-[72%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2.5 leading-relaxed;
+  }
+  .bubble-user {
+    @apply self-end rounded-br-sm bg-[var(--primary-color)] text-white;
+  }
+  .bubble-agent {
+    @apply self-start rounded-bl-sm border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)];
+  }
+  .bubble-sys {
+    @apply max-w-[90%] self-center bg-transparent text-center text-xs text-[var(--text-secondary)];
+  }
+  .bubble-typing {
+    @apply self-start rounded-bl-sm bg-[var(--bg-secondary)] px-3.5 py-2.5 text-[var(--text-secondary)];
+  }
+
+  /* ---- 快捷鈕列 ---- */
+  .quick-bar {
+    @apply flex flex-wrap gap-2 bg-[var(--card-bg)] px-5 pb-2.5;
+  }
+
+  /* ---- 輸入列 ---- */
+  .composer {
+    @apply flex items-end gap-2.5 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3.5;
+  }
+
+  /* ---- 側欄 ---- */
+  .side-pane {
+    @apply w-72 overflow-y-auto border-l border-[var(--border-color)] bg-[var(--card-bg)] p-4 text-sm max-[720px]:hidden;
+  }
+  .side-title {
+    @apply mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)];
+  }
+  .kv-row {
+    @apply flex justify-between gap-2 border-b border-dashed border-[var(--border-color)] py-1.5;
+  }
+  .kv-key {
+    @apply text-[var(--text-secondary)];
+  }
+  .kv-val {
+    @apply text-right font-semibold text-[var(--text-primary)];
+  }
+  .empty-hint {
+    @apply italic text-[var(--text-secondary)];
+  }
+
+  /* ---- 請假單表單畫面（modal） ---- */
+  .form-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4;
+  }
+  .form-sheet {
+    @apply max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-[var(--card-bg)] p-6 shadow-2xl;
+  }
+  .form-sheet-head {
+    @apply mb-5 flex items-center gap-3 border-b border-[var(--border-color)] pb-3;
+  }
+  .form-sheet-title {
+    @apply flex-1 text-lg font-bold text-[var(--text-primary)];
+  }
+  .form-stamp {
+    @apply rotate-[-6deg] rounded-md border-2 border-emerald-500 px-2 py-0.5 text-sm font-bold text-emerald-600;
+  }
+  .form-close {
+    @apply cursor-pointer rounded-md px-2 py-1 text-[var(--text-secondary)] hover:bg-[var(--nav-hover)];
+  }
+  .form-hint {
+    @apply -mt-2 mb-3 text-sm text-[var(--text-secondary)];
+  }
+  .form-tabs {
+    @apply mb-4 flex gap-2 overflow-x-auto border-b border-[var(--border-color)] pb-2;
+  }
+  .form-tab {
+    @apply inline-flex min-w-max cursor-pointer items-center gap-1.5 rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition-colors;
+  }
+  .form-tab span {
+    @apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-xs;
+  }
+  .form-tab.active {
+    @apply border-[var(--primary-color)] bg-[color-mix(in_srgb,var(--primary-color)_10%,transparent)] text-[var(--primary-color)];
+  }
+  .form-tab.complete span {
+    @apply bg-[var(--primary-color)] text-white;
+  }
+  .form-layout {
+    @apply flex flex-col gap-4;
+  }
+  .form-section {
+    @apply min-w-0;
+  }
+  .form-section-title {
+    @apply mb-2 text-sm font-bold text-[var(--text-primary)];
+  }
+  .form-grid {
+    @apply m-0 flex flex-col gap-0;
+  }
+  .form-row {
+    @apply grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-[repeat(var(--form-row-columns),minmax(0,1fr))];
+    --form-row-columns: 2;
+  }
+  .form-field {
+    @apply border-b border-[var(--border-color)] py-2.5;
+  }
+  .form-label {
+    @apply mb-0.5 text-xs text-[var(--text-secondary)];
+  }
+  .form-required {
+    @apply ml-0.5 text-[var(--status-danger)];
+  }
+  .form-value {
+    @apply m-0 font-medium text-[var(--text-primary)];
+  }
+  .form-error {
+    @apply mt-4 rounded-md bg-[var(--badge-danger-bg)] px-3 py-2 text-sm text-[var(--badge-danger-text)];
+  }
+  .form-receipt {
+    @apply mt-5 rounded-xl bg-[var(--bg-secondary)] p-4 text-sm;
+  }
+  .form-actions {
+    @apply mt-5 flex justify-end gap-2.5;
+  }
+}

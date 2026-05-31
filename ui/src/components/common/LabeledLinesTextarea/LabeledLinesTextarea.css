@@ -1,0 +1,46 @@
+@reference "tailwindcss";
+
+/**
+ * LabeledLinesTextarea：單一 textarea 內，行首固定標籤與使用者輸入值以顏色區隔。
+ *
+ * 原生 textarea 無法為部分文字單獨上色，故採「著色層疊加」：
+ * - backdrop：與 textarea 完全相同盒模型的唯讀層，負責顯示彩色文字。
+ * - input：上層真正可編輯的 textarea，文字透明、只保留游標，露出底層著色。
+ *
+ * 兩層以 CSS grid 疊在同一格（grid-area 1/1）：盒模型／字體／padding／換行
+ * 完全一致並自動等高，外部傳入的 className／style 同時套到兩層即可保持對齊。
+ */
+
+.labeled-lines {
+  @apply grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 兩層共用同一個 grid 格，疊在一起 */
+.labeled-lines > .form-textarea {
+  grid-area: 1 / 1;
+}
+
+/* 底層著色層：沿用 form-textarea 盒模型，僅覆寫為唯讀顯示用 */
+.labeled-lines__backdrop {
+  @apply pointer-events-none m-0 overflow-hidden whitespace-pre-wrap break-words;
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+/* 上層 textarea：透明文字 + 可見游標，露出底層著色；保留 form-textarea 的邊框與 focus 樣式 */
+.labeled-lines__input {
+  @apply bg-transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+}
+
+/* 行首固定標籤：以次要色與輸入值做區隔 */
+.labeled-lines__label {
+  color: var(--text-secondary);
+}
+
+/* 使用者輸入值：主要文字色 */
+.labeled-lines__value {
+  color: var(--text-primary);
+}

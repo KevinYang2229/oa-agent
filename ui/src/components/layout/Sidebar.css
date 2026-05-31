@@ -1,0 +1,268 @@
+@reference "tailwindcss";
+
+.sidebar {
+  @apply relative z-[1100] flex h-screen w-[15.625em] flex-col bg-[var(--sidebar-bg)] px-[0.9375em] pb-2 pt-[1.875em] text-[var(--text-primary)] shadow-[0.0625em_0_1.25em_rgba(0,0,0,0.03)] transition-[width] duration-400 ease-out;
+}
+
+.dashboard-container.left-collapsed .sidebar {
+  @apply w-[5em] px-0 pb-0 pt-[1.875em];
+}
+
+.sidebar h1 {
+  @apply px-[0.625em] transition-all duration-300 ease-out;
+}
+
+.sidebar h1 a {
+  @apply min-w-0;
+}
+
+.sidebar h1 img {
+  @apply block h-auto w-[2em] shrink-0 opacity-100;
+}
+
+.sidebar-brand-text {
+  @apply inline-block overflow-hidden whitespace-nowrap opacity-100 transition-[max-width,opacity] duration-300 ease-out;
+  max-width: 9em;
+}
+
+.dashboard-container.left-collapsed .sidebar h1 {
+  @apply justify-center px-0;
+}
+
+.dashboard-container.left-collapsed .sidebar h1 a {
+  @apply w-full justify-center;
+}
+
+.dashboard-container.left-collapsed .sidebar h1 img {
+  @apply mr-0 h-auto w-[2em] min-w-[2em];
+}
+
+.dashboard-container.left-collapsed .sidebar-brand-text {
+  @apply pointer-events-none max-w-0 opacity-0;
+}
+
+.sidebar-toggle-btn {
+  @apply absolute right-[1em] top-8 z-[1101] flex h-[2.25em] w-[2.25em] cursor-pointer items-center justify-center rounded-full border-0 bg-[var(--sidebar-bg)] text-[var(--text-secondary)] shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 ease-in-out;
+}
+
+.sidebar:hover .sidebar-toggle-btn {
+  @apply text-[var(--primary-color)];
+}
+
+.sidebar-toggle-btn:hover {
+  @apply scale-110 bg-white text-[var(--primary-color)] shadow-[0_4px_12px_rgba(0,0,0,0.2)];
+}
+
+.dashboard-container.left-collapsed .sidebar-toggle-btn {
+  @apply right-0 translate-x-1/2;
+}
+
+.avatar-container {
+  @apply mt-[1em] mb-[1em] flex items-center justify-start px-[0.625em] py-0 opacity-100 transition-all duration-300 ease-out;
+}
+
+.avatar-container .employee-info {
+  @apply ml-5 flex max-w-[200px] flex-1 flex-col justify-center overflow-hidden whitespace-nowrap opacity-100 transition-all duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)];
+}
+
+.avatar-container .employee-info .employee-department {
+  @apply whitespace-nowrap text-xs font-normal text-[var(--text-secondary)];
+}
+
+.avatar-container .employee-info .employee-name {
+  @apply whitespace-nowrap text-base font-semibold text-[var(--primary-color)];
+}
+
+.avatar-container .employee-info .employee-id {
+  @apply text-[0.75em] text-[#666];
+}
+
+.avatar {
+  @apply h-[3.125em] w-[3.125em] shrink-0 rounded-[0.75em] object-cover shadow-[0_0.25em_0.625em_rgba(0,0,0,0.08)];
+}
+
+.dashboard-container.left-collapsed .avatar-container {
+  @apply justify-center p-0;
+}
+
+.dashboard-container.left-collapsed .avatar-container .employee-info {
+  @apply pointer-events-none ml-0 max-w-0 opacity-0;
+}
+
+.nav-menu {
+  @apply flex w-full flex-1 flex-col overflow-y-auto overflow-x-visible px-0 py-2;
+  scrollbar-width: none;
+}
+
+.nav-menu::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.nav-group {
+  @apply flex w-full flex-col;
+}
+
+.nav-item {
+  @apply w-full relative flex cursor-pointer items-center whitespace-nowrap rounded-[1em] border-0 bg-transparent px-[0.75em] py-[13px] text-left text-[var(--text-primary)] transition-all duration-300 ease-in-out;
+  margin: 0 auto 0.125em;
+  text-shadow: none;
+}
+
+a.nav-item:not(.active):focus,
+a.nav-item:not(.active):active {
+  @apply text-[var(--primary-color)] outline-none;
+}
+
+a.nav-item:not(.active):focus .material-symbols-outlined,
+a.nav-item:not(.active):active .material-symbols-outlined {
+  @apply text-[var(--primary-color)];
+}
+
+.nav-item:hover {
+  @apply border-r-0 bg-[var(--nav-hover)] text-[var(--text-primary)];
+}
+
+.nav-item.active {
+  @apply rounded-[1em] border-0 font-bold text-white;
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color) 0%,
+    var(--highlight-color) 100%
+  ) !important;
+}
+
+.nav-item.active .material-symbols-outlined,
+.nav-item.active .arrow-icon {
+  @apply text-white opacity-100!;
+}
+
+[data-theme="dark"] .nav-item.active,
+.dark .nav-item.active {
+  @apply text-[#002d5c]!;
+}
+
+[data-theme="dark"] .nav-item.active .material-symbols-outlined,
+[data-theme="dark"] .nav-item.active .arrow-icon,
+.dark .nav-item.active .material-symbols-outlined,
+.dark .nav-item.active .arrow-icon {
+  @apply text-[#002d5c]!;
+}
+
+.nav-item.active::after {
+  content: none !important;
+}
+
+.nav-item .material-symbols-outlined {
+  @apply mr-[15px] flex h-auto w-auto min-w-[22px] items-center justify-center rounded-none bg-transparent text-center text-[1.375em] shadow-none transition-[transform,opacity,color] duration-300 ease-in-out;
+}
+
+.nav-item .arrow-icon {
+  @apply absolute right-[15px] mr-0 text-[1.125em] opacity-60 transition-[transform,opacity,color] duration-300 ease-in-out;
+}
+
+.dashboard-container.left-collapsed .arrow-icon {
+  @apply hidden!;
+}
+
+.nav-group.open .nav-item .arrow-icon {
+  @apply rotate-180;
+}
+
+.sub-menu {
+  @apply flex max-h-0 flex-col overflow-hidden bg-transparent transition-[max-height] duration-300 ease-in-out;
+}
+
+.sub-menu .sub-item {
+  @apply cursor-pointer whitespace-nowrap rounded-xl px-3 py-[0.75em] pl-[52px] mb-1 text-[0.938rem] text-[var(--text-secondary)] transition-all duration-200 ease-in-out;
+}
+
+.sub-menu .sub-item:hover {
+  @apply bg-[rgba(1,86,162,0.08)] text-[var(--primary-color)];
+}
+
+.sub-menu .sub-item.active {
+  @apply bg-[rgba(1,86,162,0.04)] font-semibold text-[var(--primary-color)];
+}
+
+.nav-group.open .sub-menu {
+  @apply max-h-[360px];
+}
+
+.dashboard-container.left-collapsed .sub-menu {
+  @apply max-h-0!;
+}
+
+.nav-text {
+  @apply inline-block min-w-0 flex-auto overflow-hidden text-ellipsis whitespace-nowrap text-base font-medium tracking-[0.2px] opacity-100 transition-[color,opacity,max-width] duration-300 ease-in-out leading-[1.25em];
+  max-width: 200px;
+  transition:
+    color 0.3s ease,
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dashboard-container.left-collapsed .nav-text {
+  @apply pointer-events-none max-w-0 opacity-0;
+}
+
+.sidebar .nav-group > .nav-item {
+  padding-right: calc(15px + 1.5em);
+}
+
+.dashboard-container.left-collapsed .sidebar .nav-group > .nav-item {
+  @apply pr-0;
+}
+
+.sidebar .nav-group .sub-item {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+
+.dashboard-container.left-collapsed .nav-item {
+  @apply w-[calc(100%-3em)] justify-center px-0 py-[0.75em];
+  margin-block: 0;
+}
+
+.dashboard-container.left-collapsed .nav-item:hover {
+  @apply z-[100];
+}
+
+.dashboard-container.left-collapsed .nav-item .material-symbols-outlined {
+  @apply mr-0 text-[1.5em];
+}
+
+/* 收合狀態下用 React 以 position:fixed 渲染 tooltip
+ * 不再使用 ::after / ::before，避免被 .nav-menu 的 overflow 裁切 */
+.sidebar-tooltip {
+  @apply pointer-events-none fixed z-1200 -translate-y-1/2 whitespace-nowrap rounded bg-[#1f1f1f] px-2.5 py-1.5 text-xs font-normal text-white shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)];
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.sidebar-tooltip::before {
+  content: "";
+  @apply absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-solid border-y-transparent border-l-transparent border-r-[#1f1f1f];
+}
+
+.sidebar-footer {
+  @apply mt-auto flex flex-col items-center gap-[1em] border-t border-[var(--border-color)] px-2 py-2;
+}
+
+.sidebar-copyright {
+  @apply text-center text-sm leading-[1.4] text-[var(--text-secondary)] opacity-60;
+}
+
+.sidebar-copyright p {
+  @apply m-0 whitespace-nowrap;
+}
+
+.dashboard-container.left-collapsed .sidebar-footer {
+  @apply hidden;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

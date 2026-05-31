@@ -1,0 +1,132 @@
+@reference "tailwindcss";
+
+/**
+ * Alert 選項樣式
+ * 採用 Tailwind @apply 實作，對其 OA 系統設計規範。
+ */
+
+.form-alert {
+  @apply flex flex-nowrap items-start gap-3 px-4 py-3 border border-[#91d5ff] border-l-[4px] border-l-[#1890ff] bg-[#e6f7ff] text-[#0d47a1] rounded-none text-[0.875rem] leading-[1.6] w-full transition-all duration-200;
+}
+
+.form-alert i {
+  @apply text-[1.25rem] shrink-0 mt-[2px] text-inherit;
+}
+
+.form-alert span,
+.form-alert p {
+  @apply m-0 flex-1 text-inherit block;
+}
+
+/* 變體樣式 */
+.form-alert.success {
+  @apply bg-[#f6ffed] border-[#b7eb8f] border-l-[#52c41a] text-[#388e3c];
+}
+
+.form-alert.info {
+  @apply bg-[#e6f7ff] border-[#91d5ff] border-l-[#1890ff] text-[#0d47a1];
+}
+
+.form-alert.warning {
+  @apply bg-[#fff7e6] border-[#ffd591] border-l-[#fa8c16] text-[#e65100];
+}
+
+.form-alert.danger {
+  @apply bg-[#fff1f0] border-[#ffa39e] border-l-[#f5222d] text-[#b71c1c];
+}
+
+/* 暗色模式通用調整 */
+.dark .form-alert,
+[data-theme="dark"] .form-alert {
+  @apply bg-[#e6f7ff]/10 border-[#91d5ff]/20;
+}
+
+.dark .form-alert.success,
+[data-theme="dark"] .form-alert.success {
+  @apply text-[#81c784];
+}
+
+.dark .form-alert.info,
+[data-theme="dark"] .form-alert.info {
+  @apply text-[#64b5f6];
+}
+
+.dark .form-alert.warning,
+[data-theme="dark"] .form-alert.warning {
+  @apply text-[#ffb74d];
+}
+
+.dark .form-alert.danger,
+[data-theme="dark"] .form-alert.danger {
+  @apply text-[#e57373];
+}
+
+/* 關閉按鈕 */
+.form-alert-close {
+  @apply ml-2 shrink-0 inline-flex items-center justify-center w-6 h-6 rounded text-inherit opacity-70 cursor-pointer bg-transparent border-0 transition-opacity hover:opacity-100;
+}
+
+.form-alert-close i {
+  @apply text-[1rem] m-0;
+}
+
+.form-submit-alert-stack {
+  @apply fixed right-4 top-4 z-[1000] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col;
+}
+
+.form-submit-alert {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-bottom: 0.5rem;
+  opacity: 1;
+  transform: translateY(0);
+  animation: form-alert-fade-in 220ms ease-out both;
+}
+
+.form-submit-alert-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.form-submit-alert.is-leaving {
+  animation: form-alert-fade-out 220ms ease-in both;
+}
+
+@keyframes form-alert-fade-in {
+  from {
+    grid-template-rows: 0fr;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    grid-template-rows: 1fr;
+    margin-bottom: 0.5rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes form-alert-fade-out {
+  from {
+    grid-template-rows: 1fr;
+    margin-bottom: 0.5rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    grid-template-rows: 0fr;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-submit-alert,
+  .form-submit-alert.is-leaving {
+    animation-duration: 1ms;
+  }
+}

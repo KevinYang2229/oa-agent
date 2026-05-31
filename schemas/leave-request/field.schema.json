@@ -1,0 +1,35 @@
+{
+  "leaveType": {
+    "component": "Select",
+    "label": "請假類型",
+    "options": [
+      { "value": "annual", "label": "特休" },
+      { "value": "personal", "label": "事假" },
+      { "value": "sick", "label": "病假" },
+      { "value": "official", "label": "公假" },
+      { "value": "funeral", "label": "喪假" },
+      { "value": "marriage", "label": "婚假" }
+    ]
+  },
+  "startDate": {
+    "component": "DatePicker",
+    "label": "開始日期"
+  },
+  "endDate": {
+    "component": "DatePicker",
+    "label": "結束日期"
+  },
+  "startTime": {
+    "component": "TimePicker",
+    "label": "開始時間"
+  },
+  "endTime": {
+    "component": "TimePicker",
+    "label": "結束時間"
+  },
+  "reason": {
+    "component": "Textarea",
+    "label": "事由",
+    "placeholder": "請簡述請假事由"
+  }
+}

@@ -1,0 +1,41 @@
+@reference "tailwindcss";
+
+/**
+ * Input 選項樣式
+ * 採用 Tailwind @apply 實作，對其 OA 系統設計規範。
+ */
+
+.form-input {
+  @apply w-full h-[42px] px-4 py-2 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-[0.9375rem] text-[var(--text-primary)] transition-all duration-300 outline-none;
+}
+
+.form-input:focus {
+  @apply border-[var(--primary-color)] shadow-[0_0_0_3px_rgba(var(--primary-color-rgb),0.15)];
+}
+
+.form-input::placeholder {
+  @apply text-[var(--text-secondary)] opacity-60;
+}
+
+/* 錯誤狀態 */
+.form-input--error {
+  @apply border-red-500!;
+}
+
+.form-input--error:focus {
+  @apply border-red-500! bg-[var(--card-bg)]! shadow-[0_0_0_4px_rgba(239,68,68,0.12)]!;
+}
+
+/* 帶錯誤訊息時的外層容器 */
+.form-input-field {
+  @apply flex w-full flex-col gap-1.5;
+}
+
+.form-input-error-message {
+  @apply flex items-center gap-1.5;
+}
+
+/* 暗色模式調整 */
+.dark .form-input {
+  @apply bg-[#1e293b] border-white/20 text-[#dce4ee];
+}

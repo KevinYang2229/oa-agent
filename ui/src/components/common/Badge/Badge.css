@@ -1,0 +1,70 @@
+@reference "tailwindcss";
+
+/**
+ * Badge 選項樣式
+ * 包含狀態標籤 (.status-badge) 與簡單標籤 (.simple-badge)
+ */
+
+.status-badge {
+  @apply inline-flex items-center justify-center px-[6px] h-[20px] leading-[20px] rounded-[6px] whitespace-nowrap font-bold text-[0.875rem] bg-[var(--badge-draft-bg)] border border-[var(--badge-draft-border)] text-[var(--badge-draft-text)] transition-all duration-300 align-middle mr-1.5 hover:opacity-85;
+}
+
+/* 狀態變體 */
+.status-normal {
+  @apply text-[var(--badge-success-text)] bg-[var(--badge-success-bg)] border-[var(--badge-success-border)];
+}
+.status-danger {
+  @apply text-[var(--badge-danger-text)] bg-[var(--badge-danger-bg)] border-[var(--badge-danger-border)];
+}
+.status-urgent {
+  @apply text-[var(--badge-warning-text)] bg-[var(--badge-warning-bg)] border-[var(--badge-warning-border)];
+}
+/* 催件：實心紅底白字 */
+.status-urge {
+  @apply text-white bg-[#dc2626] border-[#dc2626];
+}
+.status-process {
+  @apply text-[var(--badge-info-text)] bg-[var(--badge-info-bg)] border-[var(--badge-info-border)];
+}
+.status-draft {
+  @apply -translate-y-[1px] text-[var(--badge-draft-text)] bg-[var(--badge-draft-bg)] border-[var(--badge-draft-border)] mr-2;
+}
+
+/* 簡單標籤 */
+.simple-badge {
+  @apply inline-flex h-[22px] min-w-[48px] items-center justify-center rounded-[3px] px-2 text-[0.8125rem] font-extrabold leading-none text-white ml-2;
+}
+
+.simple-badge.primary {
+  @apply bg-[#006de5];
+}
+.simple-badge.secondary {
+  @apply bg-[#6f8799];
+}
+.simple-badge.highlight {
+  @apply bg-[#00a6e8];
+}
+
+/* 其他輔助樣式 */
+.status-dot {
+  @apply w-2 h-2 bg-[#059669] rounded-full;
+}
+.status-pill {
+  @apply !bg-[var(--badge-draft-bg)] !text-[var(--badge-draft-text)] !border-[var(--badge-draft-border)];
+}
+
+.status-success {
+  @apply text-[var(--badge-success-text)] bg-[var(--badge-success-bg)] border-[var(--badge-success-border)];
+}
+
+.status-info {
+  @apply text-[var(--badge-info-text)] bg-[var(--badge-info-bg)] border-[var(--badge-info-border)];
+}
+
+.status-warning {
+  @apply text-[var(--badge-warning-text)] bg-[var(--badge-warning-bg)] border-[var(--badge-warning-border)];
+}
+
+.status-default {
+  @apply text-[var(--badge-draft-text)] bg-[var(--badge-draft-bg)] border-[var(--badge-draft-border)];
+}

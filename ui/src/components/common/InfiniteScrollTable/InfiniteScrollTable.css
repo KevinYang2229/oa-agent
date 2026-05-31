@@ -1,0 +1,47 @@
+@reference "tailwindcss";
+
+.infinite-scroll-table-container {
+  @apply overflow-y-auto;
+}
+
+/* 凍結表頭：在捲動容器內 sticky 至頂端 */
+.infinite-scroll-table {
+  overflow: visible !important;
+}
+
+.infinite-scroll-table thead th {
+  position: sticky !important;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg-secondary);
+  border-bottom: 0 !important;
+  box-shadow: 0 1px 0 0 var(--border-color);
+}
+
+.infinite-scroll-table-row--clickable {
+  @apply cursor-pointer transition-colors hover:bg-(--nav-hover);
+}
+
+.infinite-scroll-table-empty {
+  @apply py-8 text-center text-(--text-secondary);
+}
+
+.infinite-scroll-table-footer {
+  @apply flex items-center justify-center px-3 py-3 text-sm text-(--text-secondary);
+}
+
+.infinite-scroll-table-loading {
+  @apply inline-flex items-center gap-2;
+}
+
+.infinite-scroll-table-end {
+  @apply text-xs opacity-75;
+}
+
+.infinite-scroll-table-hint {
+  @apply inline-flex items-center gap-2 text-xs opacity-75;
+}
+
+.infinite-scroll-table-hint i {
+  @apply animate-bounce;
+}

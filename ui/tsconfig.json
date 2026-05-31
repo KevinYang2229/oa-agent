@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "isolatedModules": true
+  },
+  "comment": "typecheck 範圍只含目前 client 會用到的元件；其餘設計系統元件（layout、router 相依者）先不納入，待使用時再加。",
+  "include": [
+    "src/index.ts",
+    "src/components/common/Button",
+    "src/components/common/Badge",
+    "src/components/common/Input",
+    "src/components/common/Textarea",
+    "src/components/common/Select",
+    "src/components/common/Dialog",
+    "src/components/common/DatePicker"
+  ]
+}

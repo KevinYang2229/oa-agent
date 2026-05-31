@@ -1,0 +1,200 @@
+@reference "tailwindcss";
+
+/* Attachment Section Wrapper */
+.attachment-section {
+  @apply border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--card-bg)];
+}
+
+.attachment-section__header {
+  @apply px-6 py-5 bg-[var(--nav-active-bg)] border-[var(--border-color)] flex justify-between items-center;
+}
+
+.attachment-section__title {
+  @apply font-bold text-base leading-none text-[var(--text-primary)];
+}
+
+.attachment-section__formats {
+  @apply text-sm leading-none text-[#5f7f9e];
+}
+
+.attachment-section__body {
+  @apply px-3 py-2 flex flex-col gap-4;
+}
+
+/* 有檔案時的拖曳啟用狀態：body 整塊作為拖放區 */
+.attachment-section__body.is-drop-active {
+  @apply bg-[#e8edf4] rounded-b-xl;
+  outline: 2px dashed #6fa9dc;
+  outline-offset: -4px;
+}
+
+/* Uploader Button Area (Dashed Border) */
+.uploader-container {
+  @apply flex w-full flex-col gap-5;
+}
+
+/* .btn-uploader 樣式統一定義於 Button.css（variant="uploader"） */
+
+.uploader-copy {
+  @apply flex flex-col items-center leading-tight;
+}
+
+.uploader-line-main {
+  @apply text-[0.875rem] font-normal leading-6 text-[var(--text-caption)];
+}
+
+.uploader-line-sub {
+  @apply text-[0.875rem] font-normal leading-6 text-[var(--text-caption)];
+}
+
+/* Attachment List */
+.existing-files-header {
+  @apply text-[0.875rem] font-bold text-[var(--text-primary)] mt-[5px] pb-2 border-b border-[var(--border-color)] flex items-center gap-2 opacity-80;
+}
+
+/* 有檔案時，列表上方的新增按鈕列 */
+.attachment-add-row {
+  @apply flex items-center;
+}
+
+.existing-files-list {
+  @apply flex flex-col gap-[10px];
+}
+
+.existing-file-item {
+  @apply flex items-center px-3 py-2 bg-white border border-[#eef2f6] rounded-[16px] gap-5 transition-all duration-200 relative;
+}
+
+.existing-file-item:hover {
+  @apply border-[#cbd5e1] bg-[#fbfcfe];
+}
+
+.file-thumb {
+  @apply w-[72px] h-[72px] rounded-xl overflow-hidden relative cursor-pointer border border-[#e2e8f0] shrink-0 flex items-center justify-center bg-white;
+}
+
+.file-thumb i {
+  @apply !text-[1.75rem];
+}
+
+.file-thumb img {
+  @apply w-full h-full object-cover;
+}
+
+.thumb-overlay {
+  @apply absolute inset-0 bg-[#0156a21a] flex items-center justify-center text-[var(--text-primary)] opacity-0 transition-opacity duration-200;
+}
+
+.file-thumb:hover .thumb-overlay {
+  @apply opacity-100;
+}
+
+.file-info {
+  @apply grow flex flex-col gap-1 overflow-hidden pr-10;
+}
+
+.file-name-container {
+  @apply rounded-lg inline-flex w-full max-w-none justify-start text-left;
+}
+
+.file-name {
+  @apply block cursor-pointer text-left text-[0.9375rem] text-[#0156a2] tracking-[0.5px] whitespace-normal break-all;
+  overflow-wrap: anywhere;
+  font-family: "JetBrains Mono", "Roboto Mono", monospace;
+  line-height: 1.35;
+}
+
+.file-date {
+  @apply text-[0.8125rem] text-[#94a3b8] pl-2 mb-[2px];
+}
+
+.file-description {
+  @apply mt-1 w-full;
+}
+
+.file-description .form-input {
+  @apply bg-[#f1f5f9] border border-[#e2e8f0] rounded-[10px] px-4 py-[10px] text-base text-[#64748b] w-full transition-all duration-200;
+}
+
+.file-description .form-input:focus {
+  @apply bg-white border-[var(--primary-color)] shadow-[0_0_0_3px_rgba(1,86,162,0.1)];
+}
+
+.file-actions {
+  @apply absolute right-3 top-3;
+}
+
+.attachment-empty-state {
+  @apply border-solid opacity-70;
+}
+
+.dark .attachment-section,
+[data-theme="dark"] .attachment-section {
+  @apply border-[#334766] bg-[#111820];
+}
+
+.dark .attachment-section__header,
+[data-theme="dark"] .attachment-section__header {
+  @apply border-[#334766] bg-[#151f2b];
+}
+
+.dark .attachment-section__formats,
+[data-theme="dark"] .attachment-section__formats {
+  @apply text-[#8fa3b7];
+}
+
+.dark .attachment-section__body,
+[data-theme="dark"] .attachment-section__body {
+  @apply bg-[#111820];
+}
+
+.dark .attachment-section__body.is-drop-active,
+[data-theme="dark"] .attachment-section__body.is-drop-active {
+  @apply bg-[#142033];
+  outline-color: #3b82c4;
+}
+
+.dark .existing-files-header,
+[data-theme="dark"] .existing-files-header {
+  @apply border-[#334766] text-[#e7eef8];
+}
+
+.dark .existing-file-item,
+[data-theme="dark"] .existing-file-item {
+  @apply border-[#2f4a72] bg-[#17243a] shadow-none;
+}
+
+.dark .existing-file-item:hover,
+[data-theme="dark"] .existing-file-item:hover {
+  @apply border-[#3d5f8f] bg-[#1a2a44];
+}
+
+.dark .file-thumb,
+[data-theme="dark"] .file-thumb {
+  @apply border-[#3a5375] bg-[#23334a];
+}
+
+.dark .file-name-container,
+[data-theme="dark"] .file-name-container {
+  @apply bg-[#17324d] px-2 py-0.5;
+}
+
+.dark .file-name,
+[data-theme="dark"] .file-name {
+  @apply text-[#f4f8ff];
+}
+
+.dark .file-date,
+[data-theme="dark"] .file-date {
+  @apply text-[#97a6b8];
+}
+
+.dark .file-description .form-input,
+[data-theme="dark"] .file-description .form-input {
+  @apply border-[#34455f] bg-[#101a28] text-[#d7e2ef];
+}
+
+.dark .file-description .form-input:focus,
+[data-theme="dark"] .file-description .form-input:focus {
+  @apply border-[#3b82c4] bg-[#121f31] shadow-[0_0_0_3px_rgba(59,130,196,0.2)];
+}

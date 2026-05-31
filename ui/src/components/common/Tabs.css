@@ -1,0 +1,38 @@
+@reference "tailwindcss";
+
+.card-tabs {
+  @apply flex items-center justify-start rounded-t-[var(--border-radius)] border-b border-[var(--border-color)] bg-[var(--tab-bar-bg)] pr-6;
+}
+
+.card-tabs .tabs-wrapper {
+  @apply flex;
+}
+
+.card-tabs .tab-item {
+  @apply relative flex items-center justify-center gap-3 whitespace-nowrap border-t-[5px] border-t-transparent bg-transparent px-4 py-3 text-base font-bold text-[var(--text-secondary)] no-underline transition-all duration-200 ease-in-out;
+}
+
+.card-tabs .tab-item i {
+  @apply text-xl text-[var(--primary-color)] opacity-80;
+}
+
+.card-tabs .tab-item:hover {
+  @apply bg-[rgba(var(--primary-color-rgb),0.05)] text-[var(--primary-color)];
+}
+
+.card-tabs .tab-item.active {
+  @apply -mt-px bg-[var(--card-bg)] text-[var(--text-primary)];
+}
+
+.card-tabs .tab-item.active::after {
+  @apply absolute bottom-[-1px] left-0 right-0 z-[2] h-px bg-[var(--card-bg)];
+  content: "";
+}
+
+.card-tabs .tab-item.active i {
+  @apply opacity-100;
+}
+
+.tab-actions {
+  @apply ml-auto flex items-center gap-4;
+}

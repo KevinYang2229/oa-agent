@@ -1,0 +1,27 @@
+@reference "tailwindcss";
+
+/**
+ * 帶固定前綴的多行輸入樣式
+ * 前綴以唯讀覆蓋層渲染在第一行行首，與 textarea 文字對齊。
+ */
+
+.textarea-prefix {
+  @apply relative w-full;
+}
+
+/* 固定前綴（唯讀、不可選取、不可刪除）— 對齊 .form-textarea 的 px-4 py-3 內距與字體 */
+.textarea-prefix__fixed {
+  @apply pointer-events-none absolute select-none whitespace-pre text-[0.9375rem] leading-relaxed font-medium text-[var(--text-primary)];
+  top: 0.75rem;
+  left: 1rem;
+}
+
+/* 錯誤狀態：前綴顏色維持，僅框線由 textarea 控制 */
+.textarea-prefix--error .textarea-prefix__fixed {
+  @apply text-[var(--text-primary)];
+}
+
+/* 暗色模式 */
+.dark .textarea-prefix__fixed {
+  @apply text-[#dce4ee];
+}

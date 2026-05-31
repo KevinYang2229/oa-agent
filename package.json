@@ -1,0 +1,22 @@
+{
+  "name": "oa-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent-Native OA — 對話式表單填寫 Agent（monorepo：server + client + shared）",
+  "workspaces": [
+    "shared",
+    "ui",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w server && npm run build -w client",
+    "typecheck": "npm run typecheck -w ui && npm run typecheck -w server && npm run typecheck -w client",
+    "smoke": "npm run smoke -w server"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

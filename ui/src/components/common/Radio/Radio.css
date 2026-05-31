@@ -1,0 +1,43 @@
+@reference "tailwindcss";
+
+/**
+ * Radio 選項樣式
+ * 採用 Tailwind @apply 實作，對齊 OA 系統設計規範。
+ */
+
+.form-radio-wrap {
+  @apply relative inline-flex items-center justify-center;
+}
+
+.form-radio {
+  @apply block h-5 w-5 shrink-0 appearance-none rounded-full border-2 border-[#d9e7f0] bg-[#f4f9fd] align-middle outline-none transition-all duration-200 cursor-pointer;
+}
+
+.form-radio:hover:not(:checked) {
+  @apply border-[#b8d2e3] bg-[#eef6fb];
+}
+
+.form-radio:checked {
+  @apply border-[var(--highlight-color)] bg-[var(--card-bg)];
+}
+
+.form-radio-dot {
+  @apply pointer-events-none absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--highlight-color)] opacity-0 transition-opacity duration-150;
+  box-shadow: 0 0 6px rgba(var(--highlight-color-rgb), 0.3);
+}
+
+.form-radio:checked + .form-radio-dot {
+  @apply opacity-100;
+}
+
+.form-radio:focus {
+  @apply ring-2 ring-[var(--highlight-color)]/20;
+}
+
+.ds-inline-check-row {
+  @apply inline-flex items-center gap-2 cursor-pointer text-[0.9375rem] text-[var(--text-primary)] hover:text-[var(--text-highlight-color)] transition-colors duration-200;
+}
+
+.dark .form-radio {
+  @apply bg-[#f4f9fd] border-[#d9e7f0];
+}

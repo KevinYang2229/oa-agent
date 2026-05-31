@@ -1,0 +1,276 @@
+@reference "tailwindcss";
+
+/*
+ * Button 元件樣式（搬移自 public/css/style.min.css）
+ * 採用 Tailwind @apply 實作，保留漸層、CSS 變數與特殊陰影作為原生 CSS。
+ */
+
+.btn,
+.btn-confirm,
+.btn-cancel,
+.btn-delete,
+.btn-reset,
+.btn-new {
+  @apply inline-flex h-[42px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-5 py-2 text-base font-bold outline-none transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn i,
+.btn-confirm i,
+.btn-cancel i {
+  @apply text-[1.1em];
+}
+
+.btn-confirm,
+.form-footer-btns .btn-action.btn-confirm {
+  @apply border-transparent text-white tracking-[0.5px] shadow-[0_6px_18px_rgba(var(--primary-color-rgb),0.35)];
+  background: linear-gradient(135deg, #018ef0 0%, #2abfff 100%);
+}
+
+.btn-confirm:hover,
+.form-footer-btns .btn-action.btn-confirm:hover {
+  @apply -translate-y-[3px] brightness-110 shadow-[0_10px_25px_rgba(var(--primary-color-rgb),0.5)];
+}
+
+.btn-confirm:active,
+.form-footer-btns .btn-action.btn-confirm:active,
+.btn-cancel:active,
+.form-footer-btns .btn-action.btn-cancel:active,
+.btn-reset:active,
+.form-footer-btns .btn-action.btn-reset:active {
+  @apply translate-y-0 scale-[0.96] shadow-[0_2px_8px_rgba(0,0,0,0.1)]!;
+}
+
+.dark .btn-confirm,
+[data-theme="dark"] .btn-confirm,
+[data-theme="dark"] .form-footer-btns .btn-action.btn-confirm,
+.form-footer-btns [data-theme="dark"] .btn-action.btn-confirm {
+  @apply font-extrabold text-white!;
+}
+
+.btn-new {
+  @apply flex items-center gap-2 rounded-md border-none px-[1.8rem] py-[0.6rem] text-[0.9375rem] text-white shadow-[0_6px_20px_rgba(var(--primary-color-rgb),0.45)];
+  background: linear-gradient(135deg, #018ef0 0%, #2abfff 100%);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.btn-new:hover {
+  @apply -translate-y-0.5 brightness-110 shadow-[0_8px_25px_rgba(var(--primary-color-rgb),0.55)];
+}
+
+.btn-new:active {
+  @apply translate-y-0;
+}
+
+.dark .btn-new,
+[data-theme="dark"] .btn-new {
+  @apply font-extrabold text-white!;
+}
+
+.btn-cancel,
+.form-footer-btns .btn-action.btn-cancel {
+  @apply border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-color)] shadow-[0_4px_12px_rgba(15,23,42,0.05)];
+}
+
+.btn-cancel:hover,
+.form-footer-btns .btn-action.btn-cancel:hover {
+  @apply -translate-y-[3px] border-[#94a3b8] bg-white text-[var(--text-primary)]! shadow-[0_10px_20px_rgba(15,23,42,0.12)];
+}
+
+.dark .btn-cancel,
+[data-theme="dark"] .btn-cancel,
+[data-theme="dark"] .form-footer-btns .btn-action.btn-cancel,
+.form-footer-btns [data-theme="dark"] .btn-action.btn-cancel {
+  @apply border-[#4b5563] bg-[#242b31] text-white! shadow-[0_4px_12px_rgba(0,0,0,0.2)];
+}
+
+.dark .btn-cancel:hover,
+[data-theme="dark"] .btn-cancel:hover,
+[data-theme="dark"] .form-footer-btns .btn-action.btn-cancel:hover,
+.form-footer-btns [data-theme="dark"] .btn-action.btn-cancel:hover {
+  @apply border-[#64748b] bg-[#2f3740] text-white! shadow-[0_8px_18px_rgba(0,0,0,0.28)];
+}
+
+/* .btn-delete {
+  @apply border-[#fee2e2] bg-[#fef2f2] text-[#dc2626] shadow-[0_4px_12px_rgba(220,38,38,0.08)];
+} */
+
+.btn-delete {
+  @apply bg-[#fef2f2] text-[#dc2626];
+}
+
+.btn-delete:hover {
+  @apply -translate-y-[3px] border-[#dc2626] bg-[#dc2626] text-white! shadow-[0_10px_20px_rgba(220,38,38,0.28)];
+}
+
+.btn-delete:active {
+  @apply translate-y-0 scale-[0.96] shadow-[0_2px_8px_rgba(220,38,38,0.16)]!;
+}
+
+.dark .btn-delete,
+[data-theme="dark"] .btn-delete {
+  @apply border-[#f8717147] bg-[#f871711f] text-[#fca5a5];
+}
+
+.dark .btn-delete:hover,
+[data-theme="dark"] .btn-delete:hover {
+  @apply border-[#ef4444] bg-[#dc2626] text-white!;
+}
+
+.btn-reset,
+.form-footer-btns .btn-action.btn-reset {
+  @apply border-[var(--border-color)] bg-[#f8fafc] text-[var(--text-color)] shadow-[0_4px_12px_rgba(0,0,0,0.05)];
+}
+
+.btn-reset i,
+.form-footer-btns .btn-action.btn-reset i {
+  @apply transition-transform duration-[400ms] ease-in-out;
+}
+
+.btn-reset:hover,
+.form-footer-btns .btn-action.btn-reset:hover {
+  @apply -translate-y-[3px] border-[var(--primary-color)] bg-white text-[var(--text-primary)]! shadow-[0_10px_20px_rgba(var(--primary-color-rgb),0.12)];
+}
+
+.btn-reset:hover i,
+.form-footer-btns .btn-action.btn-reset:hover i {
+  @apply -rotate-180;
+}
+
+.dark .btn-reset,
+[data-theme="dark"] .btn-reset,
+[data-theme="dark"] .form-footer-btns .btn-action.btn-reset,
+.form-footer-btns [data-theme="dark"] .btn-action.btn-reset {
+  @apply border border-[#4b5563] bg-[#242b31]! text-white! shadow-[0_4px_12px_rgba(0,0,0,0.2)];
+}
+
+.dark .btn-reset:hover,
+[data-theme="dark"] .btn-reset:hover {
+  @apply border-[#64748b] bg-[#2f3740]! text-white! shadow-[0_8px_18px_rgba(0,0,0,0.28)];
+}
+
+.btn-form-inline {
+  @apply inline-flex h-[34px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-[rgba(var(--primary-color-rgb),0.25)] bg-white px-3.5 py-0 text-[0.8125rem] font-semibold leading-none text-[var(--text-primary)] shadow-[0_4px_10px_rgba(0,45,92,0.08)];
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-form-inline i {
+  @apply text-[0.9rem];
+}
+
+.btn-form-inline:hover {
+  @apply -translate-y-0.5 border-[var(--primary-color)] bg-white text-[var(--text-primary)] shadow-[0_8px_16px_rgba(0,45,92,0.12)];
+}
+
+.btn-form-inline:active {
+  @apply scale-95;
+}
+
+.dark .btn-form-inline,
+[data-theme="dark"] .btn-form-inline {
+  @apply border-[rgba(var(--primary-color-rgb),0.3)] bg-white/[0.05] text-[var(--text-primary)];
+}
+
+.dark .btn-form-inline:hover,
+[data-theme="dark"] .btn-form-inline:hover {
+  @apply bg-[rgba(var(--primary-color-rgb),0.15)] text-white;
+}
+
+.btn-sm {
+  @apply h-8 min-w-[60px] rounded-lg px-4 py-0 text-xs;
+}
+
+.btn-md {
+  @apply h-[42px] min-w-[100px] rounded-lg px-7 py-0 text-sm;
+}
+
+.btn-lg {
+  @apply h-[52px] min-w-[140px] rounded-lg px-10 py-0 text-base;
+}
+
+.btn-icon {
+  @apply aspect-square h-[42px] w-[42px] justify-center p-0;
+}
+
+.btn-icon.btn-sm {
+  @apply h-8 w-8 min-w-0 px-0;
+}
+
+.btn-icon.btn-lg {
+  @apply h-[52px] w-[52px] min-w-0 px-0;
+}
+
+/* 僅有 icon、無文字內容的按鈕：強制 1:1 並消除水平 padding 與最小寬度 */
+.btn-icon-only {
+  @apply aspect-square w-[42px] min-w-0 justify-center px-0;
+}
+
+.btn-icon-only.btn-sm {
+  @apply w-8 min-w-0 px-0;
+}
+
+.btn-icon-only.btn-md {
+  @apply w-[42px] min-w-0 px-0;
+}
+
+.btn-icon-only.btn-lg {
+  @apply w-[52px] min-w-0 px-0;
+}
+
+.icon-btn {
+  @apply flex cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-2 text-xl text-[var(--text-secondary)] transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)];
+}
+
+.icon-btn:hover {
+  @apply scale-110 bg-[rgba(var(--primary-color-rgb),0.08)] text-[var(--primary-color)];
+}
+
+/* 透明圓形圖示按鈕（搬移自 Header.css .icon-btn）：不套用 .btn 基底 */
+.btn-icon-ghost {
+  @apply flex cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-xl text-[var(--text-secondary)] transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)];
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+}
+
+.btn-icon-ghost:hover {
+  @apply scale-110 bg-[rgba(var(--primary-color-rgb),0.08)] text-[var(--primary-color)];
+}
+
+.btn-remove-file {
+  @apply h-auto border-none bg-transparent p-2 text-[#94a3b8] shadow-none transition-colors duration-200 hover:text-[var(--status-danger)];
+}
+
+.btn-uploader {
+  @apply flex h-[220px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[28px] border-2 border-dashed border-[#9ec2e6] bg-[#f0f2f5] text-[var(--text-primary)] transition-all duration-300;
+}
+
+.btn-uploader i {
+  @apply text-[2.125rem] text-[#5f98cc] transition-all duration-300;
+}
+
+.btn-uploader:hover,
+.btn-uploader.is-dragging {
+  @apply border-[#6fa9dc] bg-[#e8edf4];
+}
+
+.btn-uploader:hover i,
+.btn-uploader.is-dragging i {
+  @apply -translate-y-2 scale-110 text-[#3d7bb5];
+}
+
+.btn-uploader.is-dragging {
+  @apply scale-[1.01] border-solid;
+}
+
+.btn-nav {
+  @apply flex h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-secondary)] transition-all duration-200;
+}
+
+.btn-nav:hover {
+  @apply scale-105 border-[var(--primary-color)] bg-[var(--primary-color)] text-white;
+}
+
+.button-icon {
+  @apply shrink-0;
+}

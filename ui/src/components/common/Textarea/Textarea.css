@@ -1,0 +1,32 @@
+@reference "tailwindcss";
+
+/**
+ * Textarea 選項樣式
+ * 採用 Tailwind @apply 實作，對其 OA 系統設計規範。
+ */
+
+.form-textarea {
+  @apply w-full min-h-[100px] px-4 py-3 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg text-[0.9375rem] text-[var(--text-primary)] transition-all duration-300 outline-none resize-y leading-relaxed;
+}
+
+.form-textarea:focus {
+  @apply border-[var(--primary-color)] shadow-[0_0_0_3px_rgba(var(--primary-color-rgb),0.15)];
+}
+
+.form-textarea::placeholder {
+  @apply text-[var(--text-secondary)] opacity-60;
+}
+
+/* 錯誤狀態 */
+.form-textarea--error {
+  @apply border-red-500;
+}
+
+.form-textarea--error:focus {
+  @apply border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)];
+}
+
+/* 暗色模式調整 */
+.dark .form-textarea {
+  @apply bg-[#1e293b] border-white/20 text-[#dce4ee];
+}

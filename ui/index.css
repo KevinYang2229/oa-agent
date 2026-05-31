@@ -1,0 +1,1718 @@
+/* tailwindcss 由消費端（client/src/index.css）匯入，這裡不重複 @import。 */
+
+:focus {
+  @apply outline-none;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-[var(--highlight-color)];
+}
+
+.more-btn {
+  @apply flex w-fit items-center gap-1.5 rounded-2xl bg-[var(--nav-hover)] px-3 py-1.5 text-[0.8125rem] font-medium text-[var(--text-secondary)] no-underline transition-all duration-300;
+}
+
+.more-btn:hover {
+  @apply -translate-y-0.5 bg-[var(--nav-active-bg)] text-[var(--primary-color)];
+}
+
+.more-btn i {
+  @apply text-xs;
+}
+
+.login-header img {
+  @apply w-[100px];
+}
+
+.portal-brand i {
+  @apply text-[1.5em];
+}
+
+.stats-row {
+  @apply grid grid-cols-4 gap-[1.5em] py-4;
+}
+
+.preview-grid .preview-item img {
+  @apply h-full w-full object-cover;
+}
+
+.text-card p {
+  @apply mb-[15px] text-[0.75em] leading-[1.6] text-[var(--text-secondary)];
+}
+
+.image-overlay h3 {
+  @apply mb-1 text-[0.875em] font-semibold;
+}
+
+.image-overlay span {
+  @apply text-[0.6875em] opacity-80;
+}
+
+.goto-top-btn i {
+  @apply text-xl;
+}
+
+.goto-top-btn.visible {
+  @apply visible translate-y-0 opacity-100;
+}
+
+.quick-link-item i {
+  @apply w-[1em] text-center text-[#ccc];
+}
+
+.quick-link-item:hover i {
+  @apply text-[var(--accent-color)];
+}
+
+.breadcrumb {
+  @apply flex min-w-0 items-center gap-2 text-sm text-[var(--text-secondary)];
+}
+
+.breadcrumb a {
+  @apply shrink-0 text-[var(--text-secondary)] no-underline transition-colors duration-200;
+}
+
+.breadcrumb a:hover {
+  @apply text-[var(--primary-color)];
+}
+
+.breadcrumb .separator {
+  @apply shrink-0 text-sm opacity-50;
+}
+
+.breadcrumb .current {
+  @apply min-w-0 truncate font-bold text-[var(--text-primary)];
+}
+
+.dropdown {
+  @apply relative inline-flex items-center;
+}
+
+.dropdown-menu {
+  @apply absolute top-full z-[1100] flex flex-col gap-0.5 mt-2 min-w-[160px] list-none rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] p-1 shadow-[0_10px_30px_rgba(0,45,92,0.12)];
+}
+
+.dropdown-menu-start {
+  @apply left-0;
+}
+
+.dropdown-menu-end {
+  @apply right-0;
+}
+
+.dropdown-item {
+  @apply flex w-full cursor-pointer items-center rounded-md border-0 bg-transparent px-3 py-2 text-sm text-[var(--text-secondary)] no-underline transition-colors duration-150;
+}
+
+.dropdown-item:hover:not([aria-disabled="true"]):not(:disabled) {
+  @apply bg-[var(--nav-hover)] text-[var(--primary-color)];
+}
+
+.dropdown-item.active {
+  @apply bg-[color-mix(in_srgb,var(--primary-color)_22%,transparent)] font-semibold text-[var(--primary-color)];
+}
+
+.dropdown-item.active:hover:not([aria-disabled="true"]):not(:disabled) {
+  @apply bg-[color-mix(in_srgb,var(--primary-color)_30%,transparent)];
+}
+
+.dropdown-subwrap {
+  @apply relative block list-none;
+}
+
+.dropdown-item-has-submenu {
+  @apply justify-between gap-2;
+}
+
+.dropdown-submenu-chevron {
+  @apply ml-2 shrink-0 text-xs opacity-60;
+}
+
+.dropdown-submenu {
+  @apply left-full top-0 ml-1 mt-0;
+}
+
+.dropdown-item:disabled,
+.dropdown-item[aria-disabled="true"] {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.dropdown-divider {
+  @apply my-1 h-px list-none bg-[var(--border-color)];
+}
+
+.dropdown-header {
+  @apply px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary,var(--text-secondary))] opacity-70;
+}
+
+.dropdown-section {
+  @apply block list-none;
+}
+
+.dropdown-section + .dropdown-section {
+  @apply mt-1 border-t border-[var(--border-color)] pt-1;
+}
+
+.dropdown-section-title {
+  @apply px-3 pb-1 pt-1 text-xs font-semibold text-[var(--text-secondary)];
+}
+
+.dropdown-section-list {
+  @apply m-0 list-none p-0;
+}
+
+.multi-select {
+  @apply relative flex min-h-[42px] h-auto cursor-text flex-wrap items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-color)] px-2.5 py-1.5 transition-shadow duration-150;
+}
+
+.multi-select:focus-within {
+  @apply border-[var(--primary-color)] bg-[var(--card-bg)] shadow-[0_0_0_4px_rgba(var(--primary-color-rgb),0.1)];
+}
+
+.multi-select.error {
+  @apply border-[var(--status-danger)];
+}
+
+.multi-select.error:focus-within {
+  @apply shadow-[0_0_0_4px_rgba(229,57,53,0.12)];
+}
+
+.multi-select.disabled {
+  @apply cursor-not-allowed bg-[var(--bg-secondary)] opacity-70;
+}
+
+.multi-select-tag {
+  @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-[rgba(var(--primary-color-rgb),0.15)] bg-[var(--nav-active-bg)] px-2.5 py-0.5 text-[0.8125rem] font-semibold text-[var(--text-primary)];
+}
+
+.multi-select-tag-remove {
+  @apply inline-flex cursor-pointer items-center border-0 bg-transparent p-0 text-xs leading-none text-[var(--text-secondary)] opacity-60 transition-opacity;
+}
+
+.multi-select-tag-remove:hover:not(:disabled) {
+  @apply text-[var(--status-danger)] opacity-100;
+}
+
+.multi-select-tag-remove:disabled {
+  @apply cursor-not-allowed;
+}
+
+.multi-select-input {
+  @apply min-w-[60px] flex-1 border-0 bg-transparent p-0 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)];
+}
+
+.multi-select-dropdown {
+  @apply absolute left-0 top-full z-[1100] mt-1 max-h-60 w-full list-none overflow-auto rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] p-1 shadow-[0_10px_30px_rgba(0,45,92,0.12)];
+}
+
+.multi-select-option {
+  @apply flex cursor-pointer items-center rounded-md px-3 py-2 text-sm text-[var(--text-secondary)] transition-colors duration-150;
+}
+
+.multi-select-option.active,
+.multi-select-option:hover {
+  @apply bg-[color-mix(in_srgb,var(--primary-color)_10%,transparent)] text-[var(--primary-color)];
+}
+
+.multi-select-option.create {
+  @apply font-semibold;
+}
+
+.breadcrumb-dropdown-trigger {
+  @apply inline-flex shrink-0 cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-sm text-[var(--text-secondary)] transition-colors duration-200;
+}
+
+.breadcrumb-dropdown-trigger:hover {
+  @apply text-[var(--primary-color)];
+}
+
+.breadcrumb-dropdown-trigger.current {
+  @apply font-bold text-[var(--text-primary)];
+}
+
+.breadcrumb-dropdown-chevron {
+  @apply text-xs opacity-60 transition-transform duration-200;
+}
+
+.breadcrumb-dropdown-chevron.open {
+  @apply rotate-180 opacity-100;
+}
+
+.wave-line.active {
+  @apply bg-[var(--accent-color)];
+}
+
+.status-note {
+  @apply ml-4 text-[0.8125rem] font-medium text-[var(--status-danger)];
+}
+
+.required-star,
+abbr[title*="必填"],
+abbr[title*="Required"],
+abbr.required {
+  @apply border-b-0 font-bold text-[var(--status-danger)]! no-underline;
+}
+
+.helper-text {
+  @apply ml-2.5 text-[0.8125rem] text-[var(--text-secondary)] opacity-80;
+}
+
+.upload-warning {
+  @apply mt-2 block text-sm font-semibold text-[var(--status-danger)];
+}
+
+.overflow-visible {
+  @apply overflow-visible!;
+}
+
+.home-divider {
+  @apply mx-12 my-4 max-w-[1600px] border-0 border-t border-[var(--border-color)];
+}
+
+.page-loader.fade-out {
+  @apply invisible opacity-0;
+}
+
+.transition-overlay.active {
+  @apply visible opacity-100;
+}
+
+.empty-reservation h3 {
+  @apply mb-3 text-xl text-[var(--text-primary)];
+}
+
+.empty-reservation p {
+  @apply max-w-[300px] text-[0.9375rem] leading-[1.6] text-[var(--text-secondary)];
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes guide-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/*
+ * ============================================================
+ * 表格基礎樣式（搬移自 style.min.css）
+ * 使用 Tailwind @apply 實作
+ * ============================================================
+ */
+.hy-table,
+.data-table,
+.file-table,
+.info-table {
+  @apply w-full table-fixed border-separate border-spacing-0 bg-(--card-bg) overflow-hidden;
+}
+
+.hy-table tr:last-child td,
+.data-table tr:last-child td,
+.file-table tr:last-child td,
+.info-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* 表格捲動容器 */
+.table-container {
+  @apply w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container::-webkit-scrollbar {
+  @apply h-1.5;
+}
+
+.table-container::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  @apply rounded-[3px] bg-(--border-color);
+}
+
+/* 表頭與儲存格基礎樣式 */
+.hy-table th,
+.data-table th,
+.file-table th,
+.info-table th,
+.hy-table td,
+.data-table td,
+.file-table td,
+.info-table td {
+  @apply box-border h-14 border-b border-(--border-color) px-5 py-2 align-middle;
+}
+
+/* 表頭 */
+.hy-table th,
+.data-table th,
+.file-table th,
+.info-table th {
+  @apply bg-(--bg-secondary) text-left text-sm font-bold text-(--text-primary);
+}
+
+/* 新進資料列標示 */
+.hy-table tr.tr-new,
+.data-table tr.tr-new,
+.file-table tr.tr-new,
+.info-table tr.tr-new {
+  @apply bg-[rgba(255,152,0,0.05)]!;
+}
+
+.hy-table tr.tr-new td:first-child,
+.data-table tr.tr-new td:first-child,
+.file-table tr.tr-new td:first-child,
+.info-table tr.tr-new td:first-child {
+  @apply relative;
+}
+
+.hy-table tr.tr-new td:first-child::before,
+.data-table tr.tr-new td:first-child::before,
+.file-table tr.tr-new td:first-child::before,
+.info-table tr.tr-new td:first-child::before {
+  @apply absolute bottom-0 left-0 top-0 w-[4px] bg-(--status-warning) content-[""];
+}
+
+/* 不換行儲存格 */
+.hy-table td.nowrap,
+.data-table td.nowrap,
+.file-table td.nowrap,
+.info-table td.nowrap,
+.hy-table td.cell-badges,
+.data-table td.cell-badges,
+.file-table td.cell-badges,
+.info-table td.cell-badges,
+.hy-table td:last-child,
+.data-table td:last-child,
+.file-table td:last-child,
+.info-table td:last-child {
+  @apply whitespace-nowrap;
+}
+
+/* 標籤欄位 */
+.hy-table .label-cell,
+.data-table .label-cell,
+.file-table .label-cell,
+.info-table .label-cell {
+  @apply w-[185px] min-w-[185px] border-r-0 border-(--border-color) bg-(--bg-secondary) text-right text-base font-bold text-(--text-primary);
+}
+
+.hy-table .label-cell.valign-top,
+.data-table .label-cell.valign-top,
+.file-table .label-cell.valign-top,
+.info-table .label-cell.valign-top {
+  @apply pt-[1.15rem] align-top;
+}
+
+/* 標籤欄寬 */
+.hy-table col.col-label,
+.data-table col.col-label,
+.file-table col.col-label,
+.info-table col.col-label {
+  @apply w-[220px];
+}
+
+/* 內容欄位 */
+.hy-table .content-cell,
+.data-table .content-cell,
+.file-table .content-cell,
+.info-table .content-cell {
+  @apply bg-(--card-bg);
+}
+
+/* 部門 / 分類欄位 */
+.hy-table .col-dept,
+.data-table .col-dept,
+.file-table .col-dept,
+.info-table .col-dept,
+.hy-table .col-category,
+.data-table .col-category,
+.file-table .col-category,
+.info-table .col-category {
+  @apply text-sm text-(--text-secondary);
+}
+
+/* 緊湊表格 */
+.hy-table.compact-table th,
+.compact-table.data-table th,
+.compact-table.file-table th,
+.compact-table.info-table th,
+.hy-table.compact-table td,
+.compact-table.data-table td,
+.compact-table.file-table td,
+.compact-table.info-table td {
+  @apply px-3 py-2;
+}
+
+/* 置頂對齊表格 */
+.hy-table.align-top td,
+.align-top.data-table td,
+.align-top.file-table td,
+.align-top.info-table td,
+.hy-table.align-top th,
+.align-top.data-table th,
+.align-top.file-table th,
+.align-top.info-table th {
+  @apply pt-[1.15rem] align-top!;
+}
+
+/* 資訊表格容器 */
+.info-table-container {
+  @apply w-full overflow-visible! bg-(--card-bg) p-6;
+}
+
+.info-table-container .hy-table,
+.info-table-container .data-table,
+.info-table-container .file-table,
+.info-table-container .info-table {
+  @apply rounded-xl border-separate border-spacing-0;
+}
+
+.info-table-container .hy-table tr:first-child th:first-child,
+.info-table-container .data-table tr:first-child th:first-child,
+.info-table-container .file-table tr:first-child th:first-child,
+.info-table-container .info-table tr:first-child th:first-child,
+.info-table-container .hy-table tr:first-child td:first-child,
+.info-table-container .data-table tr:first-child td:first-child,
+.info-table-container .file-table tr:first-child td:first-child,
+.info-table-container .info-table tr:first-child td:first-child {
+  @apply rounded-tl-xl;
+}
+
+.info-table-container .hy-table tr:first-child th:last-child,
+.info-table-container .data-table tr:first-child th:last-child,
+.info-table-container .file-table tr:first-child th:last-child,
+.info-table-container .info-table tr:first-child th:last-child,
+.info-table-container .hy-table tr:first-child td:last-child,
+.info-table-container .data-table tr:first-child td:last-child,
+.info-table-container .file-table tr:first-child td:last-child,
+.info-table-container .info-table tr:first-child td:last-child {
+  @apply rounded-tr-xl;
+}
+
+.info-table-container .hy-table tr:last-child td:first-child,
+.info-table-container .data-table tr:last-child td:first-child,
+.info-table-container .file-table tr:last-child td:first-child,
+.info-table-container .info-table tr:last-child td:first-child {
+  @apply rounded-bl-xl;
+}
+
+.info-table-container .hy-table tr:last-child td:last-child,
+.info-table-container .data-table tr:last-child td:last-child,
+.info-table-container .file-table tr:last-child td:last-child,
+.info-table-container .info-table tr:last-child td:last-child {
+  @apply rounded-br-xl;
+}
+
+/*
+ * ============================================================
+ * 表單錯誤提示文字
+ * 定義在 layer 之外，確保優先覆蓋全域 p 樣式
+ * ============================================================
+ */
+.form-error-text {
+  font-size: 0.875rem;
+  color: #ef4444 !important;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.notes-list {
+  @apply m-0 flex list-none flex-col gap-2.5 px-0 py-2;
+}
+
+.notes-list li {
+  @apply flex items-start gap-2 text-sm leading-[1.6] text-[var(--text-secondary)];
+}
+
+.notes-list li .num {
+  @apply min-w-5 shrink-0 font-bold text-[var(--primary-color)];
+}
+
+.reservation-empty-state {
+  @apply flex flex-1 justify-center pt-[10%];
+}
+
+.reservation-prompt {
+  @apply sticky top-[10%] flex h-fit flex-col items-center gap-6 text-center text-[var(--text-secondary)] opacity-80;
+}
+
+.reservation-prompt .prompt-icon {
+  @apply flex h-[100px] w-[100px] items-center justify-center rounded-full border-2 border-[rgba(var(--primary-color-rgb),0.1)] bg-[var(--nav-active-bg)] shadow-[0_10px_30px_rgba(0,0,0,0.05)];
+}
+
+.reservation-prompt .prompt-icon .material-symbols-outlined {
+  @apply text-[4rem] text-[var(--primary-color)];
+  animation: strong-guide-point 1.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)
+    infinite;
+}
+
+.reservation-prompt .prompt-text h3 {
+  @apply mb-3 text-2xl font-bold text-[var(--text-primary)];
+}
+
+.reservation-prompt .prompt-text p {
+  @apply m-0 text-[1.1rem] opacity-80;
+}
+
+@keyframes strong-guide-point {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(var(--primary-color-rgb), 0));
+    transform: translateX(0) scale(1);
+  }
+
+  30% {
+    filter: drop-shadow(4px 4px 10px rgba(var(--primary-color-rgb), 0.3));
+    transform: translateX(-35px) scale(1.3) rotate(-10deg);
+  }
+
+  45% {
+    transform: translateX(-40px) scale(1.4) rotate(-15deg);
+  }
+}
+
+/*
+ * ============================================================
+ * 表單基礎樣式（搬移自 style.min.css）
+ * 使用 Tailwind @apply 實作
+ * ============================================================
+ */
+.form-input,
+.form-input-full,
+.form-input-mid,
+.form-input-sm,
+.form-select,
+.form-select-full,
+textarea {
+  @apply inline-flex h-[42px] w-full box-border items-center rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] px-3.5 text-[0.9375rem] leading-normal text-[var(--text-primary)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)];
+  font-family: inherit;
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-input-full,
+[data-theme="dark"] .form-input-mid,
+[data-theme="dark"] .form-input-sm,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-select-full,
+[data-theme="dark"] textarea {
+  @apply bg-[#1e293b];
+}
+
+.form-input[textarea],
+.form-input.form-textarea,
+.form-input-full[textarea],
+.form-input-full.form-textarea,
+.form-input-mid[textarea],
+.form-input-mid.form-textarea,
+.form-input-sm[textarea],
+.form-input-sm.form-textarea,
+.form-select[textarea],
+.form-select.form-textarea,
+.form-select-full[textarea],
+.form-select-full.form-textarea,
+textarea[textarea],
+textarea.form-textarea {
+  @apply h-auto min-h-[100px] resize-y p-4 leading-[1.5];
+}
+
+.form-input:focus,
+.form-input-full:focus,
+.form-input-mid:focus,
+.form-input-sm:focus,
+.form-select:focus,
+.form-select-full:focus,
+textarea:focus {
+  @apply border-[var(--primary-color)] bg-[var(--card-bg)] shadow-[0_0_0_4px_rgba(var(--primary-color-rgb),0.1),inset_0_1px_2px_rgba(0,0,0,0.02)] outline-none;
+}
+
+.form-input:disabled,
+.form-input-full:disabled,
+.form-input-mid:disabled,
+.form-input-sm:disabled,
+.form-select:disabled,
+.form-select-full:disabled,
+textarea:disabled {
+  @apply cursor-not-allowed bg-[var(--bg-secondary)] opacity-70;
+}
+
+.form-input::placeholder,
+.form-input-full::placeholder,
+.form-input-mid::placeholder,
+.form-input-sm::placeholder,
+.form-select::placeholder,
+.form-select-full::placeholder,
+textarea::placeholder {
+  @apply text-[var(--text-secondary)] opacity-[var(--placeholder-opacity)];
+}
+
+.form-input-mid {
+  @apply w-[180px]!;
+}
+
+.form-select,
+.form-select-full {
+  @apply min-w-[110px] cursor-pointer appearance-none bg-[length:1.1rem] bg-[right_0.75rem_center] bg-no-repeat pr-9!;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.form-select-full {
+  @apply w-full!;
+}
+
+.form-footer-btns {
+  @apply flex w-full justify-center gap-6 rounded-b-[var(--border-radius)] border-t border-[var(--border-color)] bg-[var(--bg-secondary)] p-8;
+}
+
+.form-footer-btns .btn-action {
+  @apply flex h-auto min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-[10px] border-0 px-10 py-3 text-base transition-all duration-300 ease-[cubic-bezier(0.165,0.84,0.44,1)];
+}
+
+.form-footer-btns .btn-action:active {
+  @apply translate-y-0;
+}
+
+.form-row-grid {
+  @apply mb-5 grid grid-cols-2 gap-6;
+}
+
+.form-row-grid.grid-3col {
+  @apply grid-cols-3;
+}
+
+.form-row-grid.grid-1col {
+  @apply grid-cols-1;
+}
+
+.form-row-grid:last-child {
+  @apply mb-0;
+}
+
+.form-group-vertical {
+  @apply flex flex-col gap-2;
+}
+
+.form-group-vertical label {
+  @apply flex items-center gap-1 text-[0.8125rem] font-bold tracking-[0.5px] text-[var(--text-primary)];
+}
+
+.form-group-vertical .required-star {
+  @apply font-bold text-[var(--status-danger)];
+}
+
+.form-group-vertical .form-input,
+.form-group-vertical .form-select,
+.form-group-vertical textarea {
+  @apply w-full;
+}
+
+.form-card-vertical {
+  @apply relative mb-4 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] p-6 transition-all duration-300 ease-in-out;
+}
+
+.form-card-vertical:last-child {
+  @apply mb-0;
+}
+
+.form-card-vertical:hover {
+  @apply shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.1)];
+}
+
+/*
+ * ============================================================
+ * 既有附件列表（搬移自 style.min.css）
+ * 使用 Tailwind @apply 實作
+ * ============================================================
+ */
+.existing-files-header {
+  @apply mt-6 flex items-center gap-2 border-b border-[var(--border-color)] pb-2 text-[0.875rem] font-bold text-[var(--primary-color)] opacity-80;
+}
+
+.existing-files-list {
+  @apply mt-3 flex flex-col gap-3;
+}
+
+.existing-files-list .existing-file-item:hover {
+  @apply border-[var(--primary-color)] bg-[rgba(var(--primary-color-rgb),0.02)] shadow-[0_4px_12px_rgba(0,0,0,0.05)];
+}
+
+.existing-files-list .existing-file-item .file-thumb {
+  @apply relative h-[72px] w-[72px] shrink-0 cursor-pointer overflow-hidden rounded-md border border-[var(--border-color)];
+}
+
+.existing-files-list .existing-file-item .file-thumb img {
+  @apply h-full w-full object-cover;
+}
+
+.existing-files-list .existing-file-item .file-thumb .thumb-overlay {
+  @apply absolute inset-0 flex items-center justify-center bg-[rgba(var(--primary-color-rgb),0.3)] text-[0.875rem] text-white opacity-0 transition-opacity duration-200;
+}
+
+.existing-files-list .existing-file-item .file-thumb:hover .thumb-overlay {
+  @apply opacity-100;
+}
+
+.existing-files-list .existing-file-item .file-info {
+  @apply flex grow flex-col gap-0.5;
+}
+
+.existing-files-list .existing-file-item .file-info .file-date {
+  @apply text-xs text-[var(--text-secondary)] opacity-70;
+}
+
+/*
+ * ============================================================
+ * 圖片燈箱（搬移自 style.min.css）
+ * 使用 Tailwind @apply 實作
+ * ============================================================
+ */
+.lightbox {
+  @apply fixed left-0 top-0 z-[9999] hidden h-full w-full flex-col items-center justify-center bg-black/90 opacity-0 backdrop-blur-[10px] transition-opacity duration-300 ease-in-out;
+}
+
+.lightbox.active {
+  @apply flex opacity-100;
+}
+
+.lightbox .lightbox-close {
+  @apply absolute right-10 top-[30px] z-[10001] cursor-pointer text-5xl font-light leading-none text-white transition-all duration-300;
+}
+
+.lightbox .lightbox-close:hover {
+  @apply rotate-90 text-[var(--primary-color)];
+}
+
+.lightbox .lightbox-content {
+  @apply z-[10000] block h-auto max-h-[85vh] w-auto max-w-[90%] rounded object-contain shadow-[0_20px_60px_rgba(0,0,0,0.5)];
+  animation: zoomIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lightbox #lightbox-caption {
+  @apply py-5 text-center text-[1.1rem] font-medium tracking-[1px] text-white/80;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/*
+ * ============================================================
+ * 篩選列樣式（搬移自 style.min.css）
+ * 使用 Tailwind @apply 實作
+ * ============================================================
+ */
+.filter-bar {
+  @apply flex flex-wrap items-center gap-6 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-6 py-5;
+}
+
+.filter-bar .filter-item {
+  @apply flex items-center gap-3;
+}
+
+.filter-bar .filter-item label {
+  @apply whitespace-nowrap text-sm font-semibold text-[var(--text-primary)];
+}
+
+.filter-bar .filter-item .form-select {
+  @apply cursor-pointer appearance-none rounded-md border border-[var(--border-color)] bg-[var(--input-bg)] py-2 pl-3 pr-8 text-sm text-[var(--text-primary)] transition-all duration-200 bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.filter-bar .filter-item .form-select:focus {
+  @apply border-[var(--primary-color)] shadow-[0_0_0_3px_rgba(var(--primary-color-rgb),0.1)] outline-none;
+}
+
+.filter-bar .filter-link {
+  @apply text-sm font-medium text-[var(--primary-color)] no-underline;
+}
+
+.filter-bar .filter-link:hover {
+  @apply opacity-80;
+}
+
+.filter-bar .search-btn {
+  @apply cursor-pointer rounded-md border-0 bg-[var(--primary-color)] px-6 py-2 text-sm font-semibold text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-200;
+}
+
+.filter-bar .search-btn:hover {
+  @apply -translate-y-px bg-[var(--highlight-color)] shadow-[0_4px_8px_rgba(0,0,0,0.15)];
+}
+
+.filter-bar .search-btn:active {
+  @apply translate-y-0;
+}
+
+.filter-item .form-input-short {
+  @apply w-20 rounded border border-[var(--border-color)] bg-[var(--input-bg)] p-2 text-sm text-[var(--text-primary)];
+}
+
+.filter-item .form-input-mid {
+  @apply w-[120px] rounded border border-[var(--border-color)] bg-[var(--input-bg)] p-2 text-sm text-[var(--text-primary)];
+}
+
+/*
+ * ============================================================
+ * 全域基礎樣式與變數
+ * ============================================================
+ */
+
+@theme {
+  --color-primary-color: var(--primary-color);
+  --color-secondary-color: var(--secondary-color);
+  --color-highlight-color: var(--highlight-color);
+  --color-accent-color: var(--accent-color);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-color: var(--border-color);
+  --color-card-bg: var(--card-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-header-bg: var(--header-bg);
+
+  --shadow-card: var(--card-shadow);
+  --radius-brand: var(--border-radius);
+}
+
+:root {
+  /* Base Variables - Aligned with _themes.scss */
+  --bg-color: #e7edf2;
+  --bg-color-rgb: 241, 245, 249;
+  --header-bg: #ffffff;
+  --header-bg-rgb: 255, 255, 255;
+  --sidebar-bg: #ffffff;
+  --text-primary: #002d5c;
+  --text-secondary: #5e7e96;
+  --text-caption: #5f7f9e;
+  --card-bg: #ffffff;
+  --header-bg: #ffffff;
+  --border-color: #cad7e2;
+  --table-header-bg: #f8fbfe;
+  --table-border: #ecf1f6;
+  --nav-hover: #f1f7fc;
+  --nav-active-bg: #ecf2f9;
+
+  /* Hyweb Corporate Brand Palette */
+  --primary-color: #0060d5;
+  --primary-color-rgb: 1, 86, 162;
+  --primary-color-channels: 1 86 162;
+  --primary-color-30: rgba(1, 86, 162, 0.3);
+  --primary-color-20: rgba(1, 86, 162, 0.2);
+  --primary-color-08: rgba(1, 86, 162, 0.08);
+  --secondary-color: #006ffd;
+  --highlight-color: #0399f7;
+  --accent-color: #11dddd;
+  --link-color: #238be8;
+  --link-hover-color: #0060d5;
+  --card-shadow: 0 12px 40px rgba(11, 55, 102, 0.15);
+  --bg-secondary: #f8fbfe;
+  --input-bg: #f8fbfe;
+  --tab-bar-bg: #eef1f5;
+
+  --status-positive: #059669;
+  --status-warning: #d97706;
+  --status-info: #0284c7;
+  --status-danger: #dc2626;
+
+  --badge-success-bg: #f6ffed;
+  --badge-success-border: #b7eb8f;
+  --badge-success-text: #52c41a;
+  --badge-danger-bg: #fff1f0;
+  --badge-danger-border: #ffa39e;
+  --badge-danger-text: #f5222d;
+  --badge-warning-bg: #fff7e6;
+  --badge-warning-border: #ffd591;
+  --badge-warning-text: #fa8c16;
+  --badge-info-bg: #e6f7ff;
+  --badge-info-border: #91d5ff;
+  --badge-info-text: #1890ff;
+  --badge-draft-bg: #fafafa;
+  --badge-draft-border: #d9d9d9;
+  --badge-draft-text: #595959;
+
+  --border-radius: 1rem;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 6rem; /* 80px */
+  --placeholder-opacity: 0.45;
+  --transition-speed: 0.3s;
+
+  /* Tailwind defaults mapping */
+  --color-bg: var(--bg-color);
+  --color-text: var(--text-primary);
+}
+
+.dark {
+  --bg-color: #161c28;
+  --bg-color-rgb: 16, 27, 46;
+  --sidebar-bg: #172437;
+  --text-primary: #dce4ee;
+  --text-secondary: #a8b1bb;
+  --card-bg: #162238;
+  --header-bg: #161c28;
+  --header-bg-rgb: 16, 27, 46;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --table-header-bg: #1d2a44;
+  --table-border: #26354a;
+  --nav-hover: rgba(255, 255, 255, 0.03);
+  --nav-active-bg: rgba(67, 97, 238, 0.2);
+
+  --primary-color: #22bafb;
+  --primary-color-rgb: 91, 225, 255;
+  --primary-color-channels: 91 225 255;
+  --primary-color-30: rgba(91, 225, 255, 0.3);
+  --primary-color-20: rgba(91, 225, 255, 0.2);
+  --primary-color-08: rgba(91, 225, 255, 0.08);
+  --secondary-color: #1cb6fe;
+  --highlight-color: #11dddd;
+  --accent-color: #11dddd;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --bg-secondary: #1a2d43;
+  --link-color: #1cb6fe;
+  --link-hover-color: var(--accent-color);
+  --input-bg: #1c2233;
+  --tab-bar-bg: #1a2234;
+
+  --status-positive: #34d399;
+  --status-warning: #fbbf24;
+  --status-info: #38bdf8;
+  --status-danger: #f87171;
+
+  --badge-success-bg: rgba(82, 196, 26, 0.25);
+  --badge-success-border: rgba(82, 196, 26, 0.4);
+  --badge-success-text: #b7eb8f;
+  --badge-danger-bg: rgba(245, 34, 45, 0.25);
+  --badge-danger-border: rgba(245, 34, 45, 0.4);
+  --badge-danger-text: #ffa39e;
+  --badge-warning-bg: rgba(250, 140, 22, 0.25);
+  --badge-warning-border: rgba(250, 140, 22, 0.4);
+  --badge-warning-text: #ffd591;
+  --badge-info-bg: rgba(24, 144, 255, 0.25);
+  --badge-info-border: rgba(24, 144, 255, 0.4);
+  --badge-info-text: #91d5ff;
+  --badge-draft-bg: rgba(140, 140, 140, 0.25);
+  --badge-draft-border: rgba(140, 140, 140, 0.4);
+  --badge-draft-text: #d9d9d9;
+  --placeholder-opacity: 0.6;
+
+  --color-bg: var(--bg-color);
+  --color-text: var(--text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-color: #161c28;
+    --bg-color-rgb: 16, 27, 46;
+    --sidebar-bg: #161c28;
+    --text-primary: #dce4ee;
+    --text-secondary: #a8b1bb;
+    --card-bg: #162238;
+    --header-bg: #161c28;
+    --header-bg-rgb: 16, 27, 46;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --table-header-bg: #1d2a44;
+    --table-border: #26354a;
+    --nav-hover: rgba(255, 255, 255, 0.03);
+    --nav-active-bg: rgba(67, 97, 238, 0.2);
+
+    --primary-color: #22bafb;
+    --primary-color-rgb: 91, 225, 255;
+    --primary-color-channels: 91 225 255;
+    --primary-color-30: rgba(91, 225, 255, 0.3);
+    --primary-color-20: rgba(91, 225, 255, 0.2);
+    --primary-color-08: rgba(91, 225, 255, 0.08);
+    --secondary-color: #1cb6fe;
+    --highlight-color: #11dddd;
+    --accent-color: #1cb6fe;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --bg-secondary: #1a2d43;
+    --link-color: #1cb6fe;
+    --link-hover-color: var(--accent-color);
+    --input-bg: #1c2233;
+    --tab-bar-bg: #1a2234;
+
+    --status-positive: #34d399;
+    --status-warning: #fbbf24;
+    --status-info: #38bdf8;
+    --status-danger: #f87171;
+
+    --badge-success-bg: rgba(82, 196, 26, 0.25);
+    --badge-success-border: rgba(82, 196, 26, 0.4);
+    --badge-success-text: #b7eb8f;
+    --badge-danger-bg: rgba(245, 34, 45, 0.25);
+    --badge-danger-border: rgba(245, 34, 45, 0.4);
+    --badge-danger-text: #ffa39e;
+    --badge-warning-bg: rgba(250, 140, 22, 0.25);
+    --badge-warning-border: rgba(250, 140, 22, 0.4);
+    --badge-warning-text: #ffd591;
+    --badge-info-bg: rgba(24, 144, 255, 0.25);
+    --badge-info-border: rgba(24, 144, 255, 0.4);
+    --badge-info-text: #91d5ff;
+    --badge-draft-bg: rgba(140, 140, 140, 0.25);
+    --badge-draft-border: rgba(140, 140, 140, 0.4);
+    --badge-draft-text: #d9d9d9;
+    --placeholder-opacity: 0.6;
+
+    --color-bg: var(--bg-color);
+    --color-text: var(--text-primary);
+  }
+}
+
+@layer base {
+  :root[data-theme="light"] {
+    --bg-color: #e7edf2;
+    --bg-color-rgb: 241, 245, 249;
+    --sidebar-bg: #ffffff;
+    --text-primary: #002d5c;
+    --text-secondary: #5e7e96;
+    --card-bg: #ffffff;
+    --header-bg: #ffffff;
+    --border-color: #cad7e2;
+    --table-header-bg: #f8fbfe;
+    --table-border: #ecf1f6;
+    --nav-hover: #f1f7fc;
+    --nav-active-bg: rgba(1, 86, 162, 0.08);
+    --header-bg-rgb: 255, 255, 255;
+    --primary-color: #0060d5;
+    --primary-color-rgb: 1, 86, 162;
+    --primary-color-channels: 1 86 162;
+    --primary-color-30: rgba(1, 86, 162, 0.3);
+    --primary-color-20: rgba(1, 86, 162, 0.2);
+    --primary-color-08: rgba(1, 86, 162, 0.08);
+    --secondary-color: #006ffd;
+    --highlight-color: #0399f7;
+    --accent-color: #11dddd;
+    --link-color: #238be8;
+    --link-hover-color: #0060d5;
+    --card-shadow: 0 12px 40px rgba(11, 55, 102, 0.15);
+    --bg-secondary: #f8fbfe;
+    --input-bg: #f8fbfe;
+    --tab-bar-bg: #eef1f5;
+    --status-positive: #059669;
+    --status-warning: #d97706;
+    --status-info: #0284c7;
+    --status-danger: #dc2626;
+    --badge-success-bg: #f6ffed;
+    --badge-success-border: #b7eb8f;
+    --badge-success-text: #52c41a;
+    --badge-danger-bg: #fff1f0;
+    --badge-danger-border: #ffa39e;
+    --badge-danger-text: #f5222d;
+    --badge-warning-bg: #fff7e6;
+    --badge-warning-border: #ffd591;
+    --badge-warning-text: #fa8c16;
+    --badge-info-bg: #e6f7ff;
+    --badge-info-border: #91d5ff;
+    --badge-info-text: #1890ff;
+    --badge-draft-bg: #fafafa;
+    --badge-draft-border: #d9d9d9;
+    --badge-draft-text: #595959;
+    --placeholder-opacity: 0.45;
+    --color-bg: var(--bg-color);
+    --color-text: var(--text-primary);
+  }
+
+  :root[data-theme="dark"] {
+    --bg-color: #161c28;
+    --bg-color-rgb: 16, 27, 46;
+    --sidebar-bg: #172437;
+    --text-primary: #dce4ee;
+    --text-secondary: #a8b1bb;
+    --card-bg: #162238;
+    --header-bg: #161c28;
+    --header-bg-rgb: 16, 27, 46;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --table-header-bg: #1d2a44;
+    --table-border: #26354a;
+    --nav-hover: rgba(255, 255, 255, 0.03);
+    --nav-active-bg: rgba(67, 97, 238, 0.2);
+    --primary-color: #22bafb;
+    --primary-color-rgb: 91, 225, 255;
+    --primary-color-channels: 91 225 255;
+    --primary-color-30: rgba(91, 225, 255, 0.3);
+    --primary-color-20: rgba(91, 225, 255, 0.2);
+    --primary-color-08: rgba(91, 225, 255, 0.08);
+    --secondary-color: #1cb6fe;
+    --highlight-color: #11dddd;
+    --accent-color: #11dddd;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --bg-secondary: #1a2d43;
+    --link-color: #1cb6fe;
+    --link-hover-color: var(--accent-color);
+    --input-bg: #1c2233;
+    --tab-bar-bg: #1a2234;
+    --status-positive: #34d399;
+    --status-warning: #fbbf24;
+    --status-info: #38bdf8;
+    --status-danger: #f87171;
+    --badge-success-bg: rgba(82, 196, 26, 0.25);
+    --badge-success-border: rgba(82, 196, 26, 0.4);
+    --badge-success-text: #b7eb8f;
+    --badge-danger-bg: rgba(245, 34, 45, 0.25);
+    --badge-danger-border: rgba(245, 34, 45, 0.4);
+    --badge-danger-text: #ffa39e;
+    --badge-warning-bg: rgba(250, 140, 22, 0.25);
+    --badge-warning-border: rgba(250, 140, 22, 0.4);
+    --badge-warning-text: #ffd591;
+    --badge-info-bg: rgba(24, 144, 255, 0.25);
+    --badge-info-border: rgba(24, 144, 255, 0.4);
+    --badge-info-text: #91d5ff;
+    --badge-draft-bg: rgba(140, 140, 140, 0.25);
+    --badge-draft-border: rgba(140, 140, 140, 0.4);
+    --badge-draft-text: #d9d9d9;
+    --placeholder-opacity: 0.6;
+    --color-bg: var(--bg-color);
+    --color-text: var(--text-primary);
+  }
+}
+
+body {
+  /* 原為 dashboard 置中（flex h-screen items-center justify-center overflow-hidden），
+     會弄壞對話版面，改為一般文件流，由 .app-shell 控制全高布局。 */
+  @apply m-0 bg-(--bg-color) text-(--text-primary);
+  font-family: "Inter", "Noto Sans TC", sans-serif;
+  transition:
+    background-color var(--transition-speed),
+    color var(--transition-speed);
+}
+
+body.loaded {
+  @apply overflow-auto;
+}
+
+body.loaded .dashboard-container {
+  @apply opacity-100;
+}
+
+/* 全域標題 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply text-(--text-primary);
+}
+
+h1 {
+  @apply flex items-center text-[1.5em] font-bold;
+}
+
+h1 img {
+  @apply mr-[0.25em] w-[2em];
+}
+
+h2 {
+  @apply text-[1.125em] font-semibold;
+}
+
+h3 {
+  @apply text-base font-bold;
+}
+
+h4 {
+  @apply text-[0.9375rem] font-bold;
+}
+
+h5 {
+  @apply text-sm font-semibold text-(--text-secondary);
+}
+
+h6 {
+  @apply text-[0.8125rem] font-semibold uppercase tracking-[0.5px] text-(--text-secondary);
+}
+
+/* 全域段落 */
+p {
+  @apply text-[0.875em] leading-[1.6] text-(--text-secondary);
+}
+
+/* 全域連結 */
+a {
+  @apply text-inherit no-underline;
+}
+
+a:hover,
+a:focus {
+  @apply no-underline;
+}
+
+/* 螢幕閱讀器專用文字 */
+.sr-only {
+  @apply sr-only;
+}
+
+.dashboard-container {
+  @apply relative grid h-screen w-full overflow-hidden bg-(--bg-color) opacity-0;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  transition:
+    grid-template-columns 0.4s ease-out,
+    opacity 0.5s ease;
+}
+
+.dashboard-container.left-collapsed {
+  grid-template-columns: var(--sidebar-collapsed-width) 1fr;
+}
+
+#floating-toggle-btn {
+  @apply pointer-events-none absolute right-[1.25em] top-[1.25em] z-[100] flex h-[2.5em] w-[2.5em] cursor-pointer items-center justify-center rounded-full border-0 bg-[var(--card-bg)] opacity-0 shadow-[0_0.3125em_0.9375em_rgba(0,0,0,0.1)] transition-all duration-300;
+}
+
+.main-body {
+  @apply flex h-screen flex-col overflow-hidden bg-(--bg-color);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+}
+
+.dashboard-container.left-collapsed .sidebar {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* Custom Scrollbar - Premium Feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Tab Utilities */
+.tab-item {
+  @apply flex cursor-pointer items-center gap-2 border-b-[3px] border-b-transparent px-6 py-3 text-base font-semibold text-[var(--text-secondary)] transition-all duration-300;
+}
+
+.tab-item:hover {
+  @apply text-[var(--primary-color)];
+}
+
+.tab-item.active {
+  @apply border-b-[var(--highlight-color)] bg-[rgba(var(--primary-color-rgb),0.05)] text-[var(--primary-color)];
+}
+
+.tab-item.active:first-child {
+  @apply rounded-tl-xl;
+}
+
+.tab-item.disabled {
+  @apply pointer-events-none cursor-not-allowed text-[var(--text-tertiary,#b0b0b0)] opacity-50;
+}
+
+/* Section Cards */
+.section-card {
+  @apply overflow-hidden rounded-[var(--border-radius)] border-0 bg-[var(--card-bg)] shadow-[var(--card-shadow)];
+}
+
+.section-header {
+  @apply flex items-center justify-between border-b border-[var(--border-color)] bg-transparent px-6 py-4;
+}
+
+.section-title {
+  @apply flex items-center gap-2.5 text-lg font-bold text-[var(--text-primary)];
+}
+
+.section-title i {
+  @apply text-xl;
+}
+
+.section-card.no-header-bg .section-header {
+  @apply block border-b-0 p-0;
+}
+
+.banner-container {
+  @apply flex min-w-0 flex-[8];
+}
+
+.info-container {
+  @apply flex min-w-[250px] flex-[4];
+}
+
+.info-container .section-card {
+  @apply m-0 flex flex-1 flex-col;
+}
+
+@media (max-width: 1024px) {
+  .info-container {
+    @apply w-full;
+  }
+}
+
+.news-top-grid .section-card {
+  @apply mb-0 ml-0 mr-0 flex h-full flex-col;
+}
+
+.home-news-table {
+  @apply w-full table-fixed border-collapse bg-transparent;
+}
+
+.home-news-table th,
+.home-news-table td {
+  @apply border-b border-[var(--border-color)] p-4 text-left transition-all duration-200;
+}
+
+.home-news-table th {
+  @apply whitespace-nowrap border-b-2 border-b-[rgba(var(--primary-color-rgb),0.1)] bg-[rgba(var(--primary-color-rgb),0.03)] text-xs font-bold uppercase tracking-[0.05em] text-[var(--text-secondary)];
+}
+
+.home-news-table td {
+  @apply align-middle text-[0.938rem] text-[var(--text-primary)];
+}
+
+.home-news-table tbody tr {
+  @apply cursor-pointer transition-colors duration-200;
+}
+
+.home-news-table tbody tr:nth-child(even) {
+  @apply bg-[rgba(var(--bg-color-rgb),0.3)];
+}
+
+.home-news-table tbody tr:hover {
+  @apply !bg-[rgba(var(--primary-color-rgb),0.04)];
+}
+
+.home-news-table tbody tr:hover .col-title a {
+  @apply translate-x-1 text-[var(--secondary-color)];
+}
+
+.home-news-table tbody tr.tr-new {
+  @apply bg-[rgba(var(--status-warning-rgb,217,119,6),0.05)];
+}
+
+.home-news-table tbody tr.tr-new td:first-child {
+  @apply relative;
+}
+
+.home-news-table tbody tr.tr-new td:first-child::before {
+  @apply absolute bottom-0 left-0 top-0 w-[3px] bg-[var(--status-warning)] content-[""];
+}
+
+.home-news-table a {
+  @apply inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap align-bottom;
+}
+
+.home-news-table a:hover,
+.home-news-table a:focus {
+  @apply translate-x-1;
+}
+
+.home-news-table .col-date {
+  @apply w-[110px] text-[0.8125rem] text-[var(--text-secondary)];
+  font-family: inherit;
+}
+
+.home-news-table .col-form,
+.home-news-table .col-name,
+.home-news-table .col-title {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+
+.home-news-table .col-form a,
+.home-news-table .col-name a,
+.home-news-table .col-title a {
+  @apply block;
+}
+
+.home-news-table .col-form .status-pill,
+.home-news-table .col-form .status-new,
+.home-news-table .col-form .status-urgent,
+.home-news-table .col-form .status-important,
+.home-news-table .col-form .status-danger,
+.home-news-table .col-form .status-normal,
+.home-news-table .col-name .status-pill,
+.home-news-table .col-name .status-new,
+.home-news-table .col-name .status-urgent,
+.home-news-table .col-name .status-important,
+.home-news-table .col-name .status-danger,
+.home-news-table .col-name .status-normal,
+.home-news-table .col-title .status-pill,
+.home-news-table .col-title .status-new,
+.home-news-table .col-title .status-urgent,
+.home-news-table .col-title .status-important,
+.home-news-table .col-title .status-danger,
+.home-news-table .col-title .status-normal {
+  @apply mr-2 translate-y-[-1px];
+}
+
+.home-news-table .col-dept {
+  @apply w-[120px] text-right text-[0.8125rem] text-[var(--text-secondary)];
+}
+
+.home-news-table .col-form {
+  @apply w-auto;
+}
+
+.home-news-table .col-form a {
+  @apply font-bold;
+}
+
+.home-news-table .col-task {
+  @apply w-[100px] text-center;
+}
+
+.home-news-table .col-time {
+  @apply w-[110px] text-right text-[0.8125rem] text-[var(--text-secondary)];
+}
+
+.home-news-table .col-code {
+  @apply w-[9em] text-xs text-[var(--text-secondary)];
+}
+
+.news-top-grid {
+  @apply mb-6 grid grid-cols-2 gap-6;
+}
+
+.news-top-grid .table-container {
+  @apply flex-1;
+}
+
+.news-dynamic-grid {
+  @apply mb-12 grid grid-cols-3 gap-6;
+}
+
+.news-dynamic-grid .news-column {
+  @apply ml-0 mr-0 flex h-full flex-col overflow-hidden rounded-[var(--border-radius)] bg-[var(--card-bg)] shadow-[var(--card-shadow)];
+}
+
+.news-dynamic-grid .table-container {
+  @apply flex-1;
+}
+
+@media (max-width: 1200px) {
+  .news-top-grid,
+  .news-dynamic-grid {
+    @apply mx-8 grid-cols-1 gap-6;
+  }
+}
+
+.custom-dropdown-menu {
+  @apply absolute left-0 top-full z-[1000] mt-2 hidden min-w-[180px] rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] p-1.5 shadow-[var(--card-shadow)];
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-dropdown-menu.active {
+  @apply block;
+}
+
+.custom-dropdown-menu .dropdown-item {
+  @apply flex cursor-pointer items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium text-[var(--text-primary)] no-underline transition-all duration-200;
+}
+
+.custom-dropdown-menu .dropdown-item i {
+  @apply w-5 text-center text-base opacity-70;
+}
+
+.custom-dropdown-menu .dropdown-item:hover {
+  @apply bg-[var(--nav-hover)] text-[var(--primary-color)];
+}
+
+.custom-dropdown-menu .dropdown-item:hover i {
+  @apply opacity-100;
+}
+
+.custom-dropdown-menu .dropdown-item.danger,
+.custom-dropdown-menu .dropdown-item.status-new,
+.custom-dropdown-menu .dropdown-item.status-danger {
+  @apply text-[var(--status-danger)];
+}
+
+.custom-dropdown-menu .dropdown-item.danger:hover,
+.custom-dropdown-menu .dropdown-item.status-new:hover,
+.custom-dropdown-menu .dropdown-item.status-danger:hover {
+  @apply bg-[#fff5f5];
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-card a,
+.modal-body a,
+.hy-table a,
+.data-table a,
+.file-table a,
+.info-table a,
+.itinerary-container a,
+.title-link,
+.home-news-table a {
+  @apply font-semibold text-[var(--text-secondary)] no-underline transition-all duration-200 ease-[cubic-bezier(0.165,0.84,0.44,1)];
+}
+
+.section-card a:hover,
+.section-card a:focus,
+.section-card a:active,
+.modal-body a:hover,
+.modal-body a:focus,
+.modal-body a:active,
+.hy-table a:hover,
+.data-table a:hover,
+.file-table a:hover,
+.info-table a:hover,
+.hy-table a:focus,
+.data-table a:focus,
+.file-table a:focus,
+.info-table a:focus,
+.hy-table a:active,
+.data-table a:active,
+.file-table a:active,
+.info-table a:active,
+.itinerary-container a:hover,
+.itinerary-container a:focus,
+.itinerary-container a:active,
+.title-link:hover,
+.home-news-table a:hover,
+.title-link:focus,
+.home-news-table a:focus,
+.title-link:active,
+.home-news-table a:active {
+  @apply text-[var(--secondary-color)] no-underline outline-none;
+}
+
+.hy-table {
+  overflow: hidden;
+}
+
+.reservation-container {
+  @apply grid min-h-[calc(100vh-250px)] min-w-0 w-full grid-cols-[240px_1fr] overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] shadow-[var(--card-shadow)];
+}
+
+.card-inner-header {
+  @apply box-border flex min-h-[54px] w-full items-center px-6 py-4;
+}
+
+.reservation-sidebar {
+  @apply flex flex-col gap-4 border-r border-[var(--border-color)] bg-[var(--bg-secondary)] p-6;
+}
+
+.reservation-sidebar .sidebar-title {
+  @apply mb-2 pl-2 text-xs font-bold uppercase tracking-[1px] text-[var(--text-secondary)];
+}
+
+.reservation-main {
+  @apply flex min-w-0 flex-col overflow-hidden bg-[var(--card-bg)];
+}
+
+.reservation-controls .date-display i {
+  @apply text-[1.125rem] text-[var(--primary-color)];
+}
+
+.reservation-tabs {
+  @apply flex flex-col gap-[0.35rem];
+}
+
+.reservation-tabs .tab-divider {
+  @apply mt-2 flex items-center gap-2.5 px-2 pb-2 pt-5 text-xs font-bold uppercase tracking-[0.5px] text-[var(--text-secondary)] opacity-80;
+}
+
+.reservation-tabs .tab-divider::before,
+.reservation-tabs .tab-divider::after {
+  @apply h-px flex-1 bg-[var(--border-color)] brightness-90 content-[""];
+}
+
+.reservation-tabs .tab-divider:first-child {
+  @apply mt-0 pt-1;
+}
+
+.reservation-tabs .res-tab {
+  @apply relative flex cursor-pointer items-center justify-start rounded-lg border border-transparent bg-transparent px-5 py-[0.6rem] text-left text-[0.9375rem] font-medium text-[var(--text-primary)] transition-all duration-[250ms] ease-in-out;
+}
+
+.reservation-tabs .res-tab:hover {
+  @apply bg-[var(--nav-hover)] text-[var(--primary-color)];
+}
+
+.reservation-tabs .res-tab.active {
+  @apply border-[var(--border-color)] bg-[var(--card-bg)] font-bold text-[var(--primary-color)] shadow-[0_4px_15px_rgba(0,0,0,0.05)];
+}
+
+.reservation-tabs .res-tab.active::before {
+  @apply absolute left-0 top-1/4 h-1/2 w-1 rounded-r bg-[var(--primary-color)] content-[""];
+}
+
+@media (max-width: 992px) {
+  .reservation-container {
+    @apply grid-cols-1;
+  }
+
+  .reservation-sidebar {
+    @apply border-b border-r-0 p-4;
+  }
+
+  .reservation-tabs {
+    @apply flex-row overflow-x-auto pb-2;
+  }
+
+  .reservation-tabs .res-tab {
+    @apply whitespace-nowrap;
+  }
+
+  .reservation-tabs .res-tab.active::before {
+    @apply bottom-0 left-1/4 top-auto h-1 w-1/2;
+  }
+}
+
+.main-content {
+  @apply relative flex min-w-0 flex-1 flex-col gap-4 content-start overflow-x-hidden overflow-y-auto px-12 pb-12 pt-0 w-full;
+}
+
+.main-content .home-divider {
+  @apply w-auto max-w-[1600px] shrink-0;
+}
+
+.main-content .stats-row,
+.main-content .sub-nav,
+.main-content .section-card,
+.main-content .reservation-container {
+  @apply w-full max-w-[1600px] px-0;
+}

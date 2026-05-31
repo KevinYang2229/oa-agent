@@ -1,0 +1,25 @@
+@reference "tailwindcss";
+
+.data-list-table-filter-item {
+  @apply flex-col! items-start! gap-1.5!;
+}
+
+.form-input.data-list-table-keyword-input {
+  @apply h-auto rounded-md border border-(--border-color) bg-(--input-bg) px-3 py-2 text-sm text-(--text-primary) placeholder:text-(--text-secondary) transition-all focus:border-(--primary-color) focus:shadow-[0_0_0_3px_rgba(var(--primary-color-rgb),0.1)] focus:outline-none;
+}
+
+.data-list-table-search-btn {
+  @apply self-end;
+}
+
+.data-list-table-th--sortable {
+  @apply cursor-pointer select-none;
+}
+
+.data-list-table-empty-cell {
+  @apply py-8 text-center;
+}
+
+.data-list-table-row--link {
+  @apply cursor-pointer transition-colors hover:bg-(--nav-hover);
+}

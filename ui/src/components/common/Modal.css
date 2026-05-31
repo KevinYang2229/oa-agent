@@ -1,0 +1,56 @@
+@reference "tailwindcss";
+
+/*
+ * ============================================================
+ * 彈窗 Modal（搬移自 style.min.css，改用 Tailwind @apply）
+ * ============================================================
+ */
+.modal-overlay {
+  @apply fixed inset-0 w-full h-full bg-black/40 backdrop-blur-[4px] flex items-center justify-center z-[2000] opacity-0 invisible transition-all duration-300 ease-in-out;
+}
+
+.modal-overlay.active {
+  @apply opacity-100 visible;
+}
+
+/* 基底層彈窗：降低 z-index，讓巢狀彈窗（如員工選擇器）可疊於其上 */
+.modal-overlay.modal-overlay--base {
+  @apply z-[1000];
+}
+
+.modal-container {
+  @apply bg-(--card-bg) w-[90%] max-w-[800px] rounded-[1.25rem] shadow-2xl overflow-hidden translate-y-5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)];
+}
+
+/* 寬版彈窗容器（穿梭選擇器、代理設定等） */
+.modal-container.modal-container--wide {
+  @apply max-w-[900px];
+}
+
+.modal-overlay.active .modal-container {
+  @apply translate-y-0;
+}
+
+.modal-header {
+  @apply p-5 bg-(--bg-secondary) border-b border-(--border-color) flex justify-between items-center;
+}
+
+.modal-header h3 {
+  @apply text-lg text-(--text-color) flex items-center gap-2.5 m-0;
+}
+
+.modal-header .modal-close {
+  @apply bg-transparent border-none text-(--text-secondary) text-2xl cursor-pointer transition-colors duration-200;
+}
+
+.modal-header .modal-close:hover {
+  @apply text-(--status-danger);
+}
+
+.modal-body {
+  @apply p-5 max-h-[70vh] overflow-y-auto;
+}
+
+.modal-footer {
+  @apply p-5 bg-(--bg-secondary) border-t border-(--border-color) flex justify-end gap-3;
+}

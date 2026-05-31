@@ -1,0 +1,36 @@
+@reference "tailwindcss";
+
+.table-footer {
+  @apply flex items-center justify-end gap-8 rounded-b-[var(--border-radius)] border-t border-[var(--border-color)] bg-[var(--card-bg)] px-6 py-4 text-[0.8125rem] text-[var(--text-secondary)];
+}
+
+.table-footer .pagination-info {
+  @apply flex items-center gap-4;
+}
+
+.table-footer .pagination-controls {
+  @apply flex items-center gap-2;
+}
+
+.table-footer .pagination-controls .page-link {
+  @apply flex h-6 w-6 cursor-pointer items-center justify-center rounded border border-[var(--border-color)] bg-transparent text-[var(--text-secondary)] no-underline transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.table-footer .pagination-controls .page-link:hover {
+  @apply border-[var(--primary-color)] text-[var(--primary-color)];
+  text-decoration: none;
+}
+
+.table-footer .pagination-controls .page-link i {
+  @apply text-xs;
+}
+
+.table-footer .pagination-controls .page-link:disabled:hover {
+  @apply border-[var(--border-color)] text-[var(--text-secondary)];
+  text-decoration: none;
+}
+
+.table-footer .form-select.form-select-sm {
+  @apply h-auto! w-auto! min-w-0! cursor-pointer appearance-none rounded border border-[var(--border-color)] bg-transparent bg-[length:1rem] bg-[right_0.25rem_center] bg-no-repeat py-1! pl-2! pr-6! text-xs text-[var(--text-primary)] shadow-none!;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}

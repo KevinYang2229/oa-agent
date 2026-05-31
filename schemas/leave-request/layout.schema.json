@@ -1,0 +1,13 @@
+{
+  "sections": [
+    {
+      "title": "請假資訊",
+      "fields": [
+        ["leaveType"],
+        ["startDate", "endDate"],
+        ["startTime", "endTime"],
+        ["reason"]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "required": ["leaveType", "startDate", "endDate", "reason"],
+  "rules": [
+    {
+      "id": "endAfterStart",
+      "type": "compareField",
+      "field": "endDate",
+      "op": ">=",
+      "other": "startDate",
+      "message": "結束日期不可早於開始日期"
+    }
+  ]
+}

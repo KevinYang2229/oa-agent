@@ -1,0 +1,275 @@
+@reference "tailwindcss";
+
+/**
+ * DatePicker 元件樣式
+ * 採用 Tailwind @apply 實作，對齊 OA 系統設計規範。
+ */
+
+.date-picker-wrapper {
+  @apply relative max-w-full;
+  width: fit-content;
+}
+
+td .date-picker-wrapper {
+  width: fit-content;
+}
+
+.date-picker-trigger-btn {
+  @apply inline-flex h-[42px] w-full max-w-[240px] cursor-pointer items-center justify-center gap-2.5 whitespace-nowrap rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-5 text-[0.9375rem] font-semibold leading-normal tracking-[0.5px] text-[var(--text-primary)] transition-all duration-200;
+  box-sizing: border-box;
+}
+
+.date-picker-trigger-btn i,
+.date-picker-trigger-btn .date-picker-icon {
+  @apply h-5 w-5 shrink-0 text-[var(--text-primary)];
+}
+
+.date-picker-trigger-btn .picker-display-text {
+  @apply text-[0.9375rem] font-bold text-[var(--text-primary)];
+}
+
+.date-picker-trigger-btn:hover {
+  @apply border-[var(--primary-color)] bg-[rgba(var(--primary-color-rgb),0.02)] shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.08)];
+}
+
+.date-picker-trigger-btn.compact {
+  @apply rounded-md px-3 py-[0.3rem] text-[0.8125rem];
+}
+
+.date-picker-trigger-btn.compact i {
+  @apply text-[0.875rem];
+}
+
+.date-picker-trigger-btn.compact .picker-display-text {
+  @apply text-[0.8125rem];
+}
+
+.date-picker-dropdown {
+  @apply invisible absolute left-0 top-[calc(100%+10px)] z-[2000] w-[340px] -translate-y-2 rounded-[1.25rem] border border-[var(--border-color)] bg-[var(--card-bg)] p-6 opacity-0 shadow-[0_20px_50px_rgba(0,0,0,0.12)];
+  transition:
+    opacity 0.25s cubic-bezier(0.165, 0.84, 0.44, 1),
+    visibility 0.25s,
+    transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.date-picker-dropdown.active {
+  @apply visible translate-y-0 opacity-100;
+}
+
+.date-picker-dropdown.open-upward {
+  @apply bottom-[calc(100%+12px)] left-1/2 top-auto translate-x-[-50%] translate-y-2;
+}
+
+.date-picker-dropdown.open-upward.active {
+  @apply translate-x-[-50%] translate-y-0;
+}
+
+[data-theme="dark"] .date-picker-dropdown {
+  @apply shadow-[0_20px_50px_rgba(0,0,0,0.6)];
+}
+
+.picker-header {
+  @apply mb-3 flex items-center justify-between;
+}
+
+.picker-header .picker-month-year {
+  @apply text-lg font-bold tracking-[0.25px] text-[var(--text-primary)];
+}
+
+.picker-weekdays {
+  @apply mb-1 grid grid-cols-7;
+}
+
+.picker-weekdays span {
+  @apply py-1 text-center text-xs font-bold text-[var(--text-secondary)] opacity-50;
+}
+
+.picker-days {
+  @apply grid grid-cols-7 gap-[3px];
+}
+
+.picker-days .picker-day {
+  @apply flex h-[38px] cursor-pointer select-none items-center justify-center rounded-xl text-base font-semibold text-[var(--text-primary)];
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+
+.picker-days .picker-day:hover:not(.outside):not(.active) {
+  @apply bg-[var(--nav-active-bg)] text-[var(--primary-color)];
+}
+
+.picker-days .picker-day.outside {
+  @apply pointer-events-none cursor-default text-[var(--text-secondary)] opacity-20;
+}
+
+.picker-days .picker-day.today:not(.active) {
+  @apply relative font-bold text-[var(--primary-color)];
+}
+
+.picker-days .picker-day.today:not(.active)::after {
+  @apply absolute bottom-[5px] h-1 w-1 rounded-full bg-[var(--primary-color)];
+  content: "";
+}
+
+.picker-days .picker-day.active {
+  @apply bg-[var(--primary-color)]! font-bold text-white! shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.35)];
+}
+
+.picker-days .picker-day.active::after {
+  @apply bg-white/70!;
+}
+
+.picker-months,
+.picker-years {
+  @apply grid grid-cols-3 gap-3 pt-2;
+}
+
+.picker-months .picker-month,
+.picker-months .picker-year,
+.picker-years .picker-month,
+.picker-years .picker-year {
+  @apply flex h-[54px] cursor-pointer items-center justify-center rounded-xl border border-transparent text-[0.9375rem] font-semibold text-[var(--text-primary)] transition-all duration-200;
+}
+
+.picker-months .picker-month:hover,
+.picker-months .picker-year:hover,
+.picker-years .picker-month:hover,
+.picker-years .picker-year:hover {
+  @apply border-[rgba(var(--primary-color-rgb),0.1)] bg-[var(--nav-active-bg)] text-[var(--primary-color)];
+}
+
+.picker-months .picker-month.active,
+.picker-months .picker-year.active,
+.picker-years .picker-month.active,
+.picker-years .picker-year.active {
+  @apply bg-[var(--primary-color)] font-bold text-white;
+}
+
+.picker-months .picker-month.current,
+.picker-months .picker-year.current,
+.picker-years .picker-month.current,
+.picker-years .picker-year.current {
+  @apply border-[rgba(var(--primary-color-rgb),0.2)] bg-[rgba(var(--primary-color-rgb),0.05)] text-[var(--primary-color)];
+}
+
+.picker-years {
+  @apply grid-cols-4 gap-2;
+}
+
+.picker-years .picker-year {
+  @apply h-12 text-[0.875rem];
+}
+
+.picker-month-year {
+  @apply cursor-pointer rounded-lg px-3 py-1 transition-colors duration-200;
+}
+
+.picker-month-year:hover {
+  @apply bg-[var(--nav-active-bg)] text-[var(--primary-color)];
+}
+
+.picker-nav-btn {
+  @apply flex h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-secondary)] transition-all duration-200;
+}
+
+.picker-nav-btn .date-picker-chevron {
+  @apply h-4 w-4 shrink-0;
+}
+
+.picker-nav-btn:hover {
+  @apply scale-105 border-[var(--primary-color)] bg-[var(--primary-color)] text-white;
+}
+
+.picker-footer {
+  @apply mt-4 flex justify-end border-t border-[var(--border-color)] pt-4;
+}
+
+.picker-footer .picker-today-btn {
+  @apply flex h-8 w-auto cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-color)] bg-[var(--card-bg)] px-4 text-[0.8125rem] font-semibold text-[var(--text-secondary)] outline-none transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)];
+}
+
+.picker-footer .picker-today-btn i {
+  @apply text-[0.875rem];
+}
+
+.picker-footer .picker-today-btn:hover {
+  @apply scale-105 border-[var(--primary-color)] bg-[var(--primary-color)] text-white shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.2)];
+}
+
+.picker-footer .picker-today-btn:active {
+  @apply scale-95;
+}
+
+.info-table-container,
+.reservation-main,
+.reservation-container,
+.section-card,
+.card-inner-body {
+  overflow: visible !important;
+}
+
+.reservation-container {
+  @apply rounded-2xl;
+}
+
+.reservation-container .reservation-sidebar {
+  @apply rounded-bl-2xl rounded-tl-2xl;
+}
+
+.reservation-container .reservation-main {
+  @apply rounded-br-2xl rounded-tr-2xl;
+}
+
+.date-input-group .form-input {
+  @apply w-full cursor-pointer pr-10!;
+}
+
+.date-input-group .form-input:hover {
+  @apply border-[var(--primary-color)];
+}
+
+.date-picker-dropdown .picker-month-year {
+  @apply select-none;
+}
+
+.date-picker-dropdown .picker-month-year:hover {
+  @apply text-[var(--text-primary)];
+}
+
+.date-picker-trigger-btn .date-picker-placeholder {
+  @apply font-bold text-[var(--text-primary)];
+}
+
+.date-picker-trigger-btn:disabled {
+  @apply pointer-events-none cursor-not-allowed opacity-50;
+}
+
+.date-picker-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.date-picker-wrapper .date-picker-trigger-btn {
+  @apply w-full max-w-none justify-center px-3.5;
+}
+
+.date-picker-wrapper .date-picker-trigger-btn--error {
+  @apply border border-red-500 outline-none;
+  border: 1px solid #ef4444 !important;
+}
+
+.date-picker-wrapper .date-picker-trigger-btn--error:focus {
+  @apply border border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)] outline-none;
+  border: 1px solid #ef4444 !important;
+}
+
+.date-picker-wrapper .picker-display-text {
+  @apply min-w-0 text-center font-medium;
+  order: 2;
+}
+
+.date-picker-wrapper .date-picker-icon {
+  order: 1;
+}

@@ -1,0 +1,27 @@
+@reference "tailwindcss";
+
+/*
+ * ============================================================
+ * Dialog 確認彈窗（沿用 .modal-overlay/.modal-container 動畫，
+ * 縮小尺寸並調整內距，符合 confirm 對話框視覺）
+ * ============================================================
+ */
+.modal-container.hy-dialog {
+  @apply max-w-105! w-[90%] rounded-2xl;
+}
+
+.hy-dialog-body {
+  @apply p-6 pb-4;
+}
+
+.hy-dialog-title {
+  @apply text-lg font-semibold text-(--text-primary) m-0 mb-2;
+}
+
+.hy-dialog-content {
+  @apply text-sm text-(--text-secondary) leading-relaxed;
+}
+
+.hy-dialog-footer {
+  @apply px-6 pb-5 pt-1 flex justify-end gap-2;
+}
