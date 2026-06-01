@@ -1,12 +1,13 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@oa-agent/ui';
-import type { Definition, FieldSpec, SubmissionInfo } from './api';
+import type { Definition, FieldSpec, LeaveBalance, SubmissionInfo } from './api';
 import { resolveFieldRenderer } from './form/registry';
 
 interface Props {
   def: Definition;
   values: Record<string, unknown>;
+  balances?: LeaveBalance[];
   submission?: SubmissionInfo | null;
   busy?: boolean;
   /** confirming：送出前確認（draft 為編輯後的值）；submitted 時不提供 */
@@ -15,9 +16,10 @@ interface Props {
   onClose: () => void;
 }
 
-/** 唯讀顯示字串：enum 用 field options 的中文 label，空值顯示破折號 */
+/** 唯讀顯示字串：enum 用 field options 的中文 label，布林顯示是/否，空值顯示破折號 */
 function displayValue(spec: FieldSpec | undefined, raw: unknown): string {
   if (raw === null || raw === undefined || raw === '') return '—';
+  if (typeof raw === 'boolean') return raw ? '是' : '否';
   if (spec?.options?.length) {
     const opt = spec.options.find((o) => o.value === String(raw));
     if (opt) return opt.label;
@@ -25,9 +27,22 @@ function displayValue(spec: FieldSpec | undefined, raw: unknown): string {
   return String(raw);
 }
 
+/** 由起訖日期時間粗估請假時數（MVP：純時間差，不扣非工時/假日） */
+function computeHours(values: Record<string, unknown>): number | null {
+  const sd = values.startDate;
+  const ed = values.endDate;
+  if (!sd || !ed) return null;
+  const start = new Date(`${String(sd)}T${String(values.startTime || '00:00')}:00`);
+  const end = new Date(`${String(ed)}T${String(values.endTime || '00:00')}:00`);
+  const ms = end.getTime() - start.getTime();
+  if (Number.isNaN(ms) || ms <= 0) return null;
+  return Math.round((ms / 3_600_000) * 10) / 10;
+}
+
 export default function FormView({
   def,
   values,
+  balances,
   submission,
   busy,
   onConfirm,
@@ -125,6 +140,9 @@ export default function FormView({
     const raw = draft[key];
     const v = raw === null || raw === undefined ? '' : String(raw);
 
+    // 假別欄位：依目前選取的假別顯示「今年度剩餘 N 小時」
+    const balance = key === 'leaveType' && v ? balances?.find((b) => b.leaveType === v) : undefined;
+
     return (
       <div className="form-field" key={key}>
         <dt className="form-label">
@@ -141,6 +159,11 @@ export default function FormView({
               disabled={busy}
               onChange={(val) => setField(key, val)}
             />
+          )}
+          {balance && (
+            <p className="form-balance">
+              {t('form.remainingHours', { hours: balance.remainingHours })}
+            </p>
           )}
         </dd>
       </div>
@@ -162,6 +185,7 @@ export default function FormView({
           </button>
         </div>
 
+        <div className="form-body">
         {!submitted && <p className="form-hint">{t('form.hint')}</p>}
 
         {hasSteps && (
@@ -215,6 +239,14 @@ export default function FormView({
                   </div>
                 ))}
               </dl>
+              {/* 含時間欄位的步驟顯示自動計算的共計時數 */}
+              {section.rows.flat().includes('endTime') &&
+                (() => {
+                  const hours = computeHours(submitted ? values : draft);
+                  return hours != null ? (
+                    <p className="form-summary">{t('form.totalHours', { hours })}</p>
+                  ) : null;
+                })()}
             </section>
           ))}
         </div>
@@ -231,10 +263,12 @@ export default function FormView({
             </div>
           </div>
         )}
+        </div>
 
-        {err && <p className="form-error">{err}</p>}
+        <div className="form-footer">
+          {err && <p className="form-error">{err}</p>}
 
-        <div className="form-actions">
+          <div className="form-actions">
           {submitted ? (
             <Button variant="confirm" size="md" onClick={onClose} type="button">
               {t('form.complete')}
@@ -281,6 +315,7 @@ export default function FormView({
               )}
             </>
           )}
+          </div>
         </div>
       </div>
     </div>

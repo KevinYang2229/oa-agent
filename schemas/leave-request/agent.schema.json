@@ -1,18 +1,32 @@
 {
   "intent": "leave-request",
-  "description": "員工請假申請，需要假別、起訖日期、事由",
+  "description": "員工請假申請，需要申請人、職務代理人、假別、起訖日期時間、事由",
   "examples": [
     "我要請病假",
     "我下週一到週二要請特休",
     "明天下午請事假",
     "我想請喪假三天"
   ],
-  "askOrder": ["leaveType", "startDate", "endDate", "startTime", "endTime", "reason"],
+  "askOrder": [
+    "applicant",
+    "deputy",
+    "leaveType",
+    "startDate",
+    "startTime",
+    "endDate",
+    "endTime",
+    "reason"
+  ],
   "fieldGuidance": {
+    "applicant": "已自動帶入目前登入者，除非使用者明確表示要『代人申請』，否則不需詢問或更動。",
+    "deputy": "詢問職務代理人，請使用者提供姓名與工號，例如 林佩蓉(HYW018)。",
+    "onBehalf": "若使用者表示是替他人申請，設為 true。",
     "leaveType": "詢問請假類型（特休／事假／病假／公假／喪假／婚假）",
     "startDate": "詢問開始日期，將相對日期（明天、下週一）換算成 YYYY-MM-DD",
+    "startTime": "詢問開始時間 HH:mm；未提供時可詢問或預設整天起算。",
     "endDate": "若只請一天，結束日期同開始日期",
+    "endTime": "詢問結束時間 HH:mm。",
     "reason": "詢問請假事由"
   },
-  "confirmationTemplate": "請確認：{leaveType}，{startDate} 至 {endDate}，事由：{reason}。回覆「確認」即送出。"
+  "confirmationTemplate": "請確認：申請人 {applicant}，職務代理人 {deputy}，{leaveType}，{startDate} {startTime} 至 {endDate} {endTime}，事由：{reason}。回覆「確認」即送出。"
 }

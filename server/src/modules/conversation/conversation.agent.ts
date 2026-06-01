@@ -13,6 +13,7 @@ import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
 import { AppError } from '@/utils/app-error';
+import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
 
 const MAX_ITERATIONS = 6;
@@ -165,5 +166,6 @@ export async function runTurn(session: Session, userText: string): Promise<TurnR
     { sessionId: session.id, status: session.status, filled: Object.keys(session.values) },
     'conversation turn complete',
   );
+  conversationStore.save(session); // flush 本輪變更（values/status/messages/submission）
   return { reply, status: session.status, values: session.values, submission: session.submission };
 }

@@ -1,11 +1,20 @@
 {
   "sections": [
     {
+      "title": "申請資訊",
+      "fields": [
+        ["onBehalf"],
+        ["applicant"],
+        ["deputy"],
+        ["deputyAllForms"]
+      ]
+    },
+    {
       "title": "請假資訊",
       "fields": [
         ["leaveType"],
-        ["startDate", "endDate"],
-        ["startTime", "endTime"],
+        ["startDate", "startTime"],
+        ["endDate", "endTime"],
         ["reason"]
       ]
     }

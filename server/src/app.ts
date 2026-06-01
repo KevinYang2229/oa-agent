@@ -6,6 +6,7 @@ import { requestLogger } from '@/middlewares/request-logger';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
 import { conversationRouter } from '@/modules/conversation/conversation.routes';
 import { formRouter } from '@/modules/form/form.routes';
+import { leaveRouter } from '@/modules/leave/leave.routes';
 
 /**
  * MVP app：只掛對話與表單路由，不連 DB / Redis / Socket。
@@ -26,6 +27,7 @@ export function createApp(): Express {
 
   app.use('/api/v1/conversations', conversationRouter);
   app.use('/api/v1/forms', formRouter);
+  app.use('/api/v1/leave', leaveRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -3,11 +3,12 @@ import type {
   Definition,
   FieldOption,
   FieldSpec,
+  LeaveBalance,
   SessionStatus,
   SubmissionInfo,
 } from '@oa-agent/shared';
 
-export type { Definition, FieldOption, FieldSpec, SessionStatus, SubmissionInfo };
+export type { Definition, FieldOption, FieldSpec, LeaveBalance, SessionStatus, SubmissionInfo };
 
 export interface TurnData {
   id?: string;
@@ -33,6 +34,18 @@ export interface ConversationState {
 
 const BASE = '/api/v1/conversations';
 
+/** 帶 HTTP 狀態與後端錯誤碼的 API 錯誤，讓呼叫端能分辨 404（對話已不存在）等情況 */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
 function headers(userId: string): HeadersInit {
   return { 'content-type': 'application/json', 'x-user-id': userId || 'demo-user' };
 }
@@ -40,7 +53,11 @@ function headers(userId: string): HeadersInit {
 async function unwrap<T>(res: Response): Promise<T> {
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(json?.error?.message ?? json?.message ?? `錯誤 ${res.status}`);
+    throw new ApiError(
+      json?.error?.message ?? json?.message ?? `錯誤 ${res.status}`,
+      res.status,
+      json?.error?.code,
+    );
   }
   return json.data as T;
 }
@@ -95,5 +112,12 @@ export const api = {
   /** 取表單 Definition（schema-driven 渲染表單畫面） */
   getForm(formId: string): Promise<Definition> {
     return fetch(`/api/v1/forms/${formId}`).then((r) => unwrap<Definition>(r));
+  },
+
+  /** 取各假別剩餘時數（畫面顯示「今年度剩餘 N 小時」） */
+  getLeaveBalances(userId: string): Promise<LeaveBalance[]> {
+    return fetch('/api/v1/leave/balances', { headers: headers(userId) }).then((r) =>
+      unwrap<LeaveBalance[]>(r),
+    );
   },
 };

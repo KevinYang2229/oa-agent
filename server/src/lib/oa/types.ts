@@ -2,8 +2,20 @@
  * OA 連接器抽象。真 OA API 規格未定，先以 stub 實作；介面固定，之後抽換真連接器不動上層。
  */
 
+import type { LeaveBalance } from '@oa-agent/shared';
+
+export type { LeaveBalance };
+
 export interface LeaveRequestPayload {
   userId: string;
+  /** 是否代人申請 */
+  onBehalf?: boolean;
+  /** 申請人，格式：姓名(工號) */
+  applicant: string;
+  /** 職務代理人，格式：姓名(工號) */
+  deputy: string;
+  /** 同時代理所有表單 */
+  deputyAllForms?: boolean;
   leaveType: string;
   startDate: string;
   endDate: string;
@@ -16,11 +28,6 @@ export interface OASubmitResult {
   oaRequestId: string;
   status: 'accepted' | 'pending' | 'rejected';
   raw?: unknown;
-}
-
-export interface LeaveBalance {
-  leaveType: string;
-  remainingHours: number;
 }
 
 export interface OAConnector {

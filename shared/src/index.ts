@@ -143,3 +143,18 @@ export interface SubmissionInfo {
   oaRequestId: string;
   status: string;
 }
+
+/** 申請人（目前使用者）資訊，由後端使用者目錄解析 */
+export interface Applicant {
+  /** 帳號（userId） */
+  id: string;
+  name: string;
+  department: string;
+  title?: string;
+}
+
+/** 假別剩餘時數（由 OA 連接器提供） */
+export interface LeaveBalance {
+  leaveType: string;
+  remainingHours: number;
+}

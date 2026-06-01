@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Input, Select, Textarea, type StatusBadgeVariant } from '@oa-agent/ui';
+import { Badge, Button, Input, Select, type StatusBadgeVariant } from '@oa-agent/ui';
 import {
   api,
+  ApiError,
   type Definition,
+  type LeaveBalance,
   type SessionStatus,
   type SubmissionInfo,
   type TurnData,
@@ -33,6 +35,40 @@ const STATUS_BADGE: Record<SessionStatus, StatusBadgeVariant> = {
 let seq = 0;
 const nextId = () => ++seq;
 
+// 逐字浮現：Agent 回覆抵達後一字一字顯示，營造「正在回覆」的動態感。
+// 元件以 message id 為 key，狀態隨實例保留 → 既有訊息不會在重繪（如切主題）時重播。
+function TypewriterText({ text, onTick }: { text: string; onTick?: () => void }) {
+  const [count, setCount] = useState(0);
+  const onTickRef = useRef(onTick);
+  onTickRef.current = onTick;
+
+  useEffect(() => {
+    // 尊重使用者「減少動態」偏好：直接整段顯示
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !text) {
+      setCount(text.length);
+      return;
+    }
+    setCount(0);
+    let i = 0;
+    const timer = setInterval(() => {
+      i += 1;
+      setCount(i);
+      onTickRef.current?.();
+      if (i >= text.length) clearInterval(timer);
+    }, 18);
+    return () => clearInterval(timer);
+  }, [text]);
+
+  const done = count >= text.length;
+  return (
+    <>
+      {text.slice(0, count)}
+      {!done && <span className="type-caret" aria-hidden />}
+    </>
+  );
+}
+
 export default function App() {
   const { t, i18n } = useTranslation();
 
@@ -41,6 +77,7 @@ export default function App() {
   const [status, setStatus] = useState<SessionStatus | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submission, setSubmission] = useState<SubmissionInfo | null>(null);
+  const [balances, setBalances] = useState<LeaveBalance[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: nextId(), role: 'agent', text: t('app.greeting') },
   ]);
@@ -61,12 +98,41 @@ export default function App() {
     localStorage.setItem('oa-theme', theme);
   }, [theme]);
 
-  useEffect(() => {
+  const scrollToEnd = useCallback(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [messages, busy]);
+  }, []);
+
+  useEffect(() => {
+    scrollToEnd();
+  }, [messages, busy, scrollToEnd]);
+
+  // 假別剩餘時數：依使用者載入，供表單顯示「今年度剩餘 N 小時」
+  useEffect(() => {
+    let alive = true;
+    api
+      .getLeaveBalances(userId)
+      .then((b) => alive && setBalances(b))
+      .catch(() => alive && setBalances([]));
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
 
   function pushMsg(role: Role, text: string) {
     setMessages((prev) => [...prev, { id: nextId(), role, text }]);
+  }
+
+  // 對話已不存在（多半是後端重啟導致記憶體 session 遺失）。404 → 視為連線重置
+  const isSessionGone = (e: unknown) => e instanceof ApiError && e.status === 404;
+
+  // 優雅地清掉本地對話狀態，下一則訊息會自動開新對話
+  function resetSessionState() {
+    setConvId(null);
+    setStatus(null);
+    setValues({});
+    setSubmission(null);
+    setShowForm(false);
+    setFormDef(null);
   }
 
   function applyTurn(data: TurnData, sessionId: string | null) {
@@ -105,7 +171,12 @@ export default function App() {
         : await api.start(userId, message);
       applyTurn(data, convId);
     } catch (e) {
-      pushMsg('sys', '⚠️ ' + (e instanceof Error ? e.message : t('app.requestFailed')));
+      if (isSessionGone(e)) {
+        resetSessionState();
+        pushMsg('sys', t('app.sessionExpired'));
+      } else {
+        pushMsg('sys', '⚠️ ' + (e instanceof Error ? e.message : t('app.requestFailed')));
+      }
     } finally {
       setBusy(false);
       taRef.current?.focus();
@@ -151,7 +222,13 @@ export default function App() {
       setShowForm(false);
       pushMsg('sys', t('app.cancelledMsg'));
     } catch (e) {
-      pushMsg('sys', '⚠️ ' + t('app.cancelFailed') + (e instanceof Error ? e.message : ''));
+      // 對話已不存在＝本來就沒得取消，視同已結束、清掉本地狀態即可
+      if (isSessionGone(e)) {
+        resetSessionState();
+        pushMsg('sys', t('app.sessionExpired'));
+      } else {
+        pushMsg('sys', '⚠️ ' + t('app.cancelFailed') + (e instanceof Error ? e.message : ''));
+      }
     } finally {
       setBusy(false);
     }
@@ -235,10 +312,20 @@ export default function App() {
           <div className="msg-list" ref={listRef}>
             {messages.map((m) => (
               <div key={m.id} className={`bubble bubble-${m.role}`}>
-                {m.text}
+                {m.role === 'agent' ? (
+                  <TypewriterText text={m.text} onTick={scrollToEnd} />
+                ) : (
+                  m.text
+                )}
               </div>
             ))}
-            {busy && <div className="bubble-typing">…</div>}
+            {busy && (
+              <div className="bubble-typing" aria-label={t('app.typing')}>
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </div>
+            )}
           </div>
 
           <form
@@ -313,6 +400,7 @@ export default function App() {
         <FormView
           def={formDef}
           values={values}
+          balances={balances}
           submission={submission}
           busy={busy}
           onConfirm={handleConfirm}

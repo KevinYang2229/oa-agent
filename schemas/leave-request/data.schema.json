@@ -4,6 +4,26 @@
   "title": "請假單",
   "type": "object",
   "properties": {
+    "onBehalf": {
+      "type": "boolean",
+      "description": "代人申請（是否替他人申請）"
+    },
+    "applicant": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "申請人，格式：姓名(工號)"
+    },
+    "deputy": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "職務代理人，格式：姓名(工號)"
+    },
+    "deputyAllForms": {
+      "type": "boolean",
+      "description": "同時代理所有表單"
+    },
     "leaveType": {
       "type": "string",
       "enum": ["annual", "personal", "sick", "official", "funeral", "marriage"],
@@ -14,20 +34,20 @@
       "format": "date",
       "description": "開始日期 YYYY-MM-DD"
     },
+    "startTime": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "開始時間 HH:mm"
+    },
     "endDate": {
       "type": "string",
       "format": "date",
       "description": "結束日期 YYYY-MM-DD"
     },
-    "startTime": {
-      "type": "string",
-      "pattern": "^\\d{2}:\\d{2}$",
-      "description": "開始時間 HH:mm（選填）"
-    },
     "endTime": {
       "type": "string",
       "pattern": "^\\d{2}:\\d{2}$",
-      "description": "結束時間 HH:mm（選填）"
+      "description": "結束時間 HH:mm"
     },
     "reason": {
       "type": "string",

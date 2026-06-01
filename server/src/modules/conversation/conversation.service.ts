@@ -1,6 +1,7 @@
 import { computeStatus, setField } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
+import { getApplicant } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { runTurn } from './conversation.agent';
 import { conversationStore } from './conversation.store';
@@ -8,6 +9,12 @@ import type { Session, TurnResult } from './conversation.types';
 
 // MVP 僅請假單；之後 intent routing 在此決定 formId
 const MVP_FORM_ID = 'leave-request';
+
+/** 申請人欄位值格式：姓名(工號)，與真實 OA 畫面一致 */
+function formatApplicant(userId: string): string {
+  const profile = getApplicant(userId);
+  return `${profile.name}(${profile.id})`;
+}
 
 export interface UpdateFieldsResult extends TurnResult {
   applied: string[];
@@ -17,6 +24,9 @@ export interface UpdateFieldsResult extends TurnResult {
 export const conversationService = {
   async start(userId: string, message?: string): Promise<{ session: Session; turn?: TurnResult }> {
     const session = conversationStore.create(userId, MVP_FORM_ID);
+    // 申請人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
+    session.values.applicant = formatApplicant(userId);
+    conversationStore.save(session);
     if (message && message.trim()) {
       const turn = await runTurn(session, message);
       return { session, turn };
@@ -81,6 +91,7 @@ export const conversationService = {
       });
     }
 
+    conversationStore.save(session);
     return {
       reply: '',
       status: session.status,
@@ -98,6 +109,7 @@ export const conversationService = {
   cancel(userId: string, id: string): Session {
     const session = conversationStore.get(id, userId);
     if (session.status !== 'submitted') session.status = 'cancelled';
+    conversationStore.save(session);
     return session;
   },
 };

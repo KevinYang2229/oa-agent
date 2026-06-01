@@ -1,4 +1,22 @@
 {
+  "onBehalf": {
+    "component": "Checkbox",
+    "label": "代人申請"
+  },
+  "applicant": {
+    "component": "Input",
+    "label": "申請人",
+    "placeholder": "姓名(工號)"
+  },
+  "deputy": {
+    "component": "Input",
+    "label": "職務代理人",
+    "placeholder": "請輸入職務代理人 姓名(工號)，例如 林佩蓉(HYW018)"
+  },
+  "deputyAllForms": {
+    "component": "Checkbox",
+    "label": "同時代理所有表單"
+  },
   "leaveType": {
     "component": "Select",
     "label": "請假類型",
@@ -15,13 +33,13 @@
     "component": "DatePicker",
     "label": "開始日期"
   },
-  "endDate": {
-    "component": "DatePicker",
-    "label": "結束日期"
-  },
   "startTime": {
     "component": "TimePicker",
     "label": "開始時間"
+  },
+  "endDate": {
+    "component": "DatePicker",
+    "label": "結束日期"
   },
   "endTime": {
     "component": "TimePicker",

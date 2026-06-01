@@ -1,5 +1,14 @@
 {
-  "required": ["leaveType", "startDate", "endDate", "reason"],
+  "required": [
+    "applicant",
+    "deputy",
+    "leaveType",
+    "startDate",
+    "startTime",
+    "endDate",
+    "endTime",
+    "reason"
+  ],
   "rules": [
     {
       "id": "endAfterStart",

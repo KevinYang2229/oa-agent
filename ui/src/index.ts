@@ -23,6 +23,9 @@ export type { TextareaProps } from './components/common/Textarea/Textarea';
 export { default as Select } from './components/common/Select/Select';
 export type { SelectProps } from './components/common/Select/Select';
 
+export { default as Checkbox } from './components/common/Checkbox/Checkbox';
+export type { CheckboxProps } from './components/common/Checkbox/Checkbox';
+
 export { default as DatePicker } from './components/common/DatePicker/DatePicker';
 export type { DatePickerProps } from './components/common/DatePicker/DatePicker';
 
