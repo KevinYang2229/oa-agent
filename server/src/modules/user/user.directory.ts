@@ -6,6 +6,7 @@ import type { Applicant } from "@oa-agent/shared";
 
 const DIRECTORY: Record<string, Omit<Applicant, "id">> = {
   kevin: { name: "Kevin Yang", department: "行銷部", title: "技術經理" },
+  hyweb: { name: "Eason Hsieh", department: "行銷部", title: "處長" },
 };
 
 /** 取申請人 profile；未知帳號回退為「以 userId 當顯示名、部門未知」 */
