@@ -47,6 +47,9 @@ function buildSystemPrompt(def: Definition): string {
     '2. 依工具回傳的 missing/invalid，用友善的繁中逐一詢問還缺的必填欄位。',
     '3. 必填齊全後，用繁中摘要整張表單（假別用中文、列出日期與事由），請使用者回覆「確認」。',
     '4. 只有使用者明確回覆「確認」後才呼叫 submit；切勿自行送出，也不要捏造任何值。',
+    '5. 使用者詢問假別剩餘／可用時數（例如「特休還有幾小時」「所有假別剩多少」）時，',
+    '   呼叫 get_leave_balances 取得真實數字後再回答；以中文假別名稱呈現；',
+    '   查無資料的假別請如實說明（例如「系統查無此假別額度」），切勿捏造時數。',
   ].join('\n');
 }
 
@@ -114,6 +117,15 @@ async function dispatchTool(
       return JSON.stringify({ ok: true, oaRequestId: result.oaRequestId, status: result.status });
     } catch (err) {
       session.status = 'failed';
+      return JSON.stringify({ ok: false, error: (err as Error).message });
+    }
+  }
+
+  if (name === 'get_leave_balances') {
+    try {
+      const balances = await leaveService.getBalances(session.userId);
+      return JSON.stringify({ ok: true, balances });
+    } catch (err) {
       return JSON.stringify({ ok: false, error: (err as Error).message });
     }
   }

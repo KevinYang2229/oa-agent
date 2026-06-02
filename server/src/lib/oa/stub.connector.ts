@@ -20,9 +20,14 @@ export const stubOAConnector: OAConnector = {
   },
 
   async getLeaveBalance(_userId: string): Promise<LeaveBalance[]> {
+    // demo 用：涵蓋表單支援的 6 種假別（特休/事假/病假/公假/喪假/婚假）
     return [
       { leaveType: 'annual', remainingHours: 80 },
+      { leaveType: 'personal', remainingHours: 56 },
       { leaveType: 'sick', remainingHours: 240 },
+      { leaveType: 'official', remainingHours: 40 },
+      { leaveType: 'funeral', remainingHours: 64 },
+      { leaveType: 'marriage', remainingHours: 64 },
     ];
   },
 };

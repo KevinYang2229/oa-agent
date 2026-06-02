@@ -35,5 +35,12 @@ export function buildTools(def: Definition): LLMTool[] {
         '在所有必填欄位齊全、且使用者已明確回覆「確認」後呼叫，送出表單進入簽核。',
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
+    {
+      name: 'get_leave_balances',
+      description:
+        '查詢目前登入使用者各假別的可用（剩餘）時數。當使用者詢問「還有多少假」「特休剩幾小時」' +
+        '「所有假別剩餘時數」等問題時呼叫。回傳每個假別的機器值與剩餘時數（查無資料的假別不會出現）。',
+      inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
   ];
 }
