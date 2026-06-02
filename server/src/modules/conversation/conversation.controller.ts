@@ -18,6 +18,7 @@ export const conversationController = {
         status: session.status,
         values: session.values,
         reply: turn?.reply ?? null,
+        suggestions: turn?.suggestions ?? [],
       },
     });
   },

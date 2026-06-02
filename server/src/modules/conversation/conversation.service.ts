@@ -98,6 +98,7 @@ export const conversationService = {
       status: session.status,
       values: session.values,
       submission: session.submission,
+      suggestions: [],
       applied,
       rejected,
     };

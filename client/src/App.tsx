@@ -25,6 +25,8 @@ interface ChatMessage {
   id: number;
   role: Role;
   text: string;
+  /** Agent 訊息附帶的建議回覆；僅最新一則會在 UI 顯示為快捷按鈕 */
+  suggestions?: string[];
 }
 
 type Theme = 'light' | 'dark';
@@ -161,8 +163,8 @@ export default function App() {
     };
   }, [authUser]);
 
-  function pushMsg(role: Role, text: string) {
-    setMessages((prev) => [...prev, { id: nextId(), role, text }]);
+  function pushMsg(role: Role, text: string, suggestions?: string[]) {
+    setMessages((prev) => [...prev, { id: nextId(), role, text, suggestions }]);
   }
 
   // 對話已不存在（多半是後端重啟導致記憶體 session 遺失）。404 → 視為連線重置
@@ -195,7 +197,7 @@ export default function App() {
     setStatus(data.status);
     setValues(data.values ?? {});
     setSubmission(data.submission ?? null);
-    if (data.reply) pushMsg('agent', data.reply);
+    if (data.reply) pushMsg('agent', data.reply, data.suggestions);
 
     if (data.status === 'confirming' || data.status === 'submitted') {
       void loadAndShowForm(data.id ?? sessionId);
@@ -306,6 +308,10 @@ export default function App() {
   }
   // 開場引導用的範例提示（i18n 陣列）；對話開始後就不再顯示
   const quickPrompts = t('app.quickPrompts', { returnObjects: true }) as string[];
+
+  // 建議回覆：只取「最新一則 agent 訊息」附帶的建議，作為可一鍵送出的快捷按鈕
+  const lastMsg = messages[messages.length - 1];
+  const replySuggestions = lastMsg?.role === 'agent' ? (lastMsg.suggestions ?? []) : [];
 
   function reset() {
     setConvId(null);
@@ -418,6 +424,22 @@ export default function App() {
                   onClick={() => sendQuick(p)}
                 >
                   {p}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 建議回覆：AI 回覆下方的一鍵快捷按鈕（點擊即送出） */}
+          {!busy && replySuggestions.length > 0 && (
+            <div className="suggest-bar">
+              {replySuggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className="quick-chip"
+                  onClick={() => sendQuick(s)}
+                >
+                  {s}
                 </button>
               ))}
             </div>

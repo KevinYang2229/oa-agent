@@ -21,4 +21,6 @@ export interface TurnResult {
   status: SessionStatus;
   values: FormValues;
   submission?: SubmissionInfo;
+  /** 給前端 UI 的建議回覆（使用者最可能的接續回應），best-effort，可能為空 */
+  suggestions: string[];
 }

@@ -25,6 +25,8 @@ export interface TurnData {
   values: Record<string, unknown>;
   reply: string | null;
   submission?: SubmissionInfo;
+  /** 後端動態產生的建議回覆（可一鍵送出）；可能為空陣列 */
+  suggestions?: string[];
 }
 
 /** PATCH /:id/fields 的回傳（TurnData + 套用/退回明細） */
