@@ -23,22 +23,27 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 1. 登入 https://zeabur.com → **Create Project**（建議選離你近的 region，如 AWS Tokyo）。
 2. 連接 GitHub，授權存取 `KevinYang2229/oa-agent`。
 
+> **指定 Dockerfile 的關鍵規則**（Zeabur monorepo）：
+> - **最推薦**：把服務「命名」成 `server` / `client`，Zeabur 會自動配對 `Dockerfile.server` / `Dockerfile.client`，不必設任何變數。
+> - 若服務名稱不是 server/client，才用變數 `ZBPACK_DOCKERFILE_NAME`，值是**後綴**（`server` / `client`），**不是**完整檔名。
+>   寫成 `Dockerfile.server` 會讓 Zeabur 去找 `Dockerfile.Dockerfile.server`（不存在）→ 靜默退回自動偵測 → 部署到錯的進入點。
+
 ### 服務 A：server
 3. **Add Service → Git → 選 oa-agent repo**。
-4. 進該服務 → **Settings / Variables**，新增一個建置變數指定要用的 Dockerfile：
-   - `ZBPACK_DOCKERFILE_NAME = Dockerfile.server`
+4. **把服務名稱設成 `server`** → Zeabur 自動使用 `Dockerfile.server`（不需設 `ZBPACK_DOCKERFILE_NAME`）。
+   - 若服務名稱不是 `server`，才到 **Variables** 加 `ZBPACK_DOCKERFILE_NAME = server`（後綴，不含 `Dockerfile.`）。
 5. 設定下方「server 環境變數」（見第三節）。
 6. **Networking → 產生 Domain**（例：`oa-agent-server.zeabur.app`）。記下這個網址，client 要用。
 
 ### 服務 B：client
 7. 在同一個 Project 再 **Add Service → Git → 選同一個 oa-agent repo**。
-8. 該服務 **Variables** 新增：
-   - `ZBPACK_DOCKERFILE_NAME = Dockerfile.client`
+8. **把服務名稱設成 `client`** → Zeabur 自動使用 `Dockerfile.client`。並到 **Variables** 加：
    - `VITE_API_BASE = https://oa-agent-server.zeabur.app`  ← 填服務 A 的 Domain
      （Vite 會在 **build 階段** 把這個值 bake 進前端 bundle；改了要重新 build 才生效）
+   - 若服務名稱不是 `client`，再加 `ZBPACK_DOCKERFILE_NAME = client`（後綴）。
 9. **Networking → 產生 Domain**（例：`oa-agent.zeabur.app`）。記下來，回填到 server 的 `CORS_ORIGIN`。
 
-> 兩個服務都用 repo 根目錄當 build context，`ZBPACK_DOCKERFILE_NAME` 決定各自用哪個 Dockerfile。
+> 兩個服務都用 repo 根目錄當 build context；用服務名稱或 `ZBPACK_DOCKERFILE_NAME`（後綴）決定各自用哪個 Dockerfile。
 
 ---
 
@@ -61,8 +66,8 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 ### client 服務
 | 變數 | 必填 | 說明 |
 |------|------|------|
-| `ZBPACK_DOCKERFILE_NAME` | ✅ | `Dockerfile.client` |
 | `VITE_API_BASE` | ✅ | server 的對外網址，build 時 bake 進 bundle |
+| `ZBPACK_DOCKERFILE_NAME` | 視情況 | 僅當服務「名稱」不是 `client` 時才需要；值是後綴 `client`（不是 `Dockerfile.client`） |
 
 ---
 

@@ -10,7 +10,9 @@ COPY shared/package.json ./shared/
 COPY ui/package.json ./ui/
 COPY server/package.json ./server/
 COPY client/package.json ./client/
-RUN npm ci
+# --include=dev：Zeabur build 環境預設 NODE_ENV=production，會讓 npm 跳過 devDependencies
+# （vite / tsc / @vitejs/plugin-react 等在 devDeps），強制裝進來才 build 得了
+RUN npm ci --include=dev
 
 COPY . .
 
