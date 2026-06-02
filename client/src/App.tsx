@@ -93,6 +93,8 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [formDef, setFormDef] = useState<Definition | null>(null);
   const [showForm, setShowForm] = useState(false);
+  // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
+  const [paneOpen, setPaneOpen] = useState(true);
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('oa-theme') as Theme) || 'light',
   );
@@ -292,6 +294,16 @@ export default function App() {
     void send(text);
   }
 
+  /** 點聊天歡迎區的範例提示：直接送出，幫使用者快速開始 */
+  function sendQuick(text: string) {
+    if (busy) return;
+    pushMsg('user', text);
+    setInput('');
+    void send(text);
+  }
+  // 開場引導用的範例提示（i18n 陣列）；對話開始後就不再顯示
+  const quickPrompts = t('app.quickPrompts', { returnObjects: true }) as string[];
+
   function reset() {
     setConvId(null);
     setStatus(null);
@@ -330,7 +342,6 @@ export default function App() {
             <span className="app-meta-sep" aria-hidden="true" />
 
             <span className="app-meta-item">
-              <span className="app-meta-label">{t('app.statusLabel')}</span>
               <Badge status={status ? STATUS_BADGE[status] : 'normal'}>
                 {status ? t(`app.status.${status}`) : t('app.statusInitial')}
               </Badge>
@@ -392,6 +403,23 @@ export default function App() {
             )}
           </div>
 
+          {/* 開場引導：對話尚未開始時，提供可一鍵送出的範例提示 */}
+          {!convId && !busy && quickPrompts.length > 0 && (
+            <div className="quick-bar">
+              <span className="quick-hint">{t('app.quickHint')}</span>
+              {quickPrompts.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className="quick-chip"
+                  onClick={() => sendQuick(p)}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+
           <form
             className="composer"
             onSubmit={(e) => {
@@ -420,8 +448,35 @@ export default function App() {
           </form>
         </div>
 
-        <aside className="side-pane">
-          <h2 className="side-title">{t('app.filledFields')}</h2>
+        <aside className={`side-pane${paneOpen ? '' : ' collapsed'}`}>
+          <button
+            type="button"
+            className="side-toggle"
+            onClick={() => setPaneOpen((o) => !o)}
+            aria-expanded={paneOpen}
+            aria-label={t(paneOpen ? 'app.collapsePane' : 'app.expandPane')}
+            title={t(paneOpen ? 'app.collapsePane' : 'app.expandPane')}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+          {/* 收合時在細條上顯示的標籤（桌機直書、手機橫書），避免看起來空白單調 */}
+          <span className="side-collapsed-label">{t('app.paneLabel')}</span>
+
+          <div className="side-content">
+            <h2 className="side-title">{t('app.filledFields')}</h2>
           {valueEntries.length ? (
             valueEntries.map(([k, v]) => (
               <div className="kv-row" key={k}>
@@ -457,6 +512,7 @@ export default function App() {
           ) : (
             <div className="empty-hint">{t('app.notSubmitted')}</div>
           )}
+          </div>
         </aside>
       </div>
 

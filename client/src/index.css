@@ -1,9 +1,10 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 /* 設計系統共用樣式（token + base + 共用 class），由 @oa-agent/ui 提供 */
-@import '@oa-agent/ui/index.css';
+@import "@oa-agent/ui/index.css";
 
 @theme {
-  --font-sans: -apple-system, 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --font-sans:
+    -apple-system, "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
 }
 
 @layer base {
@@ -54,16 +55,19 @@
     /* 手機版（≤640px）：縮小間距與內距 */
     @apply max-sm:gap-y-2 max-sm:px-4 max-sm:py-2.5;
   }
-  /* logo + 標題固定靠左 */
+  /* logo + 標題靠左，並 flex-1 撐開把右側控制項推到最右（齒輪永遠靠右） */
   .app-title {
-    @apply text-base font-semibold text-[var(--text-primary)] max-sm:flex-1 max-sm:text-sm;
+    @apply flex-1 text-base font-semibold text-[var(--text-primary)] max-sm:text-sm;
   }
-  /* 其餘控制項整組靠右（空間夠就 inline，不夠自動換行；不再用漢堡） */
+  /* 包裝層用 display:contents 消失，讓 meta 與齒輪直接成為 header 的 flex item，
+     才能用 order 控制：齒輪永遠跟標題同一行靠右，meta 不夠寬時自己掉到下一行 */
   .app-collapse {
-    @apply ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-2;
+    @apply contents;
   }
   .app-meta {
     @apply flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-[var(--text-secondary)];
+    /* 桌面排在齒輪左側；≤720px 改排到第二行、全寬、靠右對齊 */
+    @apply order-2 max-[720px]:order-3 max-[720px]:basis-full max-[720px]:justify-end;
   }
   /* 使用者 / 狀態：同字級「標籤＋值」，垂直置中 */
   .app-meta-item {
@@ -85,9 +89,13 @@
   }
   .app-body {
     @apply flex min-h-0 flex-1;
+    /* 窄螢幕（≤720px）：左右改為上下堆疊，側欄移到聊天下方 */
+    @apply max-[720px]:flex-col;
   }
   .chat-pane {
     @apply flex min-w-0 flex-1 flex-col;
+    /* 窄螢幕：排在側欄下方，讓輸入框（composer）保持在最底部 */
+    @apply max-[720px]:order-2;
   }
 
   /* ---- 訊息串 ---- */
@@ -126,9 +134,15 @@
     animation: caret-blink 0.9s step-end infinite;
   }
 
-  /* ---- 快捷鈕列 ---- */
+  /* ---- 快捷鈕列（開場引導範例） ---- */
   .quick-bar {
-    @apply flex flex-wrap gap-2 bg-[var(--card-bg)] px-5 pb-2.5;
+    @apply flex flex-wrap items-center gap-2 bg-[var(--card-bg)] px-5 py-2.5;
+  }
+  .quick-hint {
+    @apply w-full text-xs text-[var(--text-secondary)] max-sm:w-full;
+  }
+  .quick-chip {
+    @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-colors hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)];
   }
 
   /* ---- 輸入列 ---- */
@@ -138,7 +152,41 @@
 
   /* ---- 側欄 ---- */
   .side-pane {
-    @apply w-72 overflow-y-auto border-l border-[var(--border-color)] bg-[var(--card-bg)] p-4 text-sm max-[720px]:hidden;
+    @apply relative flex w-72 flex-col overflow-hidden border-l border-[var(--border-color)] bg-[var(--card-bg)] p-4 text-sm transition-[width,max-height] duration-300 ease-out;
+    /* 窄螢幕（≤720px）：改為全寬、堆疊在聊天「上方」（讓輸入框保持最底），改用下邊框，限高可捲動 */
+    @apply max-[720px]:order-1 max-[720px]:w-full max-[720px]:max-h-[45vh] max-[720px]:shrink-0 max-[720px]:border-l-0 max-[720px]:border-b;
+  }
+  /* 內容區自己捲動（收合鈕在 .side-pane 上不跟著捲走） */
+  .side-content {
+    @apply min-h-0 flex-1 overflow-y-auto;
+  }
+  /* 收合：桌機縮成右側細條（向右收）；手機縮成上方細條（向上收） */
+  .side-pane.collapsed {
+    @apply w-10 p-0;
+    /* 收合時內容隱藏、按鈕為 absolute，手機需固定高度才不會塌成 0 把展開鈕裁掉 */
+    @apply max-[720px]:h-11 max-[720px]:max-h-11 max-[720px]:w-full max-[720px]:p-0;
+  }
+  .side-pane.collapsed .side-content {
+    @apply hidden;
+  }
+  /* 收合切換鈕：固定在面板右上角，收合/展開都看得到 */
+  .side-toggle {
+    @apply absolute right-2 top-2 z-10 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-primary)];
+  }
+  /* chevron 方向：桌機展開→指右(向右收)、收合→指左；手機展開→指上(向上收)、收合→指下 */
+  .side-toggle svg {
+    @apply transition-transform duration-300 max-[720px]:-rotate-90;
+  }
+  .side-pane.collapsed .side-toggle svg {
+    @apply rotate-180 max-[720px]:rotate-90;
+  }
+  /* 收合時細條上的標籤：預設藏起；收合後桌機用直書置中、手機用橫書靠左 */
+  .side-collapsed-label {
+    @apply hidden;
+  }
+  .side-pane.collapsed .side-collapsed-label {
+    @apply absolute left-1/2 top-11 block -translate-x-1/2 whitespace-nowrap text-xs font-medium tracking-widest text-[var(--text-secondary)] [writing-mode:vertical-rl];
+    @apply max-[720px]:left-4 max-[720px]:top-1/2 max-[720px]:translate-x-0 max-[720px]:-translate-y-1/2 max-[720px]:tracking-wide max-[720px]:[writing-mode:horizontal-tb];
   }
   .side-title {
     @apply mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)];
@@ -162,6 +210,8 @@
   }
   .form-sheet {
     @apply flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[var(--card-bg)] shadow-2xl;
+    /* 只在手機版限制最高（80vh 且不超過 620px）；桌機維持 90vh */
+    @apply max-sm:max-h-[min(80vh,620px)];
   }
   /* 凍結的標題列 */
   .form-sheet-head {
@@ -251,6 +301,8 @@
   /* ---- 齒輪設定選單 ---- */
   .settings {
     @apply relative shrink-0;
+    /* 齒輪：桌面排最右；≤720px 提到第二位（與標題同行、meta 之前），永遠固定右上 */
+    @apply order-3 max-[720px]:order-2;
   }
   .settings-trigger {
     @apply inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-lg leading-none text-[var(--text-primary)] hover:bg-[var(--nav-hover)];
