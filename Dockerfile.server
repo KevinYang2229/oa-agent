@@ -1,0 +1,35 @@
+# OA Agent — server 服務（Express API）
+# build context = repo 根目錄（monorepo workspaces 需從 root 安裝才解析得到 @oa-agent/*）
+
+# ---- build stage：裝全部依賴 + 編譯 TS ----
+FROM node:20-slim AS build
+WORKDIR /app
+
+# 先複製各 workspace 的 manifest，最大化 layer cache
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY ui/package.json ./ui/
+COPY server/package.json ./server/
+COPY client/package.json ./client/
+RUN npm ci
+
+COPY . .
+RUN npm run build -w server
+
+# ---- runtime stage：只裝 production 依賴 + 帶編譯產物 ----
+FROM node:20-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY ui/package.json ./ui/
+COPY server/package.json ./server/
+COPY client/package.json ./client/
+RUN npm ci --omit=dev
+
+COPY --from=build /app/server/dist ./server/dist
+
+# server 讀 env.PORT（預設 3000）；Zeabur 會注入 PORT，server 會跟著聽
+EXPOSE 3000
+CMD ["node", "server/dist/index.js"]

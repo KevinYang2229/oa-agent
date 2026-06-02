@@ -1,6 +1,7 @@
 import { computeStatus, setField } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
+import { leaveService } from '@/modules/leave/leave.service';
 import { getApplicant } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { runTurn } from './conversation.agent';
@@ -103,7 +104,18 @@ export const conversationService = {
   },
 
   get(userId: string, id: string): Session {
-    return conversationStore.get(id, userId);
+    const session = conversationStore.get(id, userId);
+    // 查詢時即時反映目前簽核進度（依送出時間重算關卡狀態）
+    if (session.submission?.approvals?.length) {
+      session.submission = {
+        ...session.submission,
+        approvals: leaveService.refreshApprovals(
+          session.submission.approvals,
+          session.submission.submittedAt,
+        ),
+      };
+    }
+    return session;
   },
 
   cancel(userId: string, id: string): Session {

@@ -105,7 +105,12 @@ async function dispatchTool(
     try {
       const result = await leaveService.submit(session.userId, session.values);
       session.status = 'submitted';
-      session.submission = { oaRequestId: result.oaRequestId, status: result.status };
+      session.submission = {
+        oaRequestId: result.oaRequestId,
+        status: result.status,
+        submittedAt: result.submittedAt,
+        approvals: result.approvals,
+      };
       return JSON.stringify({ ok: true, oaRequestId: result.oaRequestId, status: result.status });
     } catch (err) {
       session.status = 'failed';

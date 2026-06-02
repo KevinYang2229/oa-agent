@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import { env } from '@/config/env';
 import { requestLogger } from '@/middlewares/request-logger';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
+import { requireAuth } from '@/middlewares/require-auth';
+import { authRouter } from '@/modules/auth/auth.routes';
 import { conversationRouter } from '@/modules/conversation/conversation.routes';
 import { formRouter } from '@/modules/form/form.routes';
 import { leaveRouter } from '@/modules/leave/leave.routes';
@@ -25,9 +27,13 @@ export function createApp(): Express {
     res.status(200).json({ status: 'ok' });
   });
 
-  app.use('/api/v1/conversations', conversationRouter);
-  app.use('/api/v1/forms', formRouter);
-  app.use('/api/v1/leave', leaveRouter);
+  // 公開：登入 / 換發 token
+  app.use('/api/v1/auth', authRouter);
+
+  // 受保護：需帶有效 access token 才能操作
+  app.use('/api/v1/conversations', requireAuth, conversationRouter);
+  app.use('/api/v1/forms', requireAuth, formRouter);
+  app.use('/api/v1/leave', requireAuth, leaveRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

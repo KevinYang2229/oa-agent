@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Input, Select, type StatusBadgeVariant } from '@oa-agent/ui';
+import { Badge, Button, Input, type StatusBadgeVariant } from '@oa-agent/ui';
 import {
   api,
   ApiError,
+  auth,
+  setUnauthorizedHandler,
+  type Applicant,
   type Definition,
   type LeaveBalance,
   type SessionStatus,
@@ -12,6 +15,8 @@ import {
 } from './api';
 import { changeLanguage } from './i18n';
 import FormView from './FormView';
+import LoginView from './LoginView';
+import SettingsMenu, { FONT_MAX, FONT_MIN } from './SettingsMenu';
 
 type Role = 'user' | 'agent' | 'sys';
 interface ChatMessage {
@@ -72,7 +77,10 @@ function TypewriterText({ text, onTick }: { text: string; onTick?: () => void })
 export default function App() {
   const { t, i18n } = useTranslation();
 
-  const [userId, setUserId] = useState('kevin');
+  // 登入者；未登入為 null。userId 由登入者帶出（不再手動輸入）
+  const [authUser, setAuthUser] = useState<Applicant | null>(null);
+  const [authReady, setAuthReady] = useState(false); // 重整時還原登入狀態的載入旗標
+  const userId = authUser?.id ?? '';
   const [convId, setConvId] = useState<string | null>(null);
   const [status, setStatus] = useState<SessionStatus | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
@@ -88,6 +96,11 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('oa-theme') as Theme) || 'light',
   );
+  // 系統字級（百分比）：縮放整個介面的 root font-size
+  const [fontScale, setFontScale] = useState<number>(() => {
+    const saved = Number(localStorage.getItem('oa-font-scale'));
+    return saved >= FONT_MIN && saved <= FONT_MAX ? saved : 100;
+  });
 
   const listRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -98,6 +111,30 @@ export default function App() {
     localStorage.setItem('oa-theme', theme);
   }, [theme]);
 
+  // 系統字級：調整 root font-size（rem 為基準，整個介面隨之縮放）並記憶
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontScale}%`;
+    localStorage.setItem('oa-font-scale', String(fontScale));
+  }, [fontScale]);
+
+  // 啟動：還原登入狀態（有 token 就用 /me 取使用者）；並註冊 401（refresh 失敗）→ 登出
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setAuthUser(null);
+      resetSessionState();
+    });
+    if (auth.isAuthenticated()) {
+      auth
+        .me()
+        .then(setAuthUser)
+        .catch(() => setAuthUser(null))
+        .finally(() => setAuthReady(true));
+    } else {
+      setAuthReady(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const scrollToEnd = useCallback(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, []);
@@ -106,17 +143,18 @@ export default function App() {
     scrollToEnd();
   }, [messages, busy, scrollToEnd]);
 
-  // 假別剩餘時數：依使用者載入，供表單顯示「今年度剩餘 N 小時」
+  // 假別剩餘時數：登入後依使用者載入，供表單顯示「今年度剩餘 N 小時」
   useEffect(() => {
+    if (!authUser) return;
     let alive = true;
     api
-      .getLeaveBalances(userId)
+      .getLeaveBalances(authUser.id)
       .then((b) => alive && setBalances(b))
       .catch(() => alive && setBalances([]));
     return () => {
       alive = false;
     };
-  }, [userId]);
+  }, [authUser]);
 
   function pushMsg(role: Role, text: string) {
     setMessages((prev) => [...prev, { id: nextId(), role, text }]);
@@ -133,6 +171,18 @@ export default function App() {
     setSubmission(null);
     setShowForm(false);
     setFormDef(null);
+  }
+
+  function handleLogin(user: Applicant) {
+    setAuthUser(user);
+    setMessages([{ id: nextId(), role: 'agent', text: t('app.greeting') }]);
+  }
+
+  function handleLogout() {
+    auth.logout();
+    setAuthUser(null);
+    setBalances([]);
+    resetSessionState();
   }
 
   function applyTurn(data: TurnData, sessionId: string | null) {
@@ -259,51 +309,65 @@ export default function App() {
     ([, v]) => v !== null && v !== undefined && v !== '',
   );
 
+  // 還原登入狀態中：先不渲染，避免閃一下登入頁
+  if (!authReady) return null;
+  // 未登入：擋住整個 App，只顯示登入頁
+  if (!authUser) return <LoginView onLogin={handleLogin} />;
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <h1 className="app-title">{t('app.title')}</h1>
-        <div className="app-meta">
-          <label className="flex items-center gap-2">
-            {t('app.user')}
-            <span className="w-28">
-              <Input value={userId} onChange={(e) => setUserId(e.target.value)} />
+
+        {/* 其餘控制項整組靠右；空間夠 inline，不夠自動換行 */}
+        <div className="app-collapse">
+          <div className="app-meta">
+            <span className="app-meta-item">
+              <span className="app-meta-label">{t('app.user')}</span>
+              <span className="app-meta-value">{authUser.name}</span>
             </span>
-          </label>
-          <span className="flex items-center gap-2">
-            {t('app.statusLabel')}
-            <Badge status={status ? STATUS_BADGE[status] : 'normal'}>
-              {status ? t(`app.status.${status}`) : t('app.statusInitial')}
-            </Badge>
-          </span>
 
-          <Button variant="reset" size="sm" onClick={reset} type="button">
-            {t('app.reset')}
-          </Button>
-        </div>
+            <span className="app-meta-sep" aria-hidden="true" />
 
-        <div className="app-header-actions">
-          {/* 語系切換 */}
-          <span className="w-28" title={t('app.language')}>
-            <Select
-              value={i18n.language}
-              onChange={(e) => changeLanguage(e.target.value)}
-            >
-              <option value="zh-Hant">繁體中文</option>
-              <option value="en">English</option>
-            </Select>
-          </span>
+            <span className="app-meta-item">
+              <span className="app-meta-label">{t('app.statusLabel')}</span>
+              <Badge status={status ? STATUS_BADGE[status] : 'normal'}>
+                {status ? t(`app.status.${status}`) : t('app.statusInitial')}
+              </Badge>
+            </span>
 
-          {/* 深色 / 淺色切換 */}
-          <Button
-            variant="nav"
-            size="sm"
-            type="button"
-            title={t('app.theme')}
-            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </Button>
+            <span className="app-meta-sep" aria-hidden="true" />
+
+            <button type="button" className="app-reset" onClick={reset}>
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              {t('app.reset')}
+            </button>
+          </div>
+
+          {/* 齒輪設定：外觀模式 / 系統字級 / 切換語言 / 登出 */}
+          <SettingsMenu
+            theme={theme}
+            onThemeChange={setTheme}
+            language={i18n.language}
+            onLanguageChange={changeLanguage}
+            fontScale={fontScale}
+            onFontScaleChange={setFontScale}
+            onLogout={handleLogout}
+          />
         </div>
       </header>
 

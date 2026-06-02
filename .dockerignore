@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/coverage
+.git
+.playwright-cli
+**/*.log
+.env
+.env.*
+**/.env
+**/.env.*
+.DS_Store

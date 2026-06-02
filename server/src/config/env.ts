@@ -14,6 +14,9 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
+  // MVP 登入：固定 dev 密碼（所有 mock 帳號共用）。之後接真實認證時換掉驗證邏輯即可。
+  AUTH_DEV_PASSWORD: z.string().default('oa1234'),
+
   CORS_ORIGIN: z.string().default('*'),
 
   REDIS_URL: z.string().default('redis://localhost:6379'),

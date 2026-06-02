@@ -139,9 +139,22 @@ export type SessionStatus =
   | 'cancelled'
   | 'failed';
 
+/** 單一簽核關卡狀態（由 workflow.steps 衍生） */
+export interface ApprovalStep {
+  /** 關卡名稱（取自 workflow step.name，缺省用 type） */
+  name: string;
+  /** 關卡類型（manager / hr …） */
+  type: string;
+  status: 'current' | 'pending' | 'approved' | 'rejected';
+}
+
 export interface SubmissionInfo {
   oaRequestId: string;
   status: string;
+  /** 送出時間（ISO）；用於計算/查詢簽核進度 */
+  submittedAt?: string;
+  /** 簽核進度（依表單 workflow.steps 產生）；無 workflow 則不帶 */
+  approvals?: ApprovalStep[];
 }
 
 /** 申請人（目前使用者）資訊，由後端使用者目錄解析 */
