@@ -17,7 +17,11 @@ const envSchema = z.object({
   // MVP 登入：固定 dev 密碼（所有 mock 帳號共用）。之後接真實認證時換掉驗證邏輯即可。
   AUTH_DEV_PASSWORD: z.string().default('oa1234'),
 
-  CORS_ORIGIN: z.string().default('*'),
+  // 結尾斜線容錯：瀏覽器送的 Origin 不帶結尾斜線，env 多打一個 `/` 會比對不到而擋掉
+  CORS_ORIGIN: z
+    .string()
+    .default('*')
+    .transform((s) => s.replace(/\/+$/, '')),
 
   REDIS_URL: z.string().default('redis://localhost:6379'),
 

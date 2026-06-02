@@ -22,6 +22,10 @@ RUN npm run build -w server
 FROM node:20-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# Zeabur 的 Git/Dockerfile 服務只路由「一個」埠＝Dockerfile EXPOSE。
+# server 讀 env.PORT，所以讓 PORT 與 EXPOSE 對齊到 3000，兩邊一致才路由得到。
+# 註：若 Zeabur 後台另外注入了 PORT，會蓋掉這裡的 ENV；那就把後台的 PORT 也設成 3000。
+ENV PORT=3000
 
 COPY package.json package-lock.json ./
 COPY shared/package.json ./shared/
@@ -32,6 +36,5 @@ RUN npm ci --omit=dev
 
 COPY --from=build /app/server/dist ./server/dist
 
-# server 讀 env.PORT（預設 3000）；Zeabur 會注入 PORT，server 會跟著聽
 EXPOSE 3000
 CMD ["node", "server/dist/index.js"]

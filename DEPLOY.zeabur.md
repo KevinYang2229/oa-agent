@@ -56,7 +56,7 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 | `ANTHROPIC_API_KEY` | ✅ 必填 | 沒填 server 啟動會直接 fail-fast 退出 |
 | `JWT_ACCESS_SECRET` | ✅ | ≥32 字元隨機字串 |
 | `JWT_REFRESH_SECRET` | ✅ | ≥32 字元隨機字串（與上者不同） |
-| `CORS_ORIGIN` | 建議 | 填 client 的 Domain，如 `https://oa-agent.zeabur.app`（預設 `*` 也能動，但建議收斂） |
+| `CORS_ORIGIN` | 建議 | 填 client 的 Domain，如 `https://oa-agent.zeabur.app`。**結尾不要加 `/`**（瀏覽器送的 Origin 不帶斜線，多打會比對不到而擋掉；程式已做容錯，但仍建議別加）|
 | `AUTH_DEV_PASSWORD` | 視需要 | MVP 登入共用密碼，預設 `oa1234`，正式環境請改 |
 | `LLM_MODEL` | 選填 | 預設 `claude-sonnet-4-5` |
 | `PORT` | 不用填 | Zeabur 自動注入，server 會自動聽 |
