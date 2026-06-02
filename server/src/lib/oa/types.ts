@@ -22,6 +22,10 @@ export interface LeaveRequestPayload {
   startTime?: string;
   endTime?: string;
   reason: string;
+  /** 換算後的請假時數（依申請人地區工時政策計算） */
+  hours?: number;
+  /** 申請人所屬地區（決定工時政策） */
+  region?: string;
 }
 
 export interface OASubmitResult {

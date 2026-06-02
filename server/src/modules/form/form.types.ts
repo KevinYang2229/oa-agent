@@ -19,6 +19,8 @@ export type {
   WorkflowStep,
   WorkflowSchema,
   AgentSchema,
+  WorkTimePolicy,
+  PolicySchema,
   Definition,
   FormValues,
   FieldIssue,

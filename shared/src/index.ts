@@ -100,6 +100,25 @@ export interface AgentSchema {
   confirmationTemplate?: string;
 }
 
+// ---- ⑦ Policy Schema（optional seam：時數計算政策，可依地區覆寫）----
+/** 單一地區的工時政策（計算請假時數用） */
+export interface WorkTimePolicy {
+  /** 上下班時間 HH:mm */
+  workDay: { start: string; end: string };
+  /** 午休（休息）區間 HH:mm，計算時數時排除 */
+  lunchBreak?: { start: string; end: string };
+  /** 週休日（0=日…6=六）；省略預設 [0,6]（六、日不計時數） */
+  weekendDays?: number[];
+}
+export interface PolicySchema {
+  /** 找不到地區時的後備政策 */
+  default: WorkTimePolicy;
+  /** 地區（如 台北/新竹）→ 覆寫政策 */
+  regions?: Record<string, WorkTimePolicy>;
+  /** 國定假日（YYYY-MM-DD，全地區共用）；計算時數時不計 */
+  holidays?: string[];
+}
+
 // ---- 組合：一份 Definition ----
 export interface Definition {
   formId: string;
@@ -109,6 +128,8 @@ export interface Definition {
   validation: ValidationSchema;
   workflow?: WorkflowSchema;
   agent: AgentSchema;
+  /** 時數計算政策（僅請假類表單有；其他表單可無） */
+  policy?: PolicySchema;
 }
 
 // ---- slot-filling 用的衍生型別 ----
@@ -164,6 +185,8 @@ export interface Applicant {
   name: string;
   department: string;
   title?: string;
+  /** 所屬地區（如 台北/新竹）；決定工時政策，缺省用 policy.default */
+  region?: string;
 }
 
 /** 假別剩餘時數（由 OA 連接器提供） */

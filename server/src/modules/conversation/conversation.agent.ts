@@ -46,7 +46,8 @@ function buildSystemPrompt(def: Definition): string {
     '工作方式：',
     '1. 從使用者訊息擷取可得欄位值，呼叫 fill_fields 一次填入。',
     '2. 依工具回傳的 missing/invalid，用友善的繁中逐一詢問還缺的必填欄位。',
-    '3. 必填齊全後，用繁中摘要整張表單（假別用中文、列出日期與事由），請使用者回覆「確認」。',
+    '3. 必填齊全後，先呼叫 compute_leave_hours 取得本次請假時數，再用繁中摘要整張表單',
+    '   （假別用中文、列出日期時間、事由，並附上「本次請假時數：N 小時」），請使用者回覆「確認」。',
     '4. 只有使用者明確回覆「確認」後才呼叫 submit；切勿自行送出，也不要捏造任何值。',
     '5. 使用者詢問假別剩餘／可用時數（例如「特休還有幾小時」「所有假別剩多少」）時，',
     '   呼叫 get_leave_balances 取得真實數字後再回答；以中文假別名稱呈現；',
@@ -138,6 +139,14 @@ async function dispatchTool(
     const department = typeof input.department === 'string' ? input.department : undefined;
     const candidates = listDeputyCandidates({ requesterId: session.userId, department });
     return JSON.stringify({ ok: true, candidates });
+  }
+
+  if (name === 'compute_leave_hours') {
+    const estimate = leaveService.estimateHours(session.userId, session.values);
+    if (!estimate) {
+      return JSON.stringify({ ok: false, error: '尚無法計算（缺起訖日期或此表單未設定工時政策）' });
+    }
+    return JSON.stringify({ ok: true, ...estimate });
   }
 
   return JSON.stringify({ error: `unknown tool: ${name}` });

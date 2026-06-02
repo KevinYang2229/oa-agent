@@ -11,6 +11,7 @@ import type {
   Definition,
   FieldSchema,
   LayoutSchema,
+  PolicySchema,
   ValidationSchema,
   WorkflowSchema,
 } from './form.types';
@@ -23,6 +24,11 @@ function readJson<T>(file: string): T {
   return JSON.parse(fs.readFileSync(file, 'utf-8')) as T;
 }
 
+/** 讀取選用檔案；不存在回 undefined（policy 等 optional seam 並非每個表單都有） */
+function readJsonOptional<T>(file: string): T | undefined {
+  return fs.existsSync(file) ? readJson<T>(file) : undefined;
+}
+
 export function loadDefinitionFromDir(formId: string): Definition {
   const dir = path.join(SCHEMAS_DIR, formId);
   return {
@@ -33,6 +39,7 @@ export function loadDefinitionFromDir(formId: string): Definition {
     validation: readJson<ValidationSchema>(path.join(dir, 'validation.schema.json')),
     workflow: readJson<WorkflowSchema>(path.join(dir, 'workflow.schema.json')),
     agent: readJson<AgentSchema>(path.join(dir, 'agent.schema.json')),
+    policy: readJsonOptional<PolicySchema>(path.join(dir, 'policy.schema.json')),
   };
 }
 

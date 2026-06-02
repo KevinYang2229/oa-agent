@@ -8,7 +8,9 @@ import type { LeaveBalance } from '@/lib/oa/types';
 import { validateAll } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 import type { Definition, FormValues } from '@/modules/form/form.types';
+import { getApplicant } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
+import { computeLeaveHours } from './leave.hours';
 
 const FORM_ID = 'leave-request';
 
@@ -51,6 +53,12 @@ export const leaveService = {
       throw AppError.unprocessable('Leave request validation failed', issues);
     }
 
+    // 依申請人所屬地區的工時政策換算請假時數（排除午休等）
+    const region = getApplicant(userId).region;
+    const hours = def.policy
+      ? computeLeaveHours(values, def.policy, region).hours
+      : undefined;
+
     const connector = getOAConnector();
     const result = await connector.submitLeaveRequest({
       userId,
@@ -64,6 +72,8 @@ export const leaveService = {
       startTime: values.startTime as string | undefined,
       endTime: values.endTime as string | undefined,
       reason: values.reason as string,
+      hours,
+      region,
     });
 
     const submittedAt = new Date().toISOString();
@@ -91,5 +101,17 @@ export const leaveService = {
   async getBalances(userId: string): Promise<LeaveBalance[]> {
     const connector = getOAConnector();
     return connector.getLeaveBalance ? connector.getLeaveBalance(userId) : [];
+  },
+
+  /**
+   * 依申請人地區工時政策估算目前表單值的請假時數（供對話中送出前告知）。
+   * 表單無 policy 或缺起訖日期時回 null。
+   */
+  estimateHours(userId: string, values: FormValues): { hours: number; region?: string } | null {
+    const def = getDefinition(FORM_ID);
+    if (!def.policy) return null;
+    const region = getApplicant(userId).region;
+    const { hours } = computeLeaveHours(values, def.policy, region);
+    return { hours, region };
   },
 };

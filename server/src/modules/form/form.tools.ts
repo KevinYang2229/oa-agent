@@ -9,7 +9,7 @@ import type { LLMTool } from '@/lib/llm/types';
 import type { Definition } from './form.types';
 
 export function buildTools(def: Definition): LLMTool[] {
-  return [
+  const tools: LLMTool[] = [
     {
       name: 'fill_fields',
       description:
@@ -62,4 +62,17 @@ export function buildTools(def: Definition): LLMTool[] {
       },
     },
   ];
+
+  // 僅在表單有工時政策時提供時數試算（依申請人地區排除午休等換算）
+  if (def.policy) {
+    tools.push({
+      name: 'compute_leave_hours',
+      description:
+        '依目前已填的起訖日期時間，換算這次請假的實際時數（會依申請人所屬地區的工時政策排除午休等）。' +
+        '在出示確認摘要前呼叫，於摘要中告知使用者「本次請假時數」。需要 startDate/endDate 已填妥。',
+      inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    });
+  }
+
+  return tools;
 }
