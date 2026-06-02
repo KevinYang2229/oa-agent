@@ -129,6 +129,85 @@
   .typing-dot:nth-child(3) {
     animation-delay: 0.32s;
   }
+  /* ---- Agent 回覆的 markdown 排版 ---- */
+  /* 由 react-markdown 產生標準區塊元素；關掉 bubble 的 pre-wrap，改由各元素自行控制間距 */
+  .md-body {
+    @apply whitespace-normal;
+  }
+  .md-body > :first-child {
+    @apply mt-0;
+  }
+  .md-body > :last-child {
+    @apply mb-0;
+  }
+  .md-body p {
+    @apply my-2;
+  }
+  .md-body h1,
+  .md-body h2,
+  .md-body h3,
+  .md-body h4 {
+    @apply mb-1.5 mt-3 font-semibold leading-snug;
+  }
+  .md-body h1 {
+    @apply text-lg;
+  }
+  .md-body h2 {
+    @apply text-base;
+  }
+  .md-body h3,
+  .md-body h4 {
+    @apply text-sm;
+  }
+  .md-body ul,
+  .md-body ol {
+    @apply my-2 pl-5;
+  }
+  .md-body ul {
+    @apply list-disc;
+  }
+  .md-body ol {
+    @apply list-decimal;
+  }
+  .md-body li {
+    @apply my-0.5;
+  }
+  .md-body li > ul,
+  .md-body li > ol {
+    @apply my-0.5;
+  }
+  .md-body a {
+    @apply text-[var(--primary-color)] underline underline-offset-2;
+  }
+  .md-body strong {
+    @apply font-semibold;
+  }
+  .md-body code {
+    @apply rounded bg-[color-mix(in_srgb,var(--text-primary)_12%,transparent)] px-1 py-0.5 font-mono text-[0.85em];
+  }
+  .md-body pre {
+    @apply my-2 overflow-x-auto rounded-lg bg-[color-mix(in_srgb,var(--text-primary)_8%,transparent)] p-3 text-[0.85em];
+  }
+  .md-body pre code {
+    @apply bg-transparent p-0;
+  }
+  .md-body blockquote {
+    @apply my-2 border-l-2 border-[var(--border-color)] pl-3 text-[var(--text-secondary)];
+  }
+  .md-body hr {
+    @apply my-3 border-[var(--border-color)];
+  }
+  .md-body table {
+    @apply my-2 block w-full overflow-x-auto border-collapse text-[0.9em];
+  }
+  .md-body th,
+  .md-body td {
+    @apply border border-[var(--border-color)] px-2 py-1 text-left;
+  }
+  .md-body th {
+    @apply bg-[var(--bg-secondary)] font-semibold;
+  }
+
   /* 逐字浮現時的閃爍游標 */
   .type-caret {
     @apply ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] rounded-sm bg-[var(--primary-color)] align-middle;

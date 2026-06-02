@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Badge, Button, Input, type StatusBadgeVariant } from '@oa-agent/ui';
 import {
   api,
@@ -67,10 +69,11 @@ function TypewriterText({ text, onTick }: { text: string; onTick?: () => void })
 
   const done = count >= text.length;
   return (
-    <>
-      {text.slice(0, count)}
+    <div className="md-body">
+      {/* 逐字浮現：對已揭露的片段做 markdown 渲染（未閉合語法會短暫以原文呈現，屬正常） */}
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text.slice(0, count)}</ReactMarkdown>
       {!done && <span className="type-caret" aria-hidden />}
-    </>
+    </div>
   );
 }
 
