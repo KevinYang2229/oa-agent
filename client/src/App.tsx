@@ -194,12 +194,18 @@ export default function App() {
 
   function applyTurn(data: TurnData, sessionId: string | null) {
     if (data.id) setConvId(data.id);
+    // status 為上一輪的值（setState 尚未生效），用來判斷是否「剛進入」表單階段
+    const prevStatus = status;
     setStatus(data.status);
     setValues(data.values ?? {});
     setSubmission(data.submission ?? null);
     if (data.reply) pushMsg('agent', data.reply, data.suggestions);
 
-    if (data.status === 'confirming' || data.status === 'submitted') {
+    // 只在「剛填寫完畢（→confirming）」或「剛送出（→submitted）」的轉變當下主動開表單；
+    // 停留在同一狀態（例如 confirming 中繼續問話）不再強制彈出。
+    const enteredFormStage =
+      (data.status === 'confirming' || data.status === 'submitted') && data.status !== prevStatus;
+    if (enteredFormStage) {
       void loadAndShowForm(data.id ?? sessionId);
     }
   }
