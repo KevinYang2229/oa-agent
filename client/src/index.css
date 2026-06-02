@@ -47,11 +47,12 @@
   }
 
   /* ---- 版面 ---- */
+  /* 100dvh：用動態視窗高度，手機瀏覽器網址列收合時底部輸入框仍穩定貼底 */
   .app-shell {
-    @apply flex h-screen flex-col;
+    @apply flex h-[100dvh] flex-col;
   }
   .app-header {
-    @apply flex flex-wrap items-center gap-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3;
+    @apply flex shrink-0 flex-wrap items-center gap-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3;
     /* 手機版（≤640px）：縮小間距與內距 */
     @apply max-sm:gap-y-2 max-sm:px-4 max-sm:py-2.5;
   }
@@ -93,7 +94,7 @@
     @apply max-[720px]:flex-col;
   }
   .chat-pane {
-    @apply flex min-w-0 flex-1 flex-col;
+    @apply flex min-h-0 min-w-0 flex-1 flex-col;
     /* 窄螢幕：排在側欄下方，讓輸入框（composer）保持在最底部 */
     @apply max-[720px]:order-2;
   }
@@ -147,7 +148,7 @@
 
   /* ---- 輸入列 ---- */
   .composer {
-    @apply flex items-end gap-2.5 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3.5;
+    @apply flex shrink-0 items-end gap-2.5 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3.5;
   }
 
   /* ---- 側欄 ---- */
