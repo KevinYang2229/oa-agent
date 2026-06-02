@@ -5,9 +5,7 @@
 import type { Applicant } from "@oa-agent/shared";
 
 const DIRECTORY: Record<string, Omit<Applicant, "id">> = {
-  kevin: { name: "Kevin Yang", department: "資訊部", title: "前端工程師" },
-  //謝
-  eason: { name: "Eason H", department: "行銷部", title: "處長" },
+  kevin: { name: "Kevin Yang", department: "行銷部", title: "技術經理" },
 };
 
 /** 取申請人 profile；未知帳號回退為「以 userId 當顯示名、部門未知」 */

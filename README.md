@@ -6,14 +6,14 @@
 
 表單以 `schemas/<formId>/` 下的六層 JSON 定義，程式由此生成驗證與 Agent 工具：
 
-| 層 | 檔 | 用途 | MVP |
-|---|---|---|---|
-| Data | `data.schema.json` | 資料形狀（JSON Schema = OA 契約） | ✅ |
-| Field | `field.schema.json` | 欄位 UI 元件 + 標籤 + 選項 | ✅ |
-| Validation | `validation.schema.json` | 必填 + 跨欄商規 | ✅ |
-| Agent | `agent.schema.json` | 詢問順序、提示、確認話術 | ✅ |
-| Layout | `layout.schema.json` | 版面（optional seam） | 🔸 留著未用 |
-| Workflow | `workflow.schema.json` | 簽核流程（optional seam） | 🔸 留著未用 |
+| 層         | 檔                       | 用途                              | MVP         |
+| ---------- | ------------------------ | --------------------------------- | ----------- |
+| Data       | `data.schema.json`       | 資料形狀（JSON Schema = OA 契約） | ✅          |
+| Field      | `field.schema.json`      | 欄位 UI 元件 + 標籤 + 選項        | ✅          |
+| Validation | `validation.schema.json` | 必填 + 跨欄商規                   | ✅          |
+| Agent      | `agent.schema.json`      | 詢問順序、提示、確認話術          | ✅          |
+| Layout     | `layout.schema.json`     | 版面（optional seam）             | 🔸 留著未用 |
+| Workflow   | `workflow.schema.json`   | 簽核流程（optional seam）         | 🔸 留著未用 |
 
 新增一張表單 = 在 `schemas/` 加一個資料夾，**不需改編排層程式**。
 
@@ -45,13 +45,14 @@ client/src/FormView.tsx      只查 registry render，不寫死 switch
 
 ```css
 /* client/src/index.css */
-@import 'tailwindcss';
-@import '@oa-agent/ui/styles.css';   /* ← 元件共用 token + base */
+@import "tailwindcss";
+@import "@oa-agent/ui/styles.css"; /* ← 元件共用 token + base */
 ```
 
 （`@oa-agent/ui/styles.css` 對應 `ui/src/styles.css`，於 ui 的 package.json `exports` 宣告。）
 
 **接上你的設計系統**：
+
 1. 把元件放進 `ui/src/components/` 並從 `ui/src/index.ts` export。
 2. 在 `client/src/form/registry.tsx` import，寫一個把 `FieldControlProps`（`spec` / `value` / `onChange` / `disabled`）轉成該元件 props 的 adapter。
 3. 加進 `fieldRegistry`。FormView 不需改動。
@@ -83,14 +84,14 @@ npm run typecheck
 
 ## API（REST，全程繁中對話）
 
-| Method | Path | 說明 |
-|---|---|---|
-| POST | `/api/v1/conversations` | 建對話，可帶 `{ "message": "..." }` 起首輪 |
-| POST | `/api/v1/conversations/:id/messages` | 送一則訊息，跑一輪 |
-| PATCH | `/api/v1/conversations/:id/fields` | 確認畫面手動編輯欄位（不經 LLM，走 form.engine 驗證後存回） |
-| GET | `/api/v1/conversations/:id` | 取狀態 + 已填值 + 送出結果 |
-| POST | `/api/v1/conversations/:id/cancel` | 取消 |
-| GET | `/api/v1/forms` / `/api/v1/forms/:formId` | 列出 / 取得表單 Definition |
+| Method | Path                                      | 說明                                                        |
+| ------ | ----------------------------------------- | ----------------------------------------------------------- |
+| POST   | `/api/v1/conversations`                   | 建對話，可帶 `{ "message": "..." }` 起首輪                  |
+| POST   | `/api/v1/conversations/:id/messages`      | 送一則訊息，跑一輪                                          |
+| PATCH  | `/api/v1/conversations/:id/fields`        | 確認畫面手動編輯欄位（不經 LLM，走 form.engine 驗證後存回） |
+| GET    | `/api/v1/conversations/:id`               | 取狀態 + 已填值 + 送出結果                                  |
+| POST   | `/api/v1/conversations/:id/cancel`        | 取消                                                        |
+| GET    | `/api/v1/forms` / `/api/v1/forms/:formId` | 列出 / 取得表單 Definition                                  |
 
 > MVP 未接 JWT，使用者身分用 `x-user-id` header（預設 `demo-user`）。
 

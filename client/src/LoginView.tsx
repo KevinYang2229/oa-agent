@@ -10,7 +10,7 @@ export default function LoginView({
   onLogin: (user: Applicant) => void;
 }) {
   const { t } = useTranslation();
-  const [userId, setUserId] = useState("kevin");
+  const [userId, setUserId] = useState("hyweb");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function LoginView({
           <Input
             value={userId}
             autoFocus
-            placeholder="kevin"
+            placeholder="hyweb"
             onChange={(e) => setUserId(e.target.value)}
           />
         </label>

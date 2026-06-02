@@ -78,7 +78,7 @@ const zhHant = {
     loggingIn: "登入中…",
     loginFailed: "登入失敗",
     logout: "登出",
-    devHint: "測試帳號：kevin / eason ，密碼：oa1234",
+    devHint: "測試帳號：hyweb ，密碼：56610834",
   },
   settings: {
     title: "設定",
@@ -187,7 +187,7 @@ const en = {
     loggingIn: "Signing in…",
     loginFailed: "Sign-in failed",
     logout: "Sign out",
-    devHint: "Test accounts: kevin / eason, password: oa1234",
+    devHint: "Test accounts: hyweb, password: 56610834",
   },
   settings: {
     title: "Settings",
