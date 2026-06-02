@@ -42,5 +42,24 @@ export function buildTools(def: Definition): LLMTool[] {
         '「所有假別剩餘時數」等問題時呼叫。回傳每個假別的機器值與剩餘時數（查無資料的假別不會出現）。',
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
+    {
+      name: 'find_deputy_candidates',
+      description:
+        '查詢可指定為職務代理人的候選人清單。候選人「一律來自使用者的『我的最愛』」，' +
+        '可被推薦或選擇的代理人只能是最愛內的人員。' +
+        '可選用 department 在最愛之內再依部門篩選；省略則回全部最愛。' +
+        '當使用者要挑代理人、問「有誰可以當代理人」「我的最愛代理人」「行銷部有誰」時呼叫。' +
+        '回傳每位候選人的工號、姓名、部門、職稱；代理人欄位值請用「姓名(工號)」格式。',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          department: {
+            type: 'string',
+            description: '在「我的最愛」之內再依部門名稱篩選；省略時回全部最愛',
+          },
+        },
+        additionalProperties: false,
+      },
+    },
   ];
 }

@@ -12,6 +12,7 @@ import { getDefinition } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
+import { listDeputyCandidates } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
@@ -50,6 +51,9 @@ function buildSystemPrompt(def: Definition): string {
     '5. 使用者詢問假別剩餘／可用時數（例如「特休還有幾小時」「所有假別剩多少」）時，',
     '   呼叫 get_leave_balances 取得真實數字後再回答；以中文假別名稱呈現；',
     '   查無資料的假別請如實說明（例如「系統查無此假別額度」），切勿捏造時數。',
+    '6. 挑選職務代理人時，呼叫 find_deputy_candidates 取得候選清單（可帶 department 依部門篩選）。',
+    '   你只能推薦或填入清單（即使用者「我的最愛」）中的人員，切勿捏造或推薦清單外的人；',
+    '   候選人以「姓名(工號)」格式呈現。若使用者堅持指定清單外的人，可如實照填但不要主動推薦。',
   ].join('\n');
 }
 
@@ -128,6 +132,12 @@ async function dispatchTool(
     } catch (err) {
       return JSON.stringify({ ok: false, error: (err as Error).message });
     }
+  }
+
+  if (name === 'find_deputy_candidates') {
+    const department = typeof input.department === 'string' ? input.department : undefined;
+    const candidates = listDeputyCandidates({ requesterId: session.userId, department });
+    return JSON.stringify({ ok: true, candidates });
   }
 
   return JSON.stringify({ error: `unknown tool: ${name}` });

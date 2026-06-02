@@ -42,23 +42,31 @@ const envSchema = z.object({
   SMTP_PASS: z.string().default(''),
   MAIL_FROM: z.string().default('App <noreply@example.com>'),
 
-  // ---- LLM provider（可抽換層；MVP 預設 anthropic）----
-  LLM_PROVIDER: z.enum(['anthropic']).default('anthropic'),
+  // ---- LLM provider（可抽換層；支援 anthropic / openai）----
+  LLM_PROVIDER: z.enum(['anthropic', 'openai']).default('anthropic'),
   LLM_MODEL: z.string().default('claude-sonnet-4-5'),
   LLM_MAX_TOKENS: z.coerce.number().int().positive().default(1024),
   ANTHROPIC_API_KEY: z.string().default(''),
+  OPENAI_API_KEY: z.string().default(''),
 
   // ---- OA 連接器（MVP 預設 stub）----
   OA_CONNECTOR: z.enum(['stub']).default('stub'),
   OA_BASE_URL: z.string().optional(),
   OA_API_KEY: z.string().optional(),
 }).superRefine((val, ctx) => {
-  // provider=anthropic 時必須有 API key，boot 時 fail-fast
+  // 依 provider 要求對應的 API key，boot 時 fail-fast
   if (val.LLM_PROVIDER === 'anthropic' && !val.ANTHROPIC_API_KEY) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['ANTHROPIC_API_KEY'],
       message: 'ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic',
+    });
+  }
+  if (val.LLM_PROVIDER === 'openai' && !val.OPENAI_API_KEY) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['OPENAI_API_KEY'],
+      message: 'OPENAI_API_KEY is required when LLM_PROVIDER=openai',
     });
   }
 });
