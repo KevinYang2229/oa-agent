@@ -23,8 +23,13 @@ export function createApp(): Express {
   app.use(express.json({ limit: '1mb' }));
   app.use(requestLogger);
 
+  // 健康檢查：server 能啟動即代表 LLM provider 的 API key 通過 env 驗證（見 config/env fail-fast），
+  // 故回報 provider/model 供前端顯示「AI 已連線」。此處不實際呼叫 LLM，避免額外費用與延遲。
   app.get('/healthz', (_req, res) => {
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json({
+      status: 'ok',
+      llm: { provider: env.LLM_PROVIDER, model: env.LLM_MODEL },
+    });
   });
 
   // 公開：登入 / 換發 token

@@ -35,6 +35,12 @@ const zhHant = {
   app: {
     title: "OA Agent",
     greeting: "你好，我是 OA 小幫手。直接用自然語言描述你的需求即可 👋",
+    aiName: "AI 小幫手",
+    conn: {
+      checking: "連線中…",
+      online: "已連線",
+      offline: "未連線",
+    },
     user: "使用者",
     statusLabel: "狀態",
     statusInitial: "尚未開始",
@@ -151,6 +157,12 @@ const en = {
     title: "OA Agent",
     greeting:
       "Hi, I'm the OA assistant. Just describe your request in your own words 👋",
+    aiName: "AI Assistant",
+    conn: {
+      checking: "Connecting…",
+      online: "Connected",
+      offline: "Offline",
+    },
     user: "User",
     statusLabel: "Status",
     statusInitial: "Not started",

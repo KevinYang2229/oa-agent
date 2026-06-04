@@ -25,11 +25,24 @@ interface ChatMessage {
   id: number;
   role: Role;
   text: string;
+  /** 訊息送出時間（epoch ms），用來在氣泡下方顯示日期時間 */
+  at: number;
   /** Agent 訊息附帶的建議回覆；僅最新一則會在 UI 顯示為快捷按鈕 */
   suggestions?: string[];
 }
 
+// 氣泡下方時間：YYYY-MM-DD HH:mm:ss
+function formatTime(ms: number): string {
+  const d = new Date(ms);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(
+    d.getMinutes(),
+  )}:${p(d.getSeconds())}`;
+}
+
 type Theme = 'light' | 'dark';
+// AI 連線狀態：checking 連線中 / online 已連線（AI 可正常呼叫）/ offline 未連線
+type Conn = 'checking' | 'online' | 'offline';
 
 // session 狀態 → 設計系統 Badge 的 status 變體
 const STATUS_BADGE: Record<SessionStatus, StatusBadgeVariant> = {
@@ -92,10 +105,11 @@ export default function App() {
   const [submission, setSubmission] = useState<SubmissionInfo | null>(null);
   const [balances, setBalances] = useState<LeaveBalance[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: nextId(), role: 'agent', text: t('app.greeting') },
+    { id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() },
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [conn, setConn] = useState<Conn>('checking');
   const [formDef, setFormDef] = useState<Definition | null>(null);
   const [showForm, setShowForm] = useState(false);
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
@@ -150,6 +164,22 @@ export default function App() {
     scrollToEnd();
   }, [messages, busy, scrollToEnd]);
 
+  // AI 連線狀態：登入後探測 /healthz（server 起得來＝LLM key 已通過驗證），並每 30s 重探一次
+  useEffect(() => {
+    if (!authUser) return;
+    let alive = true;
+    const ping = async () => {
+      const ok = await api.health();
+      if (alive) setConn(ok ? 'online' : 'offline');
+    };
+    void ping();
+    const timer = setInterval(ping, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, [authUser]);
+
   // 假別剩餘時數：登入後依使用者載入，供表單顯示「今年度剩餘 N 小時」
   useEffect(() => {
     if (!authUser) return;
@@ -164,7 +194,7 @@ export default function App() {
   }, [authUser]);
 
   function pushMsg(role: Role, text: string, suggestions?: string[]) {
-    setMessages((prev) => [...prev, { id: nextId(), role, text, suggestions }]);
+    setMessages((prev) => [...prev, { id: nextId(), role, text, suggestions, at: Date.now() }]);
   }
 
   // 對話已不存在（多半是後端重啟導致記憶體 session 遺失）。404 → 視為連線重置
@@ -182,7 +212,7 @@ export default function App() {
 
   function handleLogin(user: Applicant) {
     setAuthUser(user);
-    setMessages([{ id: nextId(), role: 'agent', text: t('app.greeting') }]);
+    setMessages([{ id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() }]);
   }
 
   function handleLogout() {
@@ -233,11 +263,14 @@ export default function App() {
         ? await api.sendMessage(userId, convId, message)
         : await api.start(userId, message);
       applyTurn(data, convId);
+      setConn('online'); // 成功通一輪＝確定連線正常
     } catch (e) {
       if (isSessionGone(e)) {
         resetSessionState();
         pushMsg('sys', t('app.sessionExpired'));
       } else {
+        // 非 API 錯誤（多為網路不可達）才視為離線；API 回傳的業務錯誤仍代表連線正常
+        if (!(e instanceof ApiError)) setConn('offline');
         pushMsg('sys', '⚠️ ' + (e instanceof Error ? e.message : t('app.requestFailed')));
       }
     } finally {
@@ -326,8 +359,8 @@ export default function App() {
     setSubmission(null);
     setShowForm(false);
     setMessages([
-      { id: nextId(), role: 'agent', text: t('app.greeting') },
-      { id: nextId(), role: 'sys', text: t('app.restarted') },
+      { id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() },
+      { id: nextId(), role: 'sys', text: t('app.restarted'), at: Date.now() },
     ]);
     taRef.current?.focus();
   }
@@ -344,7 +377,19 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1 className="app-title">{t('app.title')}</h1>
+        {/* 品牌：AI 小幫手 + 連線狀態圓點（綠＝已連線，AI 可正常呼叫） */}
+        <div className="app-brand">
+          <h1 className="app-title">{t('app.aiName')}</h1>
+          <span
+            className={`conn conn-${conn}`}
+            role="status"
+            aria-live="polite"
+            title={t(`app.conn.${conn}`)}
+          >
+            <span className="conn-dot" aria-hidden="true" />
+            {t(`app.conn.${conn}`)}
+          </span>
+        </div>
 
         {/* 其餘控制項整組靠右；空間夠 inline，不夠自動換行 */}
         <div className="app-collapse">
@@ -400,15 +445,29 @@ export default function App() {
       <div className="app-body">
         <div className="chat-pane">
           <div className="msg-list" ref={listRef}>
-            {messages.map((m) => (
-              <div key={m.id} className={`bubble bubble-${m.role}`}>
-                {m.role === 'agent' ? (
-                  <TypewriterText text={m.text} onTick={scrollToEnd} />
-                ) : (
-                  m.text
-                )}
-              </div>
-            ))}
+            {messages.map((m) =>
+              m.role === 'sys' ? (
+                <div key={m.id} className="bubble bubble-sys">
+                  {m.text}
+                </div>
+              ) : (
+                <div key={m.id} className={`msg msg-${m.role}`}>
+                  {/* 對象名稱：AI 視窗顯示 AI 名稱，使用者訊息顯示登入者名稱 */}
+                  <span className="msg-name">
+                    {m.role === 'agent' ? t('app.aiName') : authUser.name}
+                  </span>
+                  <div className={`bubble bubble-${m.role}`}>
+                    {m.role === 'agent' ? (
+                      <TypewriterText text={m.text} onTick={scrollToEnd} />
+                    ) : (
+                      m.text
+                    )}
+                  </div>
+                  {/* 送出日期時間 */}
+                  <span className="msg-time">{formatTime(m.at)}</span>
+                </div>
+              ),
+            )}
             {busy && (
               <div className="bubble-typing" aria-label={t('app.typing')}>
                 <span className="typing-dot" />
