@@ -19,7 +19,14 @@ export function createApp(): Express {
 
   app.disable('x-powered-by');
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+  // CORS 來源：支援以逗號分隔的多個來源（例如前端在 5173 / 5174 都能呼叫）；'*' 則全部放行
+  const corsOrigin =
+    env.CORS_ORIGIN === '*'
+      ? '*'
+      : env.CORS_ORIGIN.split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+  app.use(cors({ origin: corsOrigin, credentials: true }));
   app.use(express.json({ limit: '1mb' }));
   app.use(requestLogger);
 
