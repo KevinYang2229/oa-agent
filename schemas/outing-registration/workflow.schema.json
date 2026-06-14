@@ -1,0 +1,5 @@
+{
+  "steps": [
+    { "type": "manager", "name": "主管審核" }
+  ]
+}

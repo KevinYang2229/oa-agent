@@ -10,6 +10,7 @@ import {
   setUnauthorizedHandler,
   type Applicant,
   type Definition,
+  type FormSummary,
   type LeaveBalance,
   type SessionStatus,
   type SubmissionInfo,
@@ -112,6 +113,9 @@ export default function App() {
   const [conn, setConn] = useState<Conn>('checking');
   const [formDef, setFormDef] = useState<Definition | null>(null);
   const [showForm, setShowForm] = useState(false);
+  // 可辦理的表單清單與目前選取的類型（新對話開始時帶給 server；未選則由 server 意圖路由）
+  const [forms, setForms] = useState<FormSummary[]>([]);
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
   const [paneOpen, setPaneOpen] = useState(true);
   const [theme, setTheme] = useState<Theme>(
@@ -177,6 +181,23 @@ export default function App() {
     return () => {
       alive = false;
       clearInterval(timer);
+    };
+  }, [authUser]);
+
+  // 可辦理的表單清單：登入後載入，供表單類型選單；預設選第一個（請假）
+  useEffect(() => {
+    if (!authUser) return;
+    let alive = true;
+    api
+      .listForms()
+      .then((list) => {
+        if (!alive) return;
+        setForms(list);
+        // 不預選：使用者先選辦理項目，才顯示該表單的動態提示按鈕
+      })
+      .catch(() => alive && setForms([]));
+    return () => {
+      alive = false;
     };
   }, [authUser]);
 
@@ -261,7 +282,7 @@ export default function App() {
     try {
       const data = convId
         ? await api.sendMessage(userId, convId, message)
-        : await api.start(userId, message);
+        : await api.start(userId, message, selectedFormId ?? undefined);
       applyTurn(data, convId);
       setConn('online'); // 成功通一輪＝確定連線正常
     } catch (e) {
@@ -306,8 +327,12 @@ export default function App() {
         }
       }
       pushMsg('user', t('app.confirm'));
-      const turn = await api.sendMessage(userId, convId, '確認');
+      // 直接走確定送出端點（不經 LLM），確保按一次即送出
+      const turn = await api.submit(userId, convId);
       applyTurn(turn, convId);
+      if (turn.submission) {
+        pushMsg('agent', t('app.submittedMsg', { id: turn.submission.oaRequestId }));
+      }
     } finally {
       setBusy(false);
     }
@@ -350,8 +375,9 @@ export default function App() {
     setInput('');
     void send(text);
   }
-  // 開場引導用的範例提示（i18n 陣列）；對話開始後就不再顯示
-  const quickPrompts = t('app.quickPrompts', { returnObjects: true }) as string[];
+  // 開場引導用的範例提示：取目前選取表單的範例語句（純動態，依辦理項目而定）；對話開始後就不再顯示
+  const selectedForm = forms.find((f) => f.formId === selectedFormId);
+  const quickPrompts = selectedForm?.examples ?? [];
 
   // 建議回覆：只取「最新一則 agent 訊息」附帶的建議，作為可一鍵送出的快捷按鈕
   const lastMsg = messages[messages.length - 1];
@@ -487,8 +513,27 @@ export default function App() {
             )}
           </div>
 
-          {/* 開場引導：對話尚未開始時，提供可一鍵送出的範例提示 */}
-          {!convId && !busy && quickPrompts.length > 0 && (
+          {/* 表單類型選單：對話開始前常駐顯示，選中高亮；切換項目一鍵即可 */}
+          {!convId && !busy && forms.length > 1 && (
+            <div className="form-picker">
+              <span className="form-picker-hint">{t('app.formPickerHint')}</span>
+              {forms.map((f) => (
+                <button
+                  key={f.formId}
+                  type="button"
+                  className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
+                  onClick={() => setSelectedFormId(f.formId)}
+                  title={f.description}
+                  aria-pressed={selectedFormId === f.formId}
+                >
+                  {f.title}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 開場引導：需先選定辦理項目，才顯示該表單的動態範例提示 */}
+          {!convId && !busy && selectedFormId && quickPrompts.length > 0 && (
             <div className="quick-bar">
               <span className="quick-hint">{t('app.quickHint')}</span>
               {quickPrompts.map((p) => (

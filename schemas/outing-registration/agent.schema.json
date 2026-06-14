@@ -1,0 +1,39 @@
+{
+  "intent": "outing-registration",
+  "description": "員工外出登記，需要外出人、主題、出發地點、目的地、外出與返回的日期時間、是否需報銷",
+  "examples": [
+    "我要登記外出",
+    "我下午要外出拜訪客戶",
+    "幫我填外出單",
+    "我明天要出去開會，登記一下"
+  ],
+  "keywords": ["外出", "出差", "拜訪", "外勤", "出去", "外出登記", "外出單"],
+  "askOrder": [
+    "applicant",
+    "subject",
+    "fromLocation",
+    "toLocation",
+    "departDate",
+    "departTime",
+    "returnDate",
+    "returnTime",
+    "needReimbursement",
+    "notifyPersons",
+    "remark"
+  ],
+  "fieldGuidance": {
+    "applicant": "已自動帶入目前登入者，除非使用者明確表示要『代人登記』，否則不需詢問或更動。",
+    "onBehalf": "若使用者表示是替他人登記外出，設為 true。",
+    "subject": "詢問外出主題（這趟外出要做什麼）",
+    "fromLocation": "詢問出發地點，例如台北辦公室",
+    "toLocation": "詢問目的地，例如客戶現場、軟體園區",
+    "departDate": "詢問外出日期，將相對日期（今天、明天、下週一）換算成 YYYY-MM-DD",
+    "departTime": "詢問外出時間 HH:mm",
+    "returnDate": "詢問返回日期；若當天往返，返回日期同外出日期",
+    "returnTime": "詢問返回時間 HH:mm",
+    "needReimbursement": "詢問是否需報銷（是 yes／否 no）。外出登記關係著差旅費報銷，請確認。",
+    "notifyPersons": "選填，詢問是否有需要通知的人員；沒有可略過。",
+    "remark": "選填，詢問是否有備註；沒有可略過。"
+  },
+  "confirmationTemplate": "請確認：外出人 {applicant}，主題 {subject}，{fromLocation} 前往 {toLocation}，{departDate} {departTime} 至 {returnDate} {returnTime}，是否需報銷：{needReimbursement}。回覆「確認」即送出。"
+}

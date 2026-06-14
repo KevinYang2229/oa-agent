@@ -99,6 +99,8 @@ export interface AgentSchema {
   intent: string;
   description: string;
   examples?: string[];
+  /** 意圖路由關鍵字：使用者未明確指定表單時，比對訊息命中數決定 formId */
+  keywords?: string[];
   askOrder?: string[];
   fieldGuidance?: Record<string, string>;
   confirmationTemplate?: string;

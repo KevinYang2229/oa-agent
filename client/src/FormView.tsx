@@ -158,22 +158,30 @@ export default function FormView({
       const list = ((submitted ? values[key] : draft[key]) as Attachment[] | undefined) ?? [];
       return (
         <div className="form-field form-field--full" key={key}>
-          <FileUploader
-            title={spec.label}
-            initialFiles={list}
-            readOnly={submitted}
-            disabled={busy}
-            accept={ATTACHMENT_ACCEPT}
-            maxFileSizeMB={10}
-            maxFiles={10}
-            onUpload={(file) =>
-              onUploadAttachment
-                ? onUploadAttachment(file)
-                : Promise.reject(new Error(t('form.submit')))
-            }
-            onDelete={(id) => (onDeleteAttachment ? onDeleteAttachment(id) : Promise.resolve())}
-            onChange={(next) => setRawField(key, next)}
-          />
+          {/* 附件欄位的標籤與其他欄位一致（form-label）；FileUploader 不再顯示自帶標題列 */}
+          <dt className="form-label">
+            {spec.label}
+            {required.has(key) && <span className="form-required">*</span>}
+          </dt>
+          <dd className="form-value">
+            <FileUploader
+              showHeader={false}
+              supportedFormatsText={spec.help}
+              initialFiles={list}
+              readOnly={submitted}
+              disabled={busy}
+              accept={ATTACHMENT_ACCEPT}
+              maxFileSizeMB={10}
+              maxFiles={10}
+              onUpload={(file) =>
+                onUploadAttachment
+                  ? onUploadAttachment(file)
+                  : Promise.reject(new Error(t('form.submit')))
+              }
+              onDelete={(id) => (onDeleteAttachment ? onDeleteAttachment(id) : Promise.resolve())}
+              onChange={(next) => setRawField(key, next)}
+            />
+          </dd>
         </div>
       );
     }

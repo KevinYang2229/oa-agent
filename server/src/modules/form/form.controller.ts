@@ -7,6 +7,7 @@ export const formController = {
       formId: d.formId,
       title: d.data.title ?? d.formId,
       description: d.agent.description,
+      examples: d.agent.examples ?? [],
     }));
     res.status(200).json({ data });
   },

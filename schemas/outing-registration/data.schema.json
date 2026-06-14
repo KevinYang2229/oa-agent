@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "formId": "outing-registration",
+  "title": "外出登記",
+  "type": "object",
+  "properties": {
+    "onBehalf": {
+      "type": "boolean",
+      "description": "代人申請（填單人是否替他人登記外出）"
+    },
+    "applicant": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "外出人，格式：姓名(工號)"
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "外出主題 / subject"
+    },
+    "fromLocation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "出發地點"
+    },
+    "toLocation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "目的地"
+    },
+    "departDate": {
+      "type": "string",
+      "format": "date",
+      "description": "外出日期 YYYY-MM-DD"
+    },
+    "departTime": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "外出時間 HH:mm"
+    },
+    "returnDate": {
+      "type": "string",
+      "format": "date",
+      "description": "返回日期 YYYY-MM-DD"
+    },
+    "returnTime": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "返回時間 HH:mm"
+    },
+    "needReimbursement": {
+      "type": "string",
+      "enum": ["yes", "no"],
+      "description": "是否需報銷 / whether reimbursement is needed"
+    },
+    "notifyPersons": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "需通知人員（選填）"
+    },
+    "remark": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "備註（選填）"
+    }
+  },
+  "additionalProperties": false
+}

@@ -11,11 +11,12 @@ function resolveUserId(req: Request): string {
 export const conversationController = {
   async start(req: Request, res: Response): Promise<void> {
     const userId = resolveUserId(req);
-    const { message } = req.body as StartInput;
-    const { session, turn } = await conversationService.start(userId, message);
+    const { message, formId } = req.body as StartInput;
+    const { session, turn } = await conversationService.start(userId, message, formId);
     res.status(201).json({
       data: {
         id: session.id,
+        formId: session.formId,
         status: session.status,
         values: session.values,
         reply: turn?.reply ?? null,
@@ -28,6 +29,13 @@ export const conversationController = {
     const userId = resolveUserId(req);
     const { message } = req.body as MessageInput;
     const turn = await conversationService.sendMessage(userId, String(req.params.id), message);
+    res.status(200).json({ data: turn });
+  },
+
+  /** 確認送出（不經 LLM，確認畫面按「送出」用）；回傳含 submission 的 turn */
+  async submit(req: Request, res: Response): Promise<void> {
+    const userId = resolveUserId(req);
+    const turn = await conversationService.submit(userId, String(req.params.id));
     res.status(200).json({ data: turn });
   },
 

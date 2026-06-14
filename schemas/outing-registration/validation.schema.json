@@ -1,0 +1,23 @@
+{
+  "required": [
+    "applicant",
+    "subject",
+    "fromLocation",
+    "toLocation",
+    "departDate",
+    "departTime",
+    "returnDate",
+    "returnTime",
+    "needReimbursement"
+  ],
+  "rules": [
+    {
+      "id": "returnAfterDepart",
+      "type": "compareField",
+      "field": "returnDate",
+      "op": ">=",
+      "other": "departDate",
+      "message": "返回日期不可早於外出日期"
+    }
+  ]
+}

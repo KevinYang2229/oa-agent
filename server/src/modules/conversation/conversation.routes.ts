@@ -34,6 +34,13 @@ router.patch(
   asyncHandler(conversationController.updateFields),
 );
 
+// 確認送出（不經 LLM）：確認畫面按「送出」用
+router.post(
+  '/:id/submit',
+  validate({ params: idParamSchema }),
+  asyncHandler(conversationController.submit),
+);
+
 router.post(
   '/:id/cancel',
   validate({ params: idParamSchema }),

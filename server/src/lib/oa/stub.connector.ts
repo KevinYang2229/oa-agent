@@ -4,10 +4,17 @@
  */
 import { randomUUID } from 'node:crypto';
 import { logger } from '@/lib/logger';
-import type { LeaveBalance, LeaveRequestPayload, OAConnector, OASubmitResult } from './types';
+import type {
+  LeaveBalance,
+  LeaveRequestPayload,
+  OAConnector,
+  OASubmitResult,
+  OutingRegistrationPayload,
+} from './types';
 
 // MVP 以記憶體保存送出紀錄，方便 demo 後檢視
 export const stubSubmissions: Array<LeaveRequestPayload & { oaRequestId: string }> = [];
+export const stubOutingSubmissions: Array<OutingRegistrationPayload & { oaRequestId: string }> = [];
 
 export const stubOAConnector: OAConnector = {
   name: 'stub',
@@ -16,6 +23,13 @@ export const stubOAConnector: OAConnector = {
     const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
     stubSubmissions.push({ ...payload, oaRequestId });
     logger.info({ oaRequestId, payload }, '[oa:stub] leave request submitted');
+    return { oaRequestId, status: 'accepted', raw: { echo: payload } };
+  },
+
+  async submitOutingRegistration(payload: OutingRegistrationPayload): Promise<OASubmitResult> {
+    const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
+    stubOutingSubmissions.push({ ...payload, oaRequestId });
+    logger.info({ oaRequestId, payload }, '[oa:stub] outing registration submitted');
     return { oaRequestId, status: 'accepted', raw: { echo: payload } };
   },
 

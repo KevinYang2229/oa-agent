@@ -12,6 +12,7 @@ import { getDefinition } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
+import { outingService } from '@/modules/outing/outing.service';
 import { listDeputyCandidates } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
@@ -37,26 +38,54 @@ function describeFields(def: Definition): string {
 
 function buildSystemPrompt(def: Definition): string {
   const today = new Date().toISOString().slice(0, 10);
-  return [
+  const hasLeaveType = 'leaveType' in def.data.properties;
+  const hasDeputy = 'deputy' in def.data.properties;
+  const hasHours = !!def.policy;
+
+  // 工作方式步驟依表單能力動態組裝：只在對應工具存在時才指示模型呼叫，避免要求外出登記等
+  // 表單呼叫不存在的工具（compute_leave_hours / get_leave_balances / find_deputy_candidates）。
+  const steps: string[] = [
+    '1. 從使用者訊息擷取可得欄位值，呼叫 fill_fields 一次填入。',
+    '2. 依工具回傳的 missing/invalid，用友善的繁中逐一詢問還缺的必填欄位。',
+  ];
+  if (hasHours) {
+    steps.push(
+      '3. 必填齊全後，先呼叫 compute_leave_hours 取得本次請假時數，再用繁中摘要整張表單',
+      '   （假別用中文、列出日期時間、事由，並附上「本次請假時數：N 小時」），請使用者回覆「確認」。',
+    );
+  } else {
+    steps.push(
+      '3. 必填齊全後，用繁中摘要整張表單（逐項列出已填欄位，可參考確認語句範本），請使用者回覆「確認」。',
+    );
+  }
+  steps.push('4. 只有使用者明確回覆「確認」後才呼叫 submit；切勿自行送出，也不要捏造任何值。');
+  if (hasLeaveType) {
+    steps.push(
+      '5. 使用者詢問假別剩餘／可用時數（例如「特休還有幾小時」「所有假別剩多少」）時，',
+      '   呼叫 get_leave_balances 取得真實數字後再回答；以中文假別名稱呈現；',
+      '   查無資料的假別請如實說明（例如「系統查無此假別額度」），切勿捏造時數。',
+    );
+  }
+  if (hasDeputy) {
+    steps.push(
+      '6. 挑選職務代理人時，呼叫 find_deputy_candidates 取得候選清單（可帶 department 依部門篩選）。',
+      '   你只能推薦或填入清單（即使用者「我的最愛」）中的人員，切勿捏造或推薦清單外的人；',
+      '   候選人以「姓名(工號)」格式呈現。若使用者堅持指定清單外的人，可如實照填但不要主動推薦。',
+    );
+  }
+
+  const lines = [
     `你是公司 OA 系統的「${def.agent.description}」助理，全程使用繁體中文。`,
     `今天日期是 ${today}；請把相對日期（明天、下週一等）換算成 YYYY-MM-DD。`,
     '',
-    '表單欄位（填入 fill_fields 時請用機器值，例如假別 annual/sick）：',
+    '表單欄位（填入 fill_fields 時請用機器值，例如假別 annual/sick、是否需報銷 yes/no）：',
     describeFields(def),
-    '',
-    '工作方式：',
-    '1. 從使用者訊息擷取可得欄位值，呼叫 fill_fields 一次填入。',
-    '2. 依工具回傳的 missing/invalid，用友善的繁中逐一詢問還缺的必填欄位。',
-    '3. 必填齊全後，先呼叫 compute_leave_hours 取得本次請假時數，再用繁中摘要整張表單',
-    '   （假別用中文、列出日期時間、事由，並附上「本次請假時數：N 小時」），請使用者回覆「確認」。',
-    '4. 只有使用者明確回覆「確認」後才呼叫 submit；切勿自行送出，也不要捏造任何值。',
-    '5. 使用者詢問假別剩餘／可用時數（例如「特休還有幾小時」「所有假別剩多少」）時，',
-    '   呼叫 get_leave_balances 取得真實數字後再回答；以中文假別名稱呈現；',
-    '   查無資料的假別請如實說明（例如「系統查無此假別額度」），切勿捏造時數。',
-    '6. 挑選職務代理人時，呼叫 find_deputy_candidates 取得候選清單（可帶 department 依部門篩選）。',
-    '   你只能推薦或填入清單（即使用者「我的最愛」）中的人員，切勿捏造或推薦清單外的人；',
-    '   候選人以「姓名(工號)」格式呈現。若使用者堅持指定清單外的人，可如實照填但不要主動推薦。',
-  ].join('\n');
+  ];
+  if (def.agent.confirmationTemplate) {
+    lines.push('', `確認語句範本：${def.agent.confirmationTemplate}`);
+  }
+  lines.push('', '工作方式：', ...steps);
+  return lines.join('\n');
 }
 
 interface DispatchCtx {
@@ -112,7 +141,10 @@ async function dispatchTool(
     }
     session.status = 'submitting';
     try {
-      const result = await leaveService.submit(session.userId, session.values);
+      // 依表單類型選擇送出 service（外出登記 / 請假…）
+      const submit =
+        session.formId === 'outing-registration' ? outingService.submit : leaveService.submit;
+      const result = await submit(session.userId, session.values);
       session.status = 'submitted';
       session.submission = {
         oaRequestId: result.oaRequestId,

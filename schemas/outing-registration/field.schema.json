@@ -1,0 +1,60 @@
+{
+  "onBehalf": {
+    "component": "Checkbox",
+    "label": "代人申請"
+  },
+  "applicant": {
+    "component": "Input",
+    "label": "外出人",
+    "placeholder": "姓名(工號)"
+  },
+  "subject": {
+    "component": "Input",
+    "label": "主題",
+    "placeholder": "請輸入外出主題"
+  },
+  "fromLocation": {
+    "component": "Input",
+    "label": "出發地點",
+    "placeholder": "例如 台北辦公室"
+  },
+  "toLocation": {
+    "component": "Input",
+    "label": "目的地",
+    "placeholder": "例如 客戶現場、台中軟體園區"
+  },
+  "departDate": {
+    "component": "DatePicker",
+    "label": "外出日期"
+  },
+  "departTime": {
+    "component": "TimePicker",
+    "label": "外出時間"
+  },
+  "returnDate": {
+    "component": "DatePicker",
+    "label": "返回日期"
+  },
+  "returnTime": {
+    "component": "TimePicker",
+    "label": "返回時間"
+  },
+  "needReimbursement": {
+    "component": "Select",
+    "label": "是否需報銷",
+    "options": [
+      { "value": "yes", "label": "是" },
+      { "value": "no", "label": "否" }
+    ]
+  },
+  "notifyPersons": {
+    "component": "Textarea",
+    "label": "需通知人員",
+    "placeholder": "選填，列出需通知的人員"
+  },
+  "remark": {
+    "component": "Textarea",
+    "label": "備註",
+    "placeholder": "選填"
+  }
+}

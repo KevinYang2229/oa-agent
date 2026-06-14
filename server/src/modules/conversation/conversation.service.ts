@@ -1,8 +1,10 @@
 import type { Attachment } from '@oa-agent/shared';
-import { computeStatus, setField } from '@/modules/form/form.engine';
-import { getDefinition } from '@/modules/form/form.registry';
+import { refreshApprovals } from '@/modules/form/approvals';
+import { computeStatus, setField, validateAll } from '@/modules/form/form.engine';
+import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
+import { outingService } from '@/modules/outing/outing.service';
 import { getApplicant } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
@@ -10,13 +12,35 @@ import { runTurn } from './conversation.agent';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
 
-// MVP 僅請假單；之後 intent routing 在此決定 formId
-const MVP_FORM_ID = 'leave-request';
+// 未指定 formId 且無法路由時的預設表單
+const DEFAULT_FORM_ID = 'leave-request';
 
 /** 申請人欄位值格式：姓名(工號)，與真實 OA 畫面一致 */
 function formatApplicant(userId: string): string {
   const profile = getApplicant(userId);
   return `${profile.name}(${profile.id})`;
+}
+
+/**
+ * 意圖路由：使用者未明確指定表單時，以訊息比對各表單 agent.keywords 命中數，取最高分者；
+ * 無命中或無訊息則回預設表單（維持原請假行為）。
+ */
+function routeIntent(message?: string): string {
+  const text = message?.trim();
+  if (!text) return DEFAULT_FORM_ID;
+  let best = DEFAULT_FORM_ID;
+  let bestScore = 0;
+  for (const def of listDefinitions()) {
+    const score = (def.agent.keywords ?? []).reduce(
+      (n, kw) => (kw && text.includes(kw) ? n + 1 : n),
+      0,
+    );
+    if (score > bestScore) {
+      bestScore = score;
+      best = def.formId;
+    }
+  }
+  return best;
 }
 
 export interface UpdateFieldsResult extends TurnResult {
@@ -25,10 +49,18 @@ export interface UpdateFieldsResult extends TurnResult {
 }
 
 export const conversationService = {
-  async start(userId: string, message?: string): Promise<{ session: Session; turn?: TurnResult }> {
-    const session = conversationStore.create(userId, MVP_FORM_ID);
-    // 申請人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
-    session.values.applicant = formatApplicant(userId);
+  async start(
+    userId: string,
+    message?: string,
+    formId?: string,
+  ): Promise<{ session: Session; turn?: TurnResult }> {
+    // 表單選擇：明確指定優先，否則依首句意圖路由（皆驗證表單存在）
+    const def = getDefinition(formId ?? routeIntent(message));
+    const session = conversationStore.create(userId, def.formId);
+    // 申請人／外出人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
+    if ('applicant' in def.data.properties) {
+      session.values.applicant = formatApplicant(userId);
+    }
     conversationStore.save(session);
     if (message && message.trim()) {
       const turn = await runTurn(session, message);
@@ -42,6 +74,59 @@ export const conversationService = {
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
     return runTurn(session, message);
+  },
+
+  /**
+   * 確認送出（不經 LLM）：確認畫面按「送出」時呼叫。直接驗證 session.values 並送出，
+   * 不依賴模型是否於對話中呼叫 submit 工具——避免「第一次按送出沒送出、要按第二次」。
+   */
+  async submit(userId: string, id: string): Promise<TurnResult> {
+    const session = conversationStore.get(id, userId);
+    if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
+    if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
+
+    const def = getDefinition(session.formId);
+    const issues = validateAll(def, session.values);
+    if (issues.length > 0) {
+      throw AppError.unprocessable('表單尚有欄位未完成，無法送出', issues);
+    }
+
+    session.status = 'submitting';
+    try {
+      // 依表單類型選擇送出 service（外出登記 / 請假…），與 agent 工具一致
+      const submitForm =
+        session.formId === 'outing-registration' ? outingService.submit : leaveService.submit;
+      const result = await submitForm(userId, session.values);
+      session.status = 'submitted';
+      session.submission = {
+        oaRequestId: result.oaRequestId,
+        status: result.status,
+        submittedAt: result.submittedAt,
+        approvals: result.approvals,
+      };
+      // 已送出：附件 metadata 已隨 payload 交付，清掉本地暫存的檔案內容
+      attachmentStore.clearSession(session.id);
+    } catch (err) {
+      session.status = 'failed';
+      conversationStore.save(session);
+      throw err;
+    }
+
+    // 在逐字稿留下確認/送出紀錄，維持對話一致
+    session.messages.push({ role: 'user', content: [{ type: 'text', text: '確認' }] });
+    session.messages.push({
+      role: 'assistant',
+      content: [{ type: 'text', text: `已送出，OA 單號：${session.submission.oaRequestId}。` }],
+    });
+    conversationStore.save(session);
+
+    return {
+      reply: '',
+      status: session.status,
+      values: session.values,
+      submission: session.submission,
+      suggestions: [],
+    };
   },
 
   /**
@@ -134,7 +219,7 @@ export const conversationService = {
     if (session.submission?.approvals?.length) {
       session.submission = {
         ...session.submission,
-        approvals: leaveService.refreshApprovals(
+        approvals: refreshApprovals(
           session.submission.approvals,
           session.submission.submittedAt,
         ),

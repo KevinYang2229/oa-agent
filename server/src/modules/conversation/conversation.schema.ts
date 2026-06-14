@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const startSchema = z.object({
   message: z.string().trim().min(1).optional(),
+  /** 明確指定要辦理的表單；省略時由 server 依首句意圖路由 */
+  formId: z.string().trim().min(1).optional(),
 });
 
 export const messageSchema = z.object({

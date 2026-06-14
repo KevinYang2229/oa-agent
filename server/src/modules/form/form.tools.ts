@@ -35,14 +35,22 @@ export function buildTools(def: Definition): LLMTool[] {
         '在所有必填欄位齊全、且使用者已明確回覆「確認」後呼叫，送出表單進入簽核。',
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
-    {
+  ];
+
+  // 假別剩餘時數查詢：僅請假類表單（有 leaveType 欄位）提供
+  if ('leaveType' in def.data.properties) {
+    tools.push({
       name: 'get_leave_balances',
       description:
         '查詢目前登入使用者各假別的可用（剩餘）時數。當使用者詢問「還有多少假」「特休剩幾小時」' +
         '「所有假別剩餘時數」等問題時呼叫。回傳每個假別的機器值與剩餘時數（查無資料的假別不會出現）。',
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-    },
-    {
+    });
+  }
+
+  // 職務代理人候選查詢：僅含 deputy 欄位的表單提供
+  if ('deputy' in def.data.properties) {
+    tools.push({
       name: 'find_deputy_candidates',
       description:
         '查詢可指定為職務代理人的候選人清單。候選人「一律來自使用者的『我的最愛』」，' +
@@ -60,8 +68,8 @@ export function buildTools(def: Definition): LLMTool[] {
         },
         additionalProperties: false,
       },
-    },
-  ];
+    });
+  }
 
   // 僅在表單有工時政策時提供時數試算（依申請人地區排除午休等換算）
   if (def.policy) {

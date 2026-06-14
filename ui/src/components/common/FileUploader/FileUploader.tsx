@@ -49,6 +49,9 @@ export interface FileUploaderProps {
   title?: string;
   /** 右側格式提示文字，預設取 i18n fileUploader.defaultFormats */
   supportedFormatsText?: string;
+  /** 是否顯示內建標題列（標題＋格式提示）；預設 true。
+   *  設為 false 時由外層自行提供標籤（如表單以 form-label 呈現，與其他欄位一致） */
+  showHeader?: boolean;
 }
 
 /** 各分類縮圖的圖示與顏色 */
@@ -77,6 +80,7 @@ export default function FileUploader({
   disabled = false,
   title,
   supportedFormatsText,
+  showHeader = true,
 }: FileUploaderProps) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t("fileUploader.defaultTitle");
@@ -129,10 +133,12 @@ export default function FileUploader({
 
   return (
     <div className="attachment-section">
-      <div className="attachment-section__header">
-        <span className="attachment-section__title">{resolvedTitle}</span>
-        <span className="attachment-section__formats">{resolvedFormats}</span>
-      </div>
+      {showHeader && (
+        <div className="attachment-section__header">
+          <span className="attachment-section__title">{resolvedTitle}</span>
+          <span className="attachment-section__formats">{resolvedFormats}</span>
+        </div>
+      )}
 
       <div
         className={`attachment-section__body ${hasFiles && isDragging ? "is-drop-active" : ""}`}
@@ -152,6 +158,11 @@ export default function FileUploader({
           disabled={locked}
           style={{ display: "none" }}
         />
+
+        {/* 標題列隱藏時（由外層提供 label），格式提示改顯示於框內頂部 */}
+        {!showHeader && resolvedFormats && (
+          <p className="attachment-body-formats">{resolvedFormats}</p>
+        )}
 
         {/* 空狀態：dashed 上傳按鈕（唯讀時改顯示無附件） */}
         {!hasFiles &&

@@ -21,6 +21,11 @@
   @apply px-3 py-2 flex flex-col gap-4;
 }
 
+/* 框內格式提示（標題列隱藏時，由 showHeader=false 觸發） */
+.attachment-body-formats {
+  @apply -mb-2 px-1 text-sm leading-none text-[#5f7f9e];
+}
+
 /* 有檔案時的拖曳啟用狀態：body 整塊作為拖放區 */
 .attachment-section__body.is-drop-active {
   @apply bg-[#e8edf4] rounded-b-xl;

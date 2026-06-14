@@ -30,6 +30,30 @@ export interface LeaveRequestPayload {
   attachments?: Attachment[];
 }
 
+export interface OutingRegistrationPayload {
+  userId: string;
+  /** 是否代人登記 */
+  onBehalf?: boolean;
+  /** 外出人，格式：姓名(工號) */
+  applicant: string;
+  /** 外出主題 */
+  subject: string;
+  /** 出發地點 */
+  fromLocation: string;
+  /** 目的地 */
+  toLocation: string;
+  departDate: string;
+  departTime: string;
+  returnDate: string;
+  returnTime: string;
+  /** 是否需報銷（yes / no） */
+  needReimbursement: string;
+  /** 需通知人員（選填） */
+  notifyPersons?: string;
+  /** 備註（選填） */
+  remark?: string;
+}
+
 export interface OASubmitResult {
   oaRequestId: string;
   status: 'accepted' | 'pending' | 'rejected';
@@ -39,5 +63,6 @@ export interface OASubmitResult {
 export interface OAConnector {
   readonly name: string;
   submitLeaveRequest(payload: LeaveRequestPayload): Promise<OASubmitResult>;
+  submitOutingRegistration(payload: OutingRegistrationPayload): Promise<OASubmitResult>;
   getLeaveBalance?(userId: string): Promise<LeaveBalance[]>;
 }

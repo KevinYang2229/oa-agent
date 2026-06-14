@@ -29,6 +29,9 @@ export type { CheckboxProps } from './components/common/Checkbox/Checkbox';
 export { default as DatePicker } from './components/common/DatePicker/DatePicker';
 export type { DatePickerProps } from './components/common/DatePicker/DatePicker';
 
+export { default as TimePicker } from './components/common/TimePicker/TimePicker';
+export type { TimePickerProps } from './components/common/TimePicker/TimePicker';
+
 export { default as Dialog } from './components/common/Dialog/Dialog';
 export type { DialogProps, DialogConfirmVariant } from './components/common/Dialog/Dialog';
 

@@ -1,0 +1,115 @@
+@reference "tailwindcss";
+
+/**
+ * TimePicker 元件樣式
+ * 與 DatePicker 對齊（trigger 按鈕 + portal 下拉），時/分雙欄可捲動選取。
+ */
+
+.time-picker-wrapper {
+  @apply relative w-full min-w-0;
+}
+
+.time-picker-trigger-btn {
+  @apply inline-flex h-[42px] w-full cursor-pointer items-center justify-center gap-2.5 whitespace-nowrap rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3.5 text-[0.9375rem] font-semibold leading-normal tracking-[0.5px] text-[var(--text-primary)] transition-all duration-200;
+  box-sizing: border-box;
+}
+
+.time-picker-trigger-btn .time-picker-icon {
+  @apply h-5 w-5 shrink-0 text-[var(--text-primary)];
+  order: 1;
+}
+
+.time-picker-trigger-btn .picker-display-text {
+  @apply min-w-0 text-center text-[0.9375rem] font-bold tracking-[1px] text-[var(--text-primary)];
+  order: 2;
+}
+
+.time-picker-trigger-btn .time-picker-placeholder {
+  @apply font-bold tracking-normal text-[var(--text-primary)];
+}
+
+.time-picker-trigger-btn:hover {
+  @apply border-[var(--primary-color)] bg-[rgba(var(--primary-color-rgb),0.02)] shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.08)];
+}
+
+.time-picker-trigger-btn:disabled {
+  @apply pointer-events-none cursor-not-allowed opacity-50;
+}
+
+.time-picker-trigger-btn--error {
+  border: 1px solid #ef4444 !important;
+}
+
+.time-picker-trigger-btn--error:focus {
+  @apply shadow-[0_0_0_3px_rgba(239,68,68,0.15)] outline-none;
+  border: 1px solid #ef4444 !important;
+}
+
+/* ---- 下拉面板 ---- */
+.time-picker-dropdown {
+  @apply z-[2000] rounded-[1.25rem] border border-[var(--border-color)] bg-[var(--card-bg)] p-4 opacity-0 shadow-[0_20px_50px_rgba(0,0,0,0.12)];
+  transition: opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.time-picker-dropdown.active {
+  @apply opacity-100;
+}
+
+[data-theme="dark"] .time-picker-dropdown {
+  @apply shadow-[0_20px_50px_rgba(0,0,0,0.6)];
+}
+
+.tp-columns {
+  @apply flex gap-2;
+}
+
+.tp-col {
+  @apply min-w-0 flex-1;
+}
+
+.tp-col-head {
+  @apply mb-1.5 text-center text-xs font-bold text-[var(--text-secondary)] opacity-60;
+}
+
+.tp-col-list {
+  @apply flex max-h-[224px] flex-col gap-0.5 overflow-y-auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.tp-col-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tp-col-list::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-[var(--border-color)];
+}
+
+.tp-cell {
+  @apply flex h-9 shrink-0 cursor-pointer select-none items-center justify-center rounded-[10px] text-[0.9375rem] font-semibold tabular-nums text-[var(--text-primary)] transition-colors duration-150;
+}
+
+.tp-cell:hover:not(.tp-active) {
+  @apply bg-[var(--nav-active-bg)] text-[var(--primary-color)];
+}
+
+.tp-cell.tp-active {
+  @apply bg-[var(--primary-color)] font-bold text-white shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.35)];
+}
+
+/* ---- 底部「現在」 ---- */
+.tp-footer {
+  @apply mt-3 flex justify-end border-t border-[var(--border-color)] pt-3;
+}
+
+.tp-now-btn {
+  @apply flex h-8 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-color)] bg-[var(--card-bg)] px-4 text-[0.8125rem] font-semibold text-[var(--text-secondary)] outline-none transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)];
+}
+
+.tp-now-btn:hover {
+  @apply scale-105 border-[var(--primary-color)] bg-[var(--primary-color)] text-white shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.2)];
+}
+
+.tp-now-btn:active {
+  @apply scale-95;
+}

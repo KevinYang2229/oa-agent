@@ -263,12 +263,27 @@
     animation: caret-blink 0.9s step-end infinite;
   }
 
+  /* ---- 表單類型選單（開始對話前選要辦理的表單） ---- */
+  .form-picker {
+    @apply flex flex-wrap items-center gap-2 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 pt-3 pb-1;
+  }
+  .form-picker-hint {
+    @apply w-full text-xs font-medium text-[var(--text-secondary)];
+  }
+  /* 分段式選擇鈕：未選為描邊、選中為品牌實心 */
+  .form-chip {
+    @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3.5 py-1.5 text-sm font-medium text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)];
+  }
+  .form-chip.active {
+    @apply border-[var(--primary-color)] bg-[var(--primary-color)] text-white shadow-[0_4px_12px_-4px_rgba(var(--primary-color-rgb),0.5)] hover:text-white;
+  }
+
   /* ---- 快捷鈕列（開場引導範例） ---- */
   .quick-bar {
     @apply flex flex-wrap items-center gap-2 bg-[var(--card-bg)] px-5 py-2.5;
   }
   .quick-hint {
-    @apply w-full text-xs text-[var(--text-secondary)] max-sm:w-full;
+    @apply w-full text-xs text-[var(--text-secondary)];
   }
   .quick-chip {
     @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)] hover:text-[var(--primary-color)];
@@ -277,8 +292,9 @@
   }
 
   /* ---- 建議回覆列（AI 回覆下方的一鍵快捷） ---- */
+  /* 用 --bg-secondary 與下方輸入列（--card-bg）區隔，三段（訊息／建議／輸入）層次分明 */
   .suggest-bar {
-    @apply flex flex-wrap items-center gap-2 bg-[var(--card-bg)] px-5 py-2.5;
+    @apply flex flex-wrap items-center gap-2 bg-[var(--bg-secondary)] px-5 py-2.5;
     /* 訊息往上捲動穿過此列時，用一道淺陰影把建議回覆與對話內容分隔開 */
     box-shadow: 0 -6px 8px -6px color-mix(in srgb, var(--text-primary) 18%, transparent);
   }
@@ -353,9 +369,9 @@
     /* 只在手機版限制最高（80vh 且不超過 620px）；桌機維持 90vh */
     @apply max-sm:max-h-[min(80vh,620px)];
   }
-  /* 凍結的標題列 */
+  /* 凍結的標題列：用 --bg-secondary 與下方白色明細 body 區隔 */
   .form-sheet-head {
-    @apply flex shrink-0 items-center gap-3 border-b border-[var(--border-color)] px-6 pb-3 pt-6;
+    @apply flex shrink-0 items-center gap-3 border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-6 pb-3 pt-6;
   }
   /* 唯一可捲動區：捲軸落在假單內側 */
   .form-body {

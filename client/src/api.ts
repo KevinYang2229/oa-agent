@@ -45,6 +45,15 @@ export interface ConversationState {
   submission?: SubmissionInfo;
 }
 
+/** GET /forms 清單項目（供表單類型選單） */
+export interface FormSummary {
+  formId: string;
+  title: string;
+  description: string;
+  /** 開場引導用的範例語句 */
+  examples: string[];
+}
+
 interface LoginData {
   accessToken: string;
   refreshToken: string;
@@ -188,13 +197,18 @@ export const api = {
     }
   },
 
-  /** 建立對話並起首輪 */
-  start(userId: string, message: string): Promise<TurnData> {
+  /** 建立對話並起首輪；formId 省略時由 server 依首句意圖路由 */
+  start(userId: string, message: string, formId?: string): Promise<TurnData> {
     return request<TurnData>(BASE, {
       method: 'POST',
       headers: headers(userId),
-      body: JSON.stringify({ message }),
+      body: JSON.stringify(formId ? { message, formId } : { message }),
     });
+  },
+
+  /** 列出可辦理的表單（供前端表單類型選單） */
+  listForms(): Promise<FormSummary[]> {
+    return request<FormSummary[]>(`${API_ORIGIN}/api/v1/forms`);
   },
 
   /** 在既有對話送一則訊息，跑一輪 */
@@ -203,6 +217,14 @@ export const api = {
       method: 'POST',
       headers: headers(userId),
       body: JSON.stringify({ message }),
+    });
+  },
+
+  /** 確認送出（不經 LLM，確認畫面按「送出」用）；回傳含 submission 的 turn */
+  submit(userId: string, convId: string): Promise<TurnData> {
+    return request<TurnData>(`${BASE}/${convId}/submit`, {
+      method: 'POST',
+      headers: headers(userId),
     });
   },
 

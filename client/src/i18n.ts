@@ -32,6 +32,12 @@ const zhHant = {
     },
     weekdays: { 0: "日", 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六" },
   },
+  timePicker: {
+    selectTime: "選擇時間",
+    hour: "時",
+    minute: "分",
+    now: "現在",
+  },
   app: {
     title: "OA Agent",
     greeting: "你好，我是 OA 小幫手。直接用自然語言描述你的需求即可 👋",
@@ -63,6 +69,7 @@ const zhHant = {
     collapsePane: "收合面板",
     expandPane: "展開面板",
     paneLabel: "表單明細",
+    formPickerHint: "要辦理什麼？",
     quickHint: "不知道怎麼開始？試試：",
     quickPrompts: [
       "我下週一到週二請特休，家裡有事",
@@ -78,6 +85,7 @@ const zhHant = {
     sessionExpired:
       "對話連線已重置（伺服器可能重新啟動或逾時），已清空目前進度。請直接輸入需求重新開始。",
     cancelledMsg: "已取消這張表單。可按「重新開始」建立新的需求。",
+    submittedMsg: "已送出 ✅ OA 單號：{{id}}",
     cancelFailed: "取消失敗：",
     loadFormFailed: "無法載入表單畫面：",
     requestFailed: "請求失敗",
@@ -130,7 +138,7 @@ const zhHant = {
     addMore: "新增附件",
     uploading: "上傳中…",
     uploadError: "上傳失敗",
-    descriptionPlaceholder: "附件說明（選填）",
+    descriptionPlaceholder: "附件說明",
     deleteFile: "移除附件",
   },
 };
@@ -166,6 +174,12 @@ const en = {
       6: "Sat",
     },
   },
+  timePicker: {
+    selectTime: "Select time",
+    hour: "Hour",
+    minute: "Min",
+    now: "Now",
+  },
   app: {
     title: "OA Agent",
     greeting:
@@ -199,6 +213,7 @@ const en = {
     collapsePane: "Collapse panel",
     expandPane: "Expand panel",
     paneLabel: "Details",
+    formPickerHint: "What would you like to do?",
     quickHint: "Not sure where to start? Try:",
     quickPrompts: [
       "I'll take annual leave next Mon–Tue for family matters",
@@ -215,6 +230,7 @@ const en = {
       "The conversation was reset (the server may have restarted or timed out); current progress was cleared. Just type your request to start over.",
     cancelledMsg:
       "This form has been cancelled. Click “Restart” to begin a new request.",
+    submittedMsg: "Submitted ✅ OA No.: {{id}}",
     cancelFailed: "Cancel failed: ",
     loadFormFailed: "Failed to load form view: ",
     requestFailed: "Request failed",
@@ -268,7 +284,7 @@ const en = {
     addMore: "Add files",
     uploading: "Uploading…",
     uploadError: "Upload failed",
-    descriptionPlaceholder: "Description (optional)",
+    descriptionPlaceholder: "Description",
     deleteFile: "Remove attachment",
   },
 };

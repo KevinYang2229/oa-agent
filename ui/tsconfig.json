@@ -23,6 +23,7 @@
     "src/components/common/Select",
     "src/components/common/Dialog",
     "src/components/common/DatePicker",
+    "src/components/common/TimePicker",
     "src/components/common/Checkbox",
     "src/components/common/FileUploader"
   ]

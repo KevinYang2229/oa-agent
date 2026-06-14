@@ -1,0 +1,23 @@
+{
+  "sections": [
+    {
+      "title": "申請資訊",
+      "fields": [
+        ["onBehalf"],
+        ["applicant"]
+      ]
+    },
+    {
+      "title": "外出資訊",
+      "fields": [
+        ["subject"],
+        ["fromLocation", "toLocation"],
+        ["departDate", "departTime"],
+        ["returnDate", "returnTime"],
+        ["needReimbursement"],
+        ["notifyPersons"],
+        ["remark"]
+      ]
+    }
+  ]
+}

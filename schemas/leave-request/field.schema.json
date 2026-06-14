@@ -53,6 +53,6 @@
   "attachments": {
     "component": "Upload",
     "label": "附件",
-    "help": "選填。支援 pdf、jpg、png、docx、xlsx，單檔上限 10MB"
+    "help": "支援 pdf、jpg、png、docx、xlsx，單檔上限 10MB"
   }
 }

@@ -5,7 +5,7 @@
  * 要新增/替換元件：在這裡 import，寫一個把 FieldControlProps 轉成該元件 props 的 adapter，
  * 再加進 fieldRegistry。FormView 只查表，不需改動。
  */
-import { Checkbox, DatePicker, Input, Select, Textarea } from '@oa-agent/ui';
+import { Checkbox, DatePicker, Input, Select, Textarea, TimePicker } from '@oa-agent/ui';
 import type { FieldComponent } from '@oa-agent/shared';
 import i18n from '../i18n';
 import type { FieldRenderer } from './types';
@@ -34,6 +34,10 @@ const renderTextarea: FieldRenderer = ({ spec, value, disabled, onChange }) => (
 
 const renderDate: FieldRenderer = ({ spec, value, disabled, onChange }) => (
   <DatePicker value={value} placeholder={spec.placeholder} disabled={disabled} onChange={onChange} />
+);
+
+const renderTime: FieldRenderer = ({ spec, value, disabled, onChange }) => (
+  <TimePicker value={value} placeholder={spec.placeholder} disabled={disabled} onChange={onChange} />
 );
 
 // 布林欄位：value 以 'true' / 'false' 字串往返（送出前由 form.engine coerce 回 boolean）
@@ -65,7 +69,7 @@ export const fieldRegistry: Partial<Record<FieldComponent, FieldRenderer>> = {
   DatePicker: renderDate,
   Input: makeInput('text'),
   Number: makeInput('number'),
-  TimePicker: makeInput('time'),
+  TimePicker: renderTime,
   Checkbox: renderCheckbox,
 };
 
