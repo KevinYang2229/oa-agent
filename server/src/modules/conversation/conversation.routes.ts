@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { validate } from '@/middlewares/validate';
+import { singleFileUpload } from '@/middlewares/upload';
 import { asyncHandler } from '@/utils/async-handler';
 import { conversationController } from './conversation.controller';
 import {
+  attachmentParamSchema,
   idParamSchema,
   messageSchema,
   startSchema,
@@ -36,6 +38,20 @@ router.post(
   '/:id/cancel',
   validate({ params: idParamSchema }),
   asyncHandler(conversationController.cancel),
+);
+
+// 附件：上傳（multipart，欄位名 file）／刪除
+router.post(
+  '/:id/attachments',
+  validate({ params: idParamSchema }),
+  singleFileUpload('file'),
+  asyncHandler(conversationController.uploadAttachment),
+);
+
+router.delete(
+  '/:id/attachments/:attachmentId',
+  validate({ params: attachmentParamSchema }),
+  asyncHandler(conversationController.deleteAttachment),
 );
 
 export const conversationRouter = router;

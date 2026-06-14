@@ -52,7 +52,9 @@
     @apply flex h-[100dvh] flex-col;
   }
   .app-header {
-    @apply flex shrink-0 flex-wrap items-center gap-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3;
+    @apply relative z-10 flex shrink-0 flex-wrap items-center gap-4 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3;
+    /* 柔和投影取代死板硬線，讓頂列與內容有層次 */
+    @apply shadow-[0_4px_20px_-14px_rgba(11,55,102,0.28)];
     /* 手機版（≤640px）：縮小間距與內距 */
     @apply max-sm:gap-y-2 max-sm:px-4 max-sm:py-2.5;
   }
@@ -127,8 +129,10 @@
     @apply flex flex-1 flex-col gap-3 overflow-y-auto p-5;
   }
   /* 訊息列：包住「名稱（上）／氣泡／時間（下）」一整組，依角色靠左或靠右 */
+  /* 進場：淡入＋上滑，讓新訊息有「浮現」的現代感（既有訊息不重播，因以 id 為 key 不重掛載） */
   .msg {
     @apply flex flex-col gap-1;
+    animation: msg-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .msg-user {
     @apply items-end;
@@ -145,17 +149,23 @@
   .bubble {
     @apply max-w-[72%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2.5 leading-relaxed;
   }
+  /* 使用者氣泡：品牌藍漸層＋柔和同色投影，營造立體感 */
   .bubble-user {
-    @apply self-end rounded-br-sm bg-[var(--primary-color)] text-white;
+    @apply self-end rounded-br-sm bg-gradient-to-br from-[var(--primary-color)] to-[var(--secondary-color)] text-white;
+    @apply shadow-[0_6px_16px_-6px_rgba(var(--primary-color-rgb),0.45)];
   }
+  /* AI 氣泡：純白卡片＋細緻中性陰影，從聊天底色浮起 */
   .bubble-agent {
-    @apply self-start rounded-bl-sm border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)];
+    @apply self-start rounded-bl-sm border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-primary)];
+    @apply shadow-[0_1px_2px_rgba(11,55,102,0.04),0_6px_16px_-8px_rgba(11,55,102,0.12)];
   }
   .bubble-sys {
     @apply max-w-[90%] self-center bg-transparent text-center text-xs text-[var(--text-secondary)];
+    animation: msg-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .bubble-typing {
-    @apply flex items-center gap-1 self-start rounded-2xl rounded-bl-sm bg-[var(--bg-secondary)] px-3.5 py-3.5;
+    @apply flex items-center gap-1 self-start rounded-2xl rounded-bl-sm border border-[var(--border-color)] bg-[var(--card-bg)] px-3.5 py-3.5;
+    @apply shadow-[0_1px_2px_rgba(11,55,102,0.04),0_6px_16px_-8px_rgba(11,55,102,0.12)];
   }
   /* 等待中：三顆跳動圓點 */
   .typing-dot {
@@ -261,17 +271,23 @@
     @apply w-full text-xs text-[var(--text-secondary)] max-sm:w-full;
   }
   .quick-chip {
-    @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-colors hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)];
+    @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)] hover:text-[var(--primary-color)];
+    /* hover 上浮＋同色柔光，增添回饋感 */
+    @apply hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-4px_rgba(var(--primary-color-rgb),0.35)];
   }
 
   /* ---- 建議回覆列（AI 回覆下方的一鍵快捷） ---- */
   .suggest-bar {
-    @apply flex flex-wrap items-center gap-2 px-5 pb-2.5;
+    @apply flex flex-wrap items-center gap-2 bg-[var(--card-bg)] px-5 py-2.5;
+    /* 訊息往上捲動穿過此列時，用一道淺陰影把建議回覆與對話內容分隔開 */
+    box-shadow: 0 -6px 8px -6px color-mix(in srgb, var(--text-primary) 18%, transparent);
   }
 
   /* ---- 輸入列 ---- */
   .composer {
-    @apply flex shrink-0 items-end gap-2.5 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 py-3.5;
+    @apply flex shrink-0 items-end gap-2.5 border-t border-[var(--border-color)] bg-[var(--card-bg)] px-5 pt-3.5;
+    /* 底部留白避開 iPhone home indicator；無安全區時退回 0.875rem（等同原 py-3.5） */
+    padding-bottom: max(0.875rem, env(safe-area-inset-bottom));
   }
 
   /* ---- 側欄 ---- */
@@ -421,6 +437,10 @@
   .form-summary {
     @apply mt-1 text-right text-sm font-semibold text-[var(--text-primary)];
   }
+  /* 跨整列的欄位（如附件 FileUploader），不分欄 */
+  .form-field--full {
+    @apply sm:col-span-full;
+  }
 
   /* ---- 齒輪設定選單 ---- */
   .settings {
@@ -515,9 +535,23 @@
   }
 }
 
+/* 訊息進場：淡入＋輕微上滑 */
+@keyframes msg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .typing-dot,
-  .type-caret {
+  .type-caret,
+  .msg,
+  .bubble-sys {
     animation: none;
   }
   .type-caret {

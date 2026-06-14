@@ -1,241 +1,209 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
-/** 既有附件項目 */
-export interface ExistingFileItem {
-  /** 唯一識別 ID */
+/** 檔案分類（決定縮圖圖示） */
+export type FileKind = "pdf" | "excel" | "word" | "image" | "other";
+
+/** 已成功上傳、可持久化的附件 metadata（對外 onChange 的單位） */
+export interface CommittedFile {
   id: string;
-  /** 檔案類型 */
-  type: "pdf" | "excel" | "image";
-  /** 檔案名稱 */
   name: string;
-  /** 上傳日期 */
-  date: string;
-  /** PDF 圖示 class（type="pdf" 時使用） */
-  iconClass?: string;
-  /** 圖片來源（type="image" 時使用） */
-  imageSrc?: string;
-  /** 附件說明 */
+  mime?: string;
+  size?: number;
   description?: string;
 }
 
-/** 已上傳預覽檔案 */
-export interface UploadedPreviewFile {
-  /** 唯一識別 ID */
+/** 上傳成功後，後端回傳的識別資料 */
+export interface UploadResult {
   id: string;
-  /** 檔案名稱 */
-  name: string;
-  /** 檔案類型 */
-  type: "pdf" | "excel" | "image" | "other";
-  /** 上傳日期/狀態文字 */
-  date: string;
-  /** 附件說明 */
-  description?: string;
-  /** 預覽用 Object URL */
-  previewUrl: string;
+  mime?: string;
+  size?: number;
 }
 
-/** useFileUploader 設定選項 */
+/** 元件內部的工作項（含上傳中／失敗等暫態，不會對外 emit） */
+export interface UploaderItem extends CommittedFile {
+  kind: FileKind;
+  /** 影像新上傳時的本地預覽 URL（object URL） */
+  previewUrl?: string;
+  status: "uploading" | "done" | "error";
+  error?: string;
+}
+
 interface UseFileUploaderOptions {
-  /** 初始既有附件 */
-  initialFiles?: ExistingFileItem[];
-  /** 上傳檔案變更回呼 */
-  onChange?: (files: UploadedPreviewFile[]) => void;
-  /** 單檔最大容量（MB） */
+  /** 初始（已上傳）清單；用來 seed 內部狀態，並於重新掛載時還原 */
+  initialFiles?: CommittedFile[];
+  /** 已成功上傳的清單變更時通知（新增完成／刪除／改說明）；不含上傳中與失敗項 */
+  onChange?: (files: CommittedFile[]) => void;
+  /** 真正把檔案送到後端，回傳伺服器識別資料 */
+  onUpload: (file: File) => Promise<UploadResult>;
+  /** 從後端刪除一個附件 */
+  onDelete?: (id: string) => Promise<void>;
+  /** 單檔上限（MB） */
   maxFileSizeMB?: number;
-  /** 檔案驗證失敗回呼 */
-  onValidationError?: (fileName: string, sizeLimitMB: number) => void;
-  /** 重置訊號：值變動時清空已上傳清單並還原既有附件（用於表單重填） */
-  resetSignal?: number | string;
+  /** 附件數量上限 */
+  maxFiles?: number;
+  /** 驗證／上傳／刪除失敗時的訊息回呼 */
+  onError?: (message: string, ctx: { fileName?: string }) => void;
 }
+
+/** 由 MIME／檔名推斷檔案分類 */
+export function getFileKind(name: string, mime = ""): FileKind {
+  const n = name.toLowerCase();
+  const m = mime.toLowerCase();
+  if (m === "application/pdf" || n.endsWith(".pdf")) return "pdf";
+  if (/sheet|excel/.test(m) || /\.(xls|xlsx)$/.test(n)) return "excel";
+  if (/word|document/.test(m) || /\.(doc|docx)$/.test(n)) return "word";
+  if (m.startsWith("image/") || /\.(jpe?g|png|gif|webp)$/.test(n)) return "image";
+  return "other";
+}
+
+function toCommitted(item: UploaderItem): CommittedFile {
+  return {
+    id: item.id,
+    name: item.name,
+    mime: item.mime,
+    size: item.size,
+    description: item.description,
+  };
+}
+
+function seedItems(files: CommittedFile[]): UploaderItem[] {
+  return files.map((f) => ({
+    ...f,
+    kind: getFileKind(f.name, f.mime),
+    status: "done" as const,
+  }));
+}
+
+let tempSeq = 0;
+const nextTempId = (): string => `tmp-${Date.now()}-${++tempSeq}`;
 
 /**
- * 檔案上傳 hook，封裝所有上傳、預覽、刪除邏輯。
+ * 檔案上傳 hook：封裝選檔／拖放、逐檔非同步上傳、刪除、說明編輯與預覽。
  *
- * @param options - 設定選項
- * @returns 狀態與操作方法
+ * 設計：內部以 items 維護工作集（含上傳中／失敗暫態），只把「已完成」清單
+ * 透過 onChange 對外 emit；故表單可持有 metadata 為唯一真實來源，元件負責暫態。
  */
-export function useFileUploader(options: UseFileUploaderOptions = {}) {
-  const {
-    initialFiles = [],
-    onChange,
-    maxFileSizeMB,
-    onValidationError,
-    resetSignal,
-  } = options;
+export function useFileUploader(options: UseFileUploaderOptions) {
+  const { initialFiles = [], onChange, onUpload, onDelete, maxFileSizeMB, maxFiles, onError } =
+    options;
 
   const uploadInputRef = useRef<HTMLInputElement>(null);
-  const [existingFiles, setExistingFiles] =
-    useState<ExistingFileItem[]>(initialFiles);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedPreviewFile[]>([]);
+  const [items, setItems] = useState<UploaderItem[]>(() => seedItems(initialFiles));
 
-  // resetSignal 變動：清空已上傳檔案並還原既有附件，供「重填」清除附件清單使用
+  // 對外 emit：只在「已完成」清單實際變動時呼叫一次 onChange（JSON 比對去重，避免迴圈）
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const lastEmit = useRef<string>(JSON.stringify(initialFiles.map((f) => ({ ...f }))));
   useEffect(() => {
-    if (resetSignal === undefined) return;
-    setUploadedFiles((current) => {
-      current.forEach((file) => URL.revokeObjectURL(file.previewUrl));
-      return [];
-    });
-    setExistingFiles(initialFiles);
-    onChange?.([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetSignal]);
+    const committed = items.filter((i) => i.status === "done").map(toCommitted);
+    const key = JSON.stringify(committed);
+    if (key !== lastEmit.current) {
+      lastEmit.current = key;
+      onChangeRef.current?.(committed);
+    }
+  }, [items]);
 
-  /** 是否有任何檔案（既有或新上傳） */
-  const hasFiles = existingFiles.length > 0 || uploadedFiles.length > 0;
+  // 卸載時釋放所有本地預覽 URL
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  useEffect(
+    () => () => {
+      itemsRef.current.forEach((i) => i.previewUrl && URL.revokeObjectURL(i.previewUrl));
+    },
+    [],
+  );
 
-  /** 開啟檔案選擇器 */
-  const handleOpenFilePicker = (): void => {
-    uploadInputRef.current?.click();
-  };
+  const patch = (id: string, next: Partial<UploaderItem>): void =>
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...next } : i)));
 
-  /** 統一新增檔案邏輯 */
+  /** 統一新增檔案：逐檔驗證 → 樂觀加入「上傳中」項 → 非同步上傳 → 完成／失敗回填 */
   const addFiles = (fileList: FileList | File[]): void => {
-    if (!fileList || fileList.length === 0) {
-      return;
-    }
+    const picked = Array.from(fileList ?? []);
+    if (picked.length === 0) return;
 
-    const validFiles = Array.from(fileList).filter((file) => {
-      if (!maxFileSizeMB) {
-        return true;
+    let count = itemsRef.current.length;
+    for (const file of picked) {
+      if (maxFiles && count >= maxFiles) {
+        onError?.(`最多只能上傳 ${maxFiles} 個附件`, {});
+        break;
       }
-
-      const maxBytes = maxFileSizeMB * 1024 * 1024;
-      const isValid = file.size <= maxBytes;
-      if (!isValid) {
-        onValidationError?.(file.name, maxFileSizeMB);
+      if (maxFileSizeMB && file.size > maxFileSizeMB * 1024 * 1024) {
+        onError?.(`檔案超過上限 ${maxFileSizeMB}MB`, { fileName: file.name });
+        continue;
       }
-      return isValid;
-    });
+      count += 1;
 
-    if (validFiles.length === 0) {
-      return;
+      const tempId = nextTempId();
+      const kind = getFileKind(file.name, file.type);
+      const previewUrl = kind === "image" ? URL.createObjectURL(file) : undefined;
+      const working: UploaderItem = {
+        id: tempId,
+        name: file.name,
+        mime: file.type,
+        size: file.size,
+        kind,
+        previewUrl,
+        status: "uploading",
+      };
+      setItems((prev) => [...prev, working]);
+
+      onUpload(file)
+        .then((res) =>
+          patch(tempId, {
+            id: res.id,
+            mime: res.mime ?? file.type,
+            size: res.size ?? file.size,
+            status: "done",
+          }),
+        )
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : "上傳失敗";
+          patch(tempId, { status: "error", error: message });
+          onError?.(message, { fileName: file.name });
+        });
     }
-
-    const nextFiles = validFiles.map((file) => ({
-      id: `${file.name}-${file.lastModified}-${Math.random().toString(16).slice(2)}`,
-      name: file.name,
-      type: getFileType(file),
-      date: getCurrentDateTime(),
-      description: "",
-      previewUrl: URL.createObjectURL(file),
-    }));
-
-    const updated = [...uploadedFiles, ...nextFiles];
-    setUploadedFiles(updated);
-    onChange?.(updated);
   };
 
-  /** 處理檔案選擇器變更 */
+  const handleOpenFilePicker = (): void => uploadInputRef.current?.click();
+
   const handleUploadFiles = (event: ChangeEvent<HTMLInputElement>): void => {
-    const fileList = event.target.files;
-    if (fileList) {
-      addFiles(fileList);
-    }
+    if (event.target.files) addFiles(event.target.files);
     event.target.value = "";
   };
 
-  /** 移除已上傳的預覽檔案並釋放 URL 資源 */
-  const handleRemoveUploadedFile = (fileId: string): void => {
-    setUploadedFiles((current) => {
-      const target = current.find((item) => item.id === fileId);
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl);
+  /** 移除一個項目：已上傳完成者先打後端刪除，再從清單移除並釋放預覽 URL */
+  const handleRemove = async (id: string): Promise<void> => {
+    const item = itemsRef.current.find((i) => i.id === id);
+    if (!item) return;
+    if (item.status === "done" && onDelete) {
+      try {
+        await onDelete(item.id);
+      } catch (err) {
+        onError?.(err instanceof Error ? err.message : "刪除失敗", { fileName: item.name });
+        return;
       }
-
-      const updated = current.filter((item) => item.id !== fileId);
-      onChange?.(updated);
-      return updated;
-    });
+    }
+    if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+    setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
-  /** 移除既有附件項目 */
-  const handleRemoveExistingFile = (fileId: string): void => {
-    setExistingFiles((current) => current.filter((item) => item.id !== fileId));
-  };
+  /** 更新某項目的附件說明 */
+  const updateDescription = (id: string, description: string): void =>
+    patch(id, { description });
 
-  /** 更新上傳檔案說明 */
-  const updateUploadedFileDescription = (fileId: string, description: string): void => {
-    setUploadedFiles((current) => {
-      const updated = current.map((file) =>
-        file.id === fileId ? { ...file, description } : file
-      );
-      onChange?.(updated);
-      return updated;
-    });
-  };
-
-  /** 更新既有檔案說明 */
-  const updateExistingFileDescription = (fileId: string, description: string): void => {
-    setExistingFiles((current) =>
-      current.map((file) =>
-        file.id === fileId ? { ...file, description } : file
-      )
-    );
-  };
-
-  /** 以新分頁預覽圖片附件 */
-  const handlePreviewImage = (imageSrc: string): void => {
-    window.open(imageSrc, "_blank", "noopener,noreferrer");
+  const previewImage = (url?: string): void => {
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return {
     uploadInputRef,
-    existingFiles,
-    uploadedFiles,
-    hasFiles,
+    items,
+    hasFiles: items.length > 0,
     handleOpenFilePicker,
     handleUploadFiles,
     addFiles,
-    handleRemoveUploadedFile,
-    handleRemoveExistingFile,
-    updateUploadedFileDescription,
-    updateExistingFileDescription,
-    handlePreviewImage,
+    handleRemove,
+    updateDescription,
+    previewImage,
   };
-}
-
-/**
- * 根據 File 物件推斷檔案類型
- *
- * @param file - File 物件
- * @returns 檔案類型字串
- */
-function getFileType(
-  file: File,
-): "pdf" | "excel" | "image" | "other" {
-  const name = file.name.toLowerCase();
-  const mime = file.type.toLowerCase();
-
-  if (name.endsWith(".pdf") || mime === "application/pdf") {
-    return "pdf";
-  }
-
-  if (
-    name.endsWith(".xlsx") ||
-    name.endsWith(".xls") ||
-    mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-    mime === "application/vnd.ms-excel"
-  ) {
-    return "excel";
-  }
-
-  if (mime.startsWith("image/")) {
-    return "image";
-  }
-
-  return "other";
-}
-
-/**
- * 取得當前日期時間字串 (格式: YYYY/MM/DD HH:mm)
- */
-function getCurrentDateTime(): string {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const hh = String(now.getHours()).padStart(2, "0");
-  const min = String(now.getMinutes()).padStart(2, "0");
-
-  return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }

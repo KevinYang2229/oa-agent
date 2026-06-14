@@ -1,6 +1,7 @@
 // 對應後端 auth / conversation / form / leave API。型別共用 @oa-agent/shared（單一來源）。
 import type {
   Applicant,
+  Attachment,
   Definition,
   FieldOption,
   FieldSpec,
@@ -11,6 +12,7 @@ import type {
 
 export type {
   Applicant,
+  Attachment,
   Definition,
   FieldOption,
   FieldSpec,
@@ -238,6 +240,26 @@ export const api = {
   /** 取各假別剩餘時數（畫面顯示「今年度剩餘 N 小時」） */
   getLeaveBalances(userId: string): Promise<LeaveBalance[]> {
     return request<LeaveBalance[]>(`${API_ORIGIN}/api/v1/leave/balances`, {
+      headers: headers(userId),
+    });
+  },
+
+  /** 上傳一個附件（multipart），回傳後端產生的附件 metadata */
+  uploadAttachment(userId: string, convId: string, file: File): Promise<Attachment> {
+    const body = new FormData();
+    body.append('file', file);
+    // 不設 content-type：交給瀏覽器附上 multipart boundary
+    return request<Attachment>(`${BASE}/${convId}/attachments`, {
+      method: 'POST',
+      headers: { 'x-user-id': userId || 'demo-user' },
+      body,
+    });
+  },
+
+  /** 刪除一個附件 */
+  deleteAttachment(userId: string, convId: string, attachmentId: string): Promise<{ id: string }> {
+    return request<{ id: string }>(`${BASE}/${convId}/attachments/${attachmentId}`, {
+      method: 'DELETE',
       headers: headers(userId),
     });
   },

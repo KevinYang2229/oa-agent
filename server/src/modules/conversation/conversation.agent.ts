@@ -14,6 +14,7 @@ import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
 import { listDeputyCandidates } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
+import { attachmentStore } from './attachment.store';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
 
@@ -119,6 +120,8 @@ async function dispatchTool(
         submittedAt: result.submittedAt,
         approvals: result.approvals,
       };
+      // 已送出：附件 metadata 已隨 payload 交付，清掉本地暫存的檔案內容
+      attachmentStore.clearSession(session.id);
       return JSON.stringify({ ok: true, oaRequestId: result.oaRequestId, status: result.status });
     } catch (err) {
       session.status = 'failed';

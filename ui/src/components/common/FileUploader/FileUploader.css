@@ -73,8 +73,8 @@
   @apply w-[72px] h-[72px] rounded-xl overflow-hidden relative cursor-pointer border border-[#e2e8f0] shrink-0 flex items-center justify-center bg-white;
 }
 
-.file-thumb i {
-  @apply !text-[1.75rem];
+.file-thumb svg {
+  @apply w-7 h-7;
 }
 
 .file-thumb img {
@@ -126,6 +126,41 @@
 
 .attachment-empty-state {
   @apply border-solid opacity-70;
+}
+
+/* 上傳中／失敗等狀態列 */
+.file-status {
+  @apply inline-flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-caption)];
+}
+
+.file-status--error {
+  @apply text-[var(--status-danger)];
+}
+
+/* 上傳中旋轉圖示 */
+.att-spin {
+  animation: att-spin 0.8s linear infinite;
+}
+
+@keyframes att-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 失敗項外框提示 */
+.existing-file-item.is-error {
+  @apply border-[var(--status-danger)];
+}
+
+/* 區塊底部錯誤訊息 */
+.attachment-error {
+  @apply px-3 py-2 rounded-md text-sm bg-[var(--badge-danger-bg)] text-[var(--badge-danger-text)];
+}
+
+/* 唯讀無附件 */
+.attachment-empty-text {
+  @apply px-1 py-2 text-sm text-[var(--text-secondary)];
 }
 
 .dark .attachment-section,

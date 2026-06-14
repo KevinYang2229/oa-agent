@@ -1,319 +1,322 @@
-import { useState, DragEvent } from "react";
+import { useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import Button from "../Button/Button";
 import Input from "../Input/Input";
 import {
   useFileUploader,
-  type ExistingFileItem,
-  type UploadedPreviewFile,
+  type CommittedFile,
+  type FileKind,
+  type UploaderItem,
+  type UploadResult,
 } from "./useFileUploader";
+import {
+  CloudUploadIcon,
+  DownloadIcon,
+  FileIcon,
+  PlusIcon,
+  SearchIcon,
+  SpinnerIcon,
+  TrashIcon,
+  WarningIcon,
+} from "./icons";
 import "./FileUploader.css";
+
+export type { CommittedFile, UploadResult } from "./useFileUploader";
 
 /** FileUploader 元件 Props */
 export interface FileUploaderProps {
-  /** 初始既有附件 */
-  initialFiles?: ExistingFileItem[];
-  /** 允許的檔案類型（MIME 或副檔名） */
+  /** 初始（已上傳）附件清單 */
+  initialFiles?: CommittedFile[];
+  /** 已完成清單變更回呼（新增完成／刪除／改說明） */
+  onChange?: (files: CommittedFile[]) => void;
+  /** 真正把檔案送到後端，回傳伺服器識別資料 */
+  onUpload: (file: File) => Promise<UploadResult>;
+  /** 從後端刪除一個附件 */
+  onDelete?: (id: string) => Promise<void>;
+  /** 允許的檔案類型（傳入 input accept） */
   accept?: string;
   /** 是否允許多選，預設 true */
   multiple?: boolean;
-  /** 區塊標題，預設「附件清單」 */
-  title?: string;
-  /** 右側格式提示文字，預設「支援 pdf、jpg、png、docx、xlsx」 */
-  supportedFormatsText?: string;
-  /** 上傳檔案變更回呼 */
-  onChange?: (files: UploadedPreviewFile[]) => void;
   /** 單檔最大容量（MB） */
   maxFileSizeMB?: number;
-  /** 重置訊號：值變動時清空清單（用於表單「重填」） */
-  resetSignal?: number | string;
+  /** 附件數量上限 */
+  maxFiles?: number;
+  /** 唯讀（如表單送出後）：只列清單、不可增刪改 */
+  readOnly?: boolean;
+  /** 停用（如表單送出中） */
+  disabled?: boolean;
+  /** 區塊標題，預設取 i18n fileUploader.defaultTitle */
+  title?: string;
+  /** 右側格式提示文字，預設取 i18n fileUploader.defaultFormats */
+  supportedFormatsText?: string;
 }
 
+/** 各分類縮圖的圖示與顏色 */
+const KIND_VISUAL: Record<FileKind, { color: string }> = {
+  pdf: { color: "#e53935" },
+  excel: { color: "#2e7d32" },
+  word: { color: "#1565c0" },
+  image: { color: "#1e88e5" },
+  other: { color: "var(--text-secondary)" },
+};
+
 /**
- * 標準檔案上傳元件，包含：
- * - 外層容器（附件清單標題 + 格式提示）
- * - 上傳按鈕區塊
- * - 新上傳的預覽清單
- * - 既有附件清單
- * - 空狀態提示（無檔案時）
- *
- * @example
- * ```tsx
- * <FileUploader
- *   initialFiles={existingAttachments}
- *   accept=".pdf,.xlsx,.jpg,.png"
- * />
- * ```
+ * 標準檔案上傳元件：選檔／拖放上傳到後端，含預覽縮圖、上傳中／失敗狀態、
+ * 附件說明與刪除。透過 onUpload／onDelete 串接後端，onChange 回傳已完成的 metadata。
  */
 export default function FileUploader({
   initialFiles = [],
+  onChange,
+  onUpload,
+  onDelete,
   accept,
   multiple = true,
+  maxFileSizeMB,
+  maxFiles,
+  readOnly = false,
+  disabled = false,
   title,
   supportedFormatsText,
-  onChange,
-  maxFileSizeMB,
-  resetSignal,
 }: FileUploaderProps) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t("fileUploader.defaultTitle");
   const resolvedFormats = supportedFormatsText ?? t("fileUploader.defaultFormats");
-  const handleValidationError = (fileName: string, sizeLimitMB: number): void => {
-    alert(
-      t("fileUploader.fileTooLarge", {
-        fileName,
-        sizeLimitMB,
-      }),
-    );
-  };
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     uploadInputRef,
-    existingFiles,
-    uploadedFiles,
+    items,
     hasFiles,
     handleOpenFilePicker,
     handleUploadFiles,
     addFiles,
-    handleRemoveUploadedFile,
-    handleRemoveExistingFile,
-    updateUploadedFileDescription,
-    updateExistingFileDescription,
-    handlePreviewImage,
+    handleRemove,
+    updateDescription,
+    previewImage,
   } = useFileUploader({
     initialFiles,
     onChange,
+    onUpload,
+    onDelete,
     maxFileSizeMB,
-    onValidationError: handleValidationError,
-    resetSignal,
+    maxFiles,
+    onError: (message) => setErrorMsg(message),
   });
 
   const [isDragging, setIsDragging] = useState(false);
+  const locked = disabled || readOnly;
 
-  /** 處理拖曳進入 */
   const handleDragOver = (e: DragEvent): void => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    if (!locked) setIsDragging(true);
   };
-
-  /** 處理拖曳離開 */
   const handleDragLeave = (e: DragEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
-
-  /** 處理放開檔案 */
   const handleDrop = (e: DragEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      addFiles(files);
+    if (locked) return;
+    if (e.dataTransfer.files?.length) {
+      setErrorMsg(null);
+      addFiles(e.dataTransfer.files);
     }
   };
 
   return (
     <div className="attachment-section">
-      {/* 標題列：左側標題 + 右側格式提示 */}
       <div className="attachment-section__header">
         <span className="attachment-section__title">{resolvedTitle}</span>
-        <span className="attachment-section__formats">
-          {resolvedFormats}
-        </span>
+        <span className="attachment-section__formats">{resolvedFormats}</span>
       </div>
 
-      {/* 內容容器：有檔案時整塊為拖曳區，並於拖曳中顯示 active 外框 */}
       <div
         className={`attachment-section__body ${hasFiles && isDragging ? "is-drop-active" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* 隱藏的 file input */}
         <input
           type="file"
           ref={uploadInputRef}
-          onChange={handleUploadFiles}
+          onChange={(e) => {
+            setErrorMsg(null);
+            handleUploadFiles(e);
+          }}
           accept={accept}
           multiple={multiple}
+          disabled={locked}
           style={{ display: "none" }}
         />
 
-        {/* 空狀態：顯示 dashed 上傳按鈕 */}
-        {!hasFiles && (
-          <Button
-            type="button"
-            variant="uploader"
-            className={isDragging ? "is-dragging" : ""}
-            onClick={handleOpenFilePicker}
-          >
-            <i className="fa-solid fa-cloud-arrow-up"></i>
-            <div className="uploader-copy">
-              <span className="uploader-line-main">{t("fileUploader.pickOrDrop")}</span>
-              <span className="uploader-line-sub">{t("fileUploader.emptyHint")}</span>
-            </div>
-          </Button>
-        )}
+        {/* 空狀態：dashed 上傳按鈕（唯讀時改顯示無附件） */}
+        {!hasFiles &&
+          (readOnly ? (
+            <p className="attachment-empty-text">{t("fileUploader.none")}</p>
+          ) : (
+            <Button
+              type="button"
+              variant="uploader"
+              className={isDragging ? "is-dragging" : ""}
+              disabled={locked}
+              onClick={handleOpenFilePicker}
+            >
+              <CloudUploadIcon />
+              <div className="uploader-copy">
+                <span className="uploader-line-main">{t("fileUploader.pickOrDrop")}</span>
+                <span className="uploader-line-sub">{t("fileUploader.emptyHint")}</span>
+              </div>
+            </Button>
+          ))}
 
-        {/* 附件列表 (包含既有與新上傳) */}
         {hasFiles && (
           <>
-            <div className="attachment-add-row">
-              <Button
-                type="button"
-                variant="form-inline"
-                onClick={handleOpenFilePicker}
-              >
-                <i className="fa-solid fa-plus"></i>
-                {t("fileUploader.addMore")}
-              </Button>
-            </div>
-            <div className="existing-files-list">
-              {[...uploadedFiles, ...existingFiles].map((file) => {
-                const isUploaded = "previewUrl" in file;
+            {!readOnly && (
+              <div className="attachment-add-row">
+                <Button
+                  type="button"
+                  variant="form-inline"
+                  disabled={locked}
+                  onClick={handleOpenFilePicker}
+                >
+                  <PlusIcon />
+                  {t("fileUploader.addMore")}
+                </Button>
+              </div>
+            )}
 
-                return (
-                  <div key={file.id} className="existing-file-item">
-                    {renderFileThumb(
-                      file.type,
-                      isUploaded ? (file as UploadedPreviewFile).previewUrl : (file as ExistingFileItem).imageSrc,
-                      (file as ExistingFileItem).iconClass,
-                      file.name,
-                      handlePreviewImage
-                    )}
-                    <div className="file-info">
-                      <div className="file-name-container">
-                        <span
-                          className="file-name"
-                          style={
-                            file.type === "image" ? { cursor: "pointer" } : undefined
-                          }
-                          onClick={() => {
-                            const src = isUploaded ? (file as UploadedPreviewFile).previewUrl : (file as ExistingFileItem).imageSrc;
-                            if (src) handlePreviewImage(src);
-                          }}
-                        >
-                          {file.name}
-                        </span>
-                      </div>
-                      <span className="file-date">{file.date}</span>
-                      <div className="file-description">
-                        <Input
-                          placeholder={t("fileUploader.descriptionPlaceholder")}
-                          value={file.description || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (isUploaded) {
-                              updateUploadedFileDescription(file.id, val);
-                            } else {
-                              updateExistingFileDescription(file.id, val);
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="file-actions">
-                      <Button
-                        type="button"
-                        variant="delete"
-                        size="sm"
-                        onClick={() =>
-                          isUploaded
-                            ? handleRemoveUploadedFile(file.id)
-                            : handleRemoveExistingFile(file.id)
-                        }
-                        title={t("fileUploader.deleteFile")}
-                      >
-                        <i className="fa-solid fa-trash"></i>
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="existing-files-list">
+              {items.map((file) => (
+                <FileRow
+                  key={file.id}
+                  file={file}
+                  readOnly={readOnly}
+                  locked={locked}
+                  onPreview={previewImage}
+                  onRemove={() => void handleRemove(file.id)}
+                  onDescription={(val) => updateDescription(file.id, val)}
+                  descriptionPlaceholder={t("fileUploader.descriptionPlaceholder")}
+                  deleteLabel={t("fileUploader.deleteFile")}
+                  uploadingLabel={t("fileUploader.uploading")}
+                  errorLabel={t("fileUploader.uploadError")}
+                />
+              ))}
             </div>
           </>
         )}
 
+        {errorMsg && <p className="attachment-error">{errorMsg}</p>}
       </div>
     </div>
   );
 }
 
-/**
- * 根據檔案類型渲染不同的縮圖區塊。
- */
-function renderFileThumb(
-  type: string,
-  url?: string,
-  iconClass?: string,
-  name?: string,
-  onPreview?: (src: string) => void,
-) {
-  const handleClick = () => {
-    if (url && onPreview) onPreview(url);
-  };
+interface FileRowProps {
+  file: UploaderItem;
+  readOnly: boolean;
+  locked: boolean;
+  onPreview: (url?: string) => void;
+  onRemove: () => void;
+  onDescription: (value: string) => void;
+  descriptionPlaceholder: string;
+  deleteLabel: string;
+  uploadingLabel: string;
+  errorLabel: string;
+}
 
-  if (type === "pdf") {
-    return (
-      <div className="file-thumb" onClick={handleClick} role="button" tabIndex={0}>
-        <i
-          className={iconClass ?? "fa-solid fa-file-pdf"}
-          style={{ fontSize: "1.5rem", color: "#f44336" }}
-        ></i>
-        <div className="thumb-overlay">
-          <i className="fa-solid fa-download"></i>
-        </div>
-      </div>
-    );
-  }
+/** 單列附件：縮圖 + 檔名/狀態/說明 + 刪除 */
+function FileRow({
+  file,
+  readOnly,
+  locked,
+  onPreview,
+  onRemove,
+  onDescription,
+  descriptionPlaceholder,
+  deleteLabel,
+  uploadingLabel,
+  errorLabel,
+}: FileRowProps) {
+  const isImage = file.kind === "image" && file.previewUrl;
+  const visual = KIND_VISUAL[file.kind];
 
-  if (type === "excel") {
-    return (
-      <div className="file-thumb" onClick={handleClick} role="button" tabIndex={0}>
-        <i
-          className={iconClass ?? "fa-solid fa-file-excel"}
-          style={{ fontSize: "1.5rem", color: "#2e7d32" }}
-        ></i>
-        <div className="thumb-overlay">
-          <i className="fa-solid fa-download"></i>
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "image" && url) {
-    return (
+  return (
+    <div className={`existing-file-item ${file.status === "error" ? "is-error" : ""}`}>
       <div
         className="file-thumb"
-        onClick={handleClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") handleClick();
+        role={isImage ? "button" : undefined}
+        tabIndex={isImage ? 0 : undefined}
+        onClick={() => isImage && onPreview(file.previewUrl)}
+        onKeyDown={(e) => {
+          if (isImage && (e.key === "Enter" || e.key === " ")) onPreview(file.previewUrl);
         }}
       >
-        <img src={url} alt={name} />
-        <div className="thumb-overlay">
-          <i className="fa-solid fa-magnifying-glass"></i>
-        </div>
+        {isImage ? (
+          <>
+            <img src={file.previewUrl} alt={file.name} />
+            <div className="thumb-overlay">
+              <SearchIcon />
+            </div>
+          </>
+        ) : (
+          <>
+            <FileIcon color={visual.color} />
+            <div className="thumb-overlay">
+              <DownloadIcon />
+            </div>
+          </>
+        )}
       </div>
-    );
-  }
 
-  /* other types */
-  return (
-    <div className="file-thumb" onClick={handleClick} role="button" tabIndex={0}>
-      <i
-        className="fa-solid fa-file"
-        style={{ fontSize: "1.5rem", color: "var(--text-secondary)" }}
-      ></i>
-      <div className="thumb-overlay">
-        <i className="fa-solid fa-download"></i>
+      <div className="file-info">
+        <div className="file-name-container">
+          <span className="file-name">{file.name}</span>
+        </div>
+
+        {file.status === "uploading" && (
+          <span className="file-status">
+            <SpinnerIcon /> {uploadingLabel}
+          </span>
+        )}
+        {file.status === "error" && (
+          <span className="file-status file-status--error">
+            <WarningIcon /> {file.error ?? errorLabel}
+          </span>
+        )}
+
+        {!readOnly && file.status === "done" && (
+          <div className="file-description">
+            <Input
+              placeholder={descriptionPlaceholder}
+              value={file.description ?? ""}
+              disabled={locked}
+              onChange={(e) => onDescription(e.target.value)}
+            />
+          </div>
+        )}
+        {readOnly && file.description && (
+          <span className="file-date">{file.description}</span>
+        )}
       </div>
+
+      {!readOnly && (
+        <div className="file-actions">
+          <Button
+            type="button"
+            variant="delete"
+            size="sm"
+            disabled={locked}
+            onClick={onRemove}
+            title={deleteLabel}
+          >
+            <TrashIcon />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

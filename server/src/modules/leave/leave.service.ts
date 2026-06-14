@@ -2,7 +2,7 @@
  * 請假領域 service：最終 payload 驗證 → 透過 OA 連接器送出 + 簽核流程（workflow）。
  * 不 import express（可在 worker 執行）。
  */
-import type { ApprovalStep } from '@oa-agent/shared';
+import type { ApprovalStep, Attachment } from '@oa-agent/shared';
 import { getOAConnector } from '@/lib/oa';
 import type { LeaveBalance } from '@/lib/oa/types';
 import { validateAll } from '@/modules/form/form.engine';
@@ -74,6 +74,7 @@ export const leaveService = {
       reason: values.reason as string,
       hours,
       region,
+      attachments: values.attachments as Attachment[] | undefined,
     });
 
     const submittedAt = new Date().toISOString();

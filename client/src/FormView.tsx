@@ -1,8 +1,11 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@oa-agent/ui';
-import type { Definition, FieldSpec, LeaveBalance, SubmissionInfo } from './api';
+import { Button, FileUploader } from '@oa-agent/ui';
+import type { Attachment, Definition, FieldSpec, LeaveBalance, SubmissionInfo } from './api';
 import { resolveFieldRenderer } from './form/registry';
+
+/** 附件可接受的副檔名（與後端 MIME 白名單對應） */
+const ATTACHMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.xls,.xlsx';
 
 interface Props {
   def: Definition;
@@ -14,6 +17,10 @@ interface Props {
   onConfirm?: (draft: Record<string, unknown>) => Promise<void>;
   onCancel?: () => void;
   onClose: () => void;
+  /** 上傳附件到後端（Upload 欄位用）；回傳 metadata */
+  onUploadAttachment?: (file: File) => Promise<Attachment>;
+  /** 刪除後端附件 */
+  onDeleteAttachment?: (attachmentId: string) => Promise<void>;
 }
 
 /** 唯讀顯示字串：enum 用 field options 的中文 label，布林顯示是/否，空值顯示破折號 */
@@ -48,6 +55,8 @@ export default function FormView({
   onConfirm,
   onCancel,
   onClose,
+  onUploadAttachment,
+  onDeleteAttachment,
 }: Props) {
   const { t } = useTranslation();
   const submitted = !!submission;
@@ -87,6 +96,12 @@ export default function FormView({
   const isLastSection = currentSectionIndex === lastSectionIndex;
 
   function setField(key: string, val: string) {
+    setErr(null);
+    setDraft((d) => ({ ...d, [key]: val }));
+  }
+
+  // 非字串欄位（如附件 Upload，值為 Attachment[]）用此設定 draft
+  function setRawField(key: string, val: unknown) {
     setErr(null);
     setDraft((d) => ({ ...d, [key]: val }));
   }
@@ -135,6 +150,34 @@ export default function FormView({
   function renderField(key: string) {
     const spec = def.field[key];
     if (!spec) return null;
+
+    // 附件（Upload）：值為 Attachment[]，非字串，且需真正上傳到後端 → 特例渲染，
+    // 改用設計系統的 FileUploader（內含標題列），不走 registry 的字串 renderer。
+    // 送出後（submitted）以唯讀清單呈現。
+    if (spec.component === 'Upload') {
+      const list = ((submitted ? values[key] : draft[key]) as Attachment[] | undefined) ?? [];
+      return (
+        <div className="form-field form-field--full" key={key}>
+          <FileUploader
+            title={spec.label}
+            initialFiles={list}
+            readOnly={submitted}
+            disabled={busy}
+            accept={ATTACHMENT_ACCEPT}
+            maxFileSizeMB={10}
+            maxFiles={10}
+            onUpload={(file) =>
+              onUploadAttachment
+                ? onUploadAttachment(file)
+                : Promise.reject(new Error(t('form.submit')))
+            }
+            onDelete={(id) => (onDeleteAttachment ? onDeleteAttachment(id) : Promise.resolve())}
+            onChange={(next) => setRawField(key, next)}
+          />
+        </div>
+      );
+    }
+
     // 依 schema 的 component 從 registry 取對應設計系統元件
     const Renderer = resolveFieldRenderer(spec.component);
     const raw = draft[key];

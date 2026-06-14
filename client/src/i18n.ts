@@ -84,6 +84,7 @@ const zhHant = {
     theme: "主題",
     language: "語言",
     menu: "選單",
+    itemsCount: "{{count}} 個項目",
   },
   auth: {
     subtitle: "請登入以使用 OA 小幫手",
@@ -119,6 +120,18 @@ const zhHant = {
     step: "步驟 {{index}}",
     requiredMissing: "請先填寫必填欄位：{{fields}}",
     selectPlaceholder: "請選擇…",
+  },
+  fileUploader: {
+    defaultTitle: "附件清單",
+    defaultFormats: "支援 pdf、jpg、png、docx、xlsx，單檔上限 10MB",
+    none: "無附件",
+    pickOrDrop: "點擊或拖曳檔案到此上傳",
+    emptyHint: "可一次選擇多個檔案",
+    addMore: "新增附件",
+    uploading: "上傳中…",
+    uploadError: "上傳失敗",
+    descriptionPlaceholder: "附件說明（選填）",
+    deleteFile: "移除附件",
   },
 };
 
@@ -208,6 +221,7 @@ const en = {
     theme: "Theme",
     language: "Language",
     menu: "Menu",
+    itemsCount: "{{count}} item(s)",
   },
   auth: {
     subtitle: "Sign in to use the OA assistant",
@@ -244,6 +258,18 @@ const en = {
     step: "Step {{index}}",
     requiredMissing: "Please complete required fields: {{fields}}",
     selectPlaceholder: "Select…",
+  },
+  fileUploader: {
+    defaultTitle: "Attachments",
+    defaultFormats: "Supports pdf, jpg, png, docx, xlsx · max 10MB each",
+    none: "No attachments",
+    pickOrDrop: "Click or drag files here to upload",
+    emptyHint: "You can select multiple files",
+    addMore: "Add files",
+    uploading: "Uploading…",
+    uploadError: "Upload failed",
+    descriptionPlaceholder: "Description (optional)",
+    deleteFile: "Remove attachment",
   },
 };
 

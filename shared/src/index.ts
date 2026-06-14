@@ -19,6 +19,10 @@ export interface JsonSchemaProperty {
   maximum?: number;
   description?: string;
   items?: JsonSchemaProperty;
+  maxItems?: number;
+  /** 巢狀物件屬性（items 為 object 時使用，如附件 metadata） */
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
 }
 
 export interface DataSchema {
@@ -193,4 +197,21 @@ export interface Applicant {
 export interface LeaveBalance {
   leaveType: string;
   remainingHours: number;
+}
+
+/**
+ * 附件 metadata（存於表單值 attachments 陣列）。
+ * 檔案內容由後端附件儲存區以 id 保管，前後端只往返這份輕量 metadata。
+ */
+export interface Attachment {
+  /** 後端產生的識別碼 */
+  id: string;
+  /** 原始檔名 */
+  name: string;
+  /** MIME 類型 */
+  mime: string;
+  /** 檔案大小（bytes） */
+  size: number;
+  /** 使用者填寫的附件說明 */
+  description?: string;
 }

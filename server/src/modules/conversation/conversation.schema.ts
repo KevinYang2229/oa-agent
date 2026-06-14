@@ -12,6 +12,12 @@ export const idParamSchema = z.object({
   id: z.string().uuid(),
 });
 
+// 刪除附件：對話 id + 附件 id（附件 id 亦為 uuid）
+export const attachmentParamSchema = z.object({
+  id: z.string().uuid(),
+  attachmentId: z.string().uuid(),
+});
+
 // 確認畫面手動編輯：直接設定一批欄位值（不經 LLM）
 export const updateFieldsSchema = z.object({
   fields: z.record(z.string(), z.unknown()).refine((f) => Object.keys(f).length > 0, {

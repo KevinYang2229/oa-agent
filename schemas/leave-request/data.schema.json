@@ -54,6 +54,22 @@
       "minLength": 1,
       "maxLength": 500,
       "description": "請假事由"
+    },
+    "attachments": {
+      "type": "array",
+      "description": "附件清單（證明文件等）；僅存 metadata，檔案內容由後端附件儲存區保管",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "後端產生的附件識別碼" },
+          "name": { "type": "string", "description": "原始檔名" },
+          "mime": { "type": "string", "description": "MIME 類型" },
+          "size": { "type": "number", "description": "檔案大小（bytes）" },
+          "description": { "type": "string", "maxLength": 200, "description": "附件說明" }
+        },
+        "required": ["id", "name"]
+      }
     }
   },
   "additionalProperties": false

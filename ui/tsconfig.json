@@ -22,6 +22,8 @@
     "src/components/common/Textarea",
     "src/components/common/Select",
     "src/components/common/Dialog",
-    "src/components/common/DatePicker"
+    "src/components/common/DatePicker",
+    "src/components/common/Checkbox",
+    "src/components/common/FileUploader"
   ]
 }

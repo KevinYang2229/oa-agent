@@ -49,5 +49,10 @@
     "component": "Textarea",
     "label": "事由",
     "placeholder": "請簡述請假事由"
+  },
+  "attachments": {
+    "component": "Upload",
+    "label": "附件",
+    "help": "選填。支援 pdf、jpg、png、docx、xlsx，單檔上限 10MB"
   }
 }

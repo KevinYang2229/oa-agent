@@ -15,7 +15,8 @@
         ["leaveType"],
         ["startDate", "startTime"],
         ["endDate", "endTime"],
-        ["reason"]
+        ["reason"],
+        ["attachments"]
       ]
     }
   ]

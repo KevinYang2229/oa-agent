@@ -284,7 +284,12 @@ export default function App() {
     if (!convId || busy) return;
     const changed: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(draft)) {
-      if (String(v ?? '') !== String(values[k] ?? '')) changed[k] = v;
+      // 物件／陣列欄位（如附件）以 JSON 比較，避免 String() 把不同內容都變成 [object Object]
+      const isComplex = typeof v === 'object' && v !== null;
+      const differs = isComplex
+        ? JSON.stringify(v) !== JSON.stringify(values[k] ?? null)
+        : String(v ?? '') !== String(values[k] ?? '');
+      if (differs) changed[k] = v;
     }
 
     setBusy(true);
@@ -366,8 +371,13 @@ export default function App() {
   }
 
   const valueEntries = Object.entries(values).filter(
-    ([, v]) => v !== null && v !== undefined && v !== '',
+    ([, v]) =>
+      v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
   );
+
+  // 側欄顯示字串：陣列（如附件）顯示「N 個項目」，其餘照原值
+  const formatPaneValue = (v: unknown): string =>
+    Array.isArray(v) ? t('app.itemsCount', { count: v.length }) : String(v);
 
   // 還原登入狀態中：先不渲染，避免閃一下登入頁
   if (!authReady) return null;
@@ -571,7 +581,7 @@ export default function App() {
             valueEntries.map(([k, v]) => (
               <div className="kv-row" key={k}>
                 <span className="kv-key">{k}</span>
-                <span className="kv-val">{String(v)}</span>
+                <span className="kv-val">{formatPaneValue(v)}</span>
               </div>
             ))
           ) : (
@@ -616,6 +626,12 @@ export default function App() {
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           onClose={() => setShowForm(false)}
+          onUploadAttachment={
+            convId ? (file) => api.uploadAttachment(userId, convId, file) : undefined
+          }
+          onDeleteAttachment={
+            convId ? (id) => api.deleteAttachment(userId, convId, id).then(() => undefined) : undefined
+          }
         />
       )}
     </div>

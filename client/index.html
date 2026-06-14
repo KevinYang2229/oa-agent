@@ -2,7 +2,12 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover：啟用 env(safe-area-inset-*)，讓底部輸入框避開 home indicator
+         interactive-widget=resizes-content：鍵盤彈出時縮小版面（dvh 隨之縮），避免遮住輸入框 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <link rel="icon" type="image/png" href="/images/hy_logo.png" />
     <title>OA Agent</title>
   </head>

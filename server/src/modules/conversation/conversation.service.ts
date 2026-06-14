@@ -1,9 +1,11 @@
+import type { Attachment } from '@oa-agent/shared';
 import { computeStatus, setField } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
 import { getApplicant } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
+import { attachmentStore } from './attachment.store';
 import { runTurn } from './conversation.agent';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
@@ -104,6 +106,28 @@ export const conversationService = {
     };
   },
 
+  /**
+   * 上傳一個附件：驗證對話歸屬與狀態 → 存入附件儲存區 → 回 metadata。
+   * 不直接寫入 session.values；附件清單由確認畫面經 updateFields 持久化（單一寫入路徑）。
+   */
+  addAttachment(
+    userId: string,
+    id: string,
+    file: { name: string; mime: string; buffer: Buffer },
+  ): Attachment {
+    const session = conversationStore.get(id, userId);
+    if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
+    if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
+    return attachmentStore.save(session.id, file);
+  },
+
+  /** 刪除一個附件（檔案內容）；對話歸屬驗證後才動作 */
+  removeAttachment(userId: string, id: string, attachmentId: string): void {
+    const session = conversationStore.get(id, userId);
+    const ok = attachmentStore.remove(session.id, attachmentId);
+    if (!ok) throw AppError.notFound('Attachment not found');
+  },
+
   get(userId: string, id: string): Session {
     const session = conversationStore.get(id, userId);
     // 查詢時即時反映目前簽核進度（依送出時間重算關卡狀態）
@@ -121,7 +145,11 @@ export const conversationService = {
 
   cancel(userId: string, id: string): Session {
     const session = conversationStore.get(id, userId);
-    if (session.status !== 'submitted') session.status = 'cancelled';
+    if (session.status !== 'submitted') {
+      session.status = 'cancelled';
+      // 已取消的對話不會送出，清掉暫存附件內容避免記憶體累積
+      attachmentStore.clearSession(session.id);
+    }
     conversationStore.save(session);
     return session;
   },
