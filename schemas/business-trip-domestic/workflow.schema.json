@@ -1,0 +1,6 @@
+{
+  "steps": [
+    { "type": "manager", "name": "主管審核" },
+    { "type": "accounting", "name": "會計審核" }
+  ]
+}

@@ -3,6 +3,7 @@ import { refreshApprovals } from '@/modules/form/approvals';
 import { computeStatus, setField, validateAll } from '@/modules/form/form.engine';
 import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
+import { businessTripService } from '@/modules/business-trip/business-trip.service';
 import { leaveService } from '@/modules/leave/leave.service';
 import { outingService } from '@/modules/outing/outing.service';
 import { getApplicant } from '@/modules/user/user.directory';
@@ -93,9 +94,13 @@ export const conversationService = {
 
     session.status = 'submitting';
     try {
-      // 依表單類型選擇送出 service（外出登記 / 請假…），與 agent 工具一致
+      // 依表單類型選擇送出 service（外出登記 / 出差報銷 / 請假…），與 agent 工具一致
       const submitForm =
-        session.formId === 'outing-registration' ? outingService.submit : leaveService.submit;
+        session.formId === 'outing-registration'
+          ? outingService.submit
+          : session.formId === 'business-trip-domestic'
+            ? businessTripService.submit
+            : leaveService.submit;
       const result = await submitForm(userId, session.values);
       session.status = 'submitted';
       session.submission = {

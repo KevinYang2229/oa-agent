@@ -1,0 +1,32 @@
+{
+  "sections": [
+    {
+      "title": "國內出差報銷申請",
+      "fields": [
+        ["onBehalf"],
+        ["applicant"],
+        ["company"],
+        ["purpose"]
+      ]
+    },
+    {
+      "title": "費用明細",
+      "fields": [
+        ["tripDate"],
+        ["routeFrom", "routeTo"],
+        ["taxiFee", "hsrFee", "transitFee"],
+        ["privateCarKm", "privateCarFee"],
+        ["lodgingFee", "mealFee", "parkingFee"],
+        ["carpoolFee", "carpoolMembers"],
+        ["subtotal"]
+      ]
+    },
+    {
+      "title": "特約計程車信息",
+      "fields": [
+        ["hsrCarbon"],
+        ["attachments"]
+      ]
+    }
+  ]
+}

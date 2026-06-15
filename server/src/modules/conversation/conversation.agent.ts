@@ -11,6 +11,7 @@ import { computeStatus, setField, validateAll } from '@/modules/form/form.engine
 import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
+import { businessTripService } from '@/modules/business-trip/business-trip.service';
 import { leaveService } from '@/modules/leave/leave.service';
 import { outingService } from '@/modules/outing/outing.service';
 import { listDeputyCandidates } from '@/modules/user/user.directory';
@@ -154,9 +155,13 @@ async function dispatchTool(
     }
     session.status = 'submitting';
     try {
-      // 依表單類型選擇送出 service（外出登記 / 請假…）
+      // 依表單類型選擇送出 service（外出登記 / 出差報銷 / 請假…）
       const submit =
-        session.formId === 'outing-registration' ? outingService.submit : leaveService.submit;
+        session.formId === 'outing-registration'
+          ? outingService.submit
+          : session.formId === 'business-trip-domestic'
+            ? businessTripService.submit
+            : leaveService.submit;
       const result = await submit(session.userId, session.values);
       session.status = 'submitted';
       session.submission = {

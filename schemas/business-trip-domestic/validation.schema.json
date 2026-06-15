@@ -1,0 +1,12 @@
+{
+  "required": [
+    "applicant",
+    "company",
+    "purpose",
+    "tripDate",
+    "routeFrom",
+    "routeTo",
+    "hsrCarbon"
+  ],
+  "rules": []
+}

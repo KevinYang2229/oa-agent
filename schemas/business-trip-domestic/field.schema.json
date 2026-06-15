@@ -1,0 +1,118 @@
+{
+  "onBehalf": {
+    "component": "Checkbox",
+    "label": "代人申請"
+  },
+  "applicant": {
+    "component": "Input",
+    "label": "申請人",
+    "placeholder": "姓名(工號)"
+  },
+  "company": {
+    "component": "Select",
+    "label": "所屬公司",
+    "options": [
+      { "value": "凌網", "label": "凌網" },
+      { "value": "全球", "label": "全球" },
+      { "value": "知識", "label": "知識" },
+      { "value": "資訊", "label": "資訊" },
+      { "value": "萬耀", "label": "萬耀" },
+      { "value": "元華", "label": "元華" },
+      { "value": "方集", "label": "方集" }
+    ]
+  },
+  "purpose": {
+    "component": "Textarea",
+    "label": "出差目的",
+    "placeholder": "例如 客戶訪談"
+  },
+  "tripDate": {
+    "component": "DatePicker",
+    "label": "出差日期"
+  },
+  "routeFrom": {
+    "component": "Input",
+    "label": "路程（起）",
+    "placeholder": "例如 台北辦公室"
+  },
+  "routeTo": {
+    "component": "Input",
+    "label": "路程（訖）",
+    "placeholder": "例如 新竹辦公室"
+  },
+  "taxiFee": {
+    "component": "Number",
+    "label": "計程車",
+    "placeholder": "0",
+    "help": "交通費（元）"
+  },
+  "hsrFee": {
+    "component": "Number",
+    "label": "高鐵",
+    "placeholder": "0",
+    "help": "交通費（元）"
+  },
+  "transitFee": {
+    "component": "Number",
+    "label": "大眾運輸",
+    "placeholder": "0",
+    "help": "交通費（元）"
+  },
+  "privateCarKm": {
+    "component": "Number",
+    "label": "私車公用（公里）",
+    "placeholder": "0"
+  },
+  "privateCarFee": {
+    "component": "Number",
+    "label": "私車公用（金額）",
+    "placeholder": "0",
+    "help": "金額（元）"
+  },
+  "lodgingFee": {
+    "component": "Number",
+    "label": "住宿費",
+    "placeholder": "0",
+    "help": "金額（元）"
+  },
+  "mealFee": {
+    "component": "Number",
+    "label": "膳雜費",
+    "placeholder": "0",
+    "help": "金額（元）"
+  },
+  "parkingFee": {
+    "component": "Number",
+    "label": "停車費",
+    "placeholder": "0",
+    "help": "金額（元）"
+  },
+  "carpoolFee": {
+    "component": "Number",
+    "label": "共乘費",
+    "placeholder": "0",
+    "help": "金額（元）"
+  },
+  "carpoolMembers": {
+    "component": "Input",
+    "label": "共乘人員",
+    "placeholder": "選填，列出共乘人員"
+  },
+  "subtotal": {
+    "component": "Number",
+    "label": "小計",
+    "placeholder": "0",
+    "help": "員工支出費用小計（元）"
+  },
+  "hsrCarbon": {
+    "component": "Number",
+    "label": "高鐵碳排放",
+    "placeholder": "0",
+    "help": "單位 kg.CO2e；依實際出差填寫單程或來回數據，例如新竹↔台北來回為 2.13*2=4.26"
+  },
+  "attachments": {
+    "component": "Upload",
+    "label": "附件",
+    "help": "支援 pdf、jpg、png、docx、xlsx，單檔上限 10MB"
+  }
+}

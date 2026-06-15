@@ -54,6 +54,50 @@ export interface OutingRegistrationPayload {
   remark?: string;
 }
 
+export interface BusinessTripDomesticPayload {
+  userId: string;
+  /** 是否代人申請 */
+  onBehalf?: boolean;
+  /** 申請人，格式：姓名(工號) */
+  applicant: string;
+  /** 所屬公司 */
+  company: string;
+  /** 出差目的 */
+  purpose: string;
+  /** 出差日期 */
+  tripDate: string;
+  /** 路程起點 */
+  routeFrom: string;
+  /** 路程終點 */
+  routeTo: string;
+  /** 交通費－計程車（元） */
+  taxiFee?: number;
+  /** 交通費－高鐵（元） */
+  hsrFee?: number;
+  /** 交通費－大眾運輸（元） */
+  transitFee?: number;
+  /** 私車公用－公里數 */
+  privateCarKm?: number;
+  /** 私車公用－金額（元） */
+  privateCarFee?: number;
+  /** 住宿費（元） */
+  lodgingFee?: number;
+  /** 膳雜費（元） */
+  mealFee?: number;
+  /** 停車費（元） */
+  parkingFee?: number;
+  /** 共乘費（元） */
+  carpoolFee?: number;
+  /** 共乘人員（選填） */
+  carpoolMembers?: string;
+  /** 員工支出費用小計（元） */
+  subtotal?: number;
+  /** 高鐵碳排放 kg.CO2e */
+  hsrCarbon: number;
+  /** 附件 metadata（單據等）；檔案內容由附件儲存區以 id 保管 */
+  attachments?: Attachment[];
+}
+
 export interface OASubmitResult {
   oaRequestId: string;
   status: 'accepted' | 'pending' | 'rejected';
@@ -64,5 +108,6 @@ export interface OAConnector {
   readonly name: string;
   submitLeaveRequest(payload: LeaveRequestPayload): Promise<OASubmitResult>;
   submitOutingRegistration(payload: OutingRegistrationPayload): Promise<OASubmitResult>;
+  submitBusinessTripDomestic(payload: BusinessTripDomesticPayload): Promise<OASubmitResult>;
   getLeaveBalance?(userId: string): Promise<LeaveBalance[]>;
 }

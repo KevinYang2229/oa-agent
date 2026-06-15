@@ -5,6 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from '@/lib/logger';
 import type {
+  BusinessTripDomesticPayload,
   LeaveBalance,
   LeaveRequestPayload,
   OAConnector,
@@ -15,6 +16,9 @@ import type {
 // MVP 以記憶體保存送出紀錄，方便 demo 後檢視
 export const stubSubmissions: Array<LeaveRequestPayload & { oaRequestId: string }> = [];
 export const stubOutingSubmissions: Array<OutingRegistrationPayload & { oaRequestId: string }> = [];
+export const stubBusinessTripSubmissions: Array<
+  BusinessTripDomesticPayload & { oaRequestId: string }
+> = [];
 
 export const stubOAConnector: OAConnector = {
   name: 'stub',
@@ -30,6 +34,15 @@ export const stubOAConnector: OAConnector = {
     const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
     stubOutingSubmissions.push({ ...payload, oaRequestId });
     logger.info({ oaRequestId, payload }, '[oa:stub] outing registration submitted');
+    return { oaRequestId, status: 'accepted', raw: { echo: payload } };
+  },
+
+  async submitBusinessTripDomestic(
+    payload: BusinessTripDomesticPayload,
+  ): Promise<OASubmitResult> {
+    const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
+    stubBusinessTripSubmissions.push({ ...payload, oaRequestId });
+    logger.info({ oaRequestId, payload }, '[oa:stub] business trip (domestic) submitted');
     return { oaRequestId, status: 'accepted', raw: { echo: payload } };
   },
 
