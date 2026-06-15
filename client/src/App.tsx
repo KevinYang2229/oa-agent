@@ -259,6 +259,10 @@ export default function App() {
     if (enteredFormStage) {
       void loadAndShowForm(data.id ?? sessionId);
     }
+    // 剛送出（→submitted）：一個 session 只處理一張表單，提醒使用者要申請其他表單需重新開始
+    if (data.status === 'submitted' && prevStatus !== 'submitted') {
+      pushMsg('sys', t('app.submittedHint'));
+    }
   }
 
   async function loadAndShowForm(sessionId: string | null) {
@@ -280,10 +284,14 @@ export default function App() {
     if (busy) return;
     setBusy(true);
     try {
-      const data = convId
-        ? await api.sendMessage(userId, convId, message)
-        : await api.start(userId, message, selectedFormId ?? undefined);
-      applyTurn(data, convId);
+      // 一個 session 一張表單：上一張已送出／取消後，下一則訊息自動開新對話（而非送進已結束的 session）
+      const terminal = status === 'submitted' || status === 'cancelled';
+      if (terminal) resetSessionState();
+      const data =
+        convId && !terminal
+          ? await api.sendMessage(userId, convId, message)
+          : await api.start(userId, message, selectedFormId ?? undefined);
+      applyTurn(data, terminal ? null : convId);
       setConn('online'); // 成功通一輪＝確定連線正常
     } catch (e) {
       if (isSessionGone(e)) {

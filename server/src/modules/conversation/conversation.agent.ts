@@ -8,7 +8,7 @@ import { getLLMProvider } from '@/lib/llm';
 import type { LLMContentBlock, LLMProvider } from '@/lib/llm/types';
 import { logger } from '@/lib/logger';
 import { computeStatus, setField, validateAll } from '@/modules/form/form.engine';
-import { getDefinition } from '@/modules/form/form.registry';
+import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
@@ -74,9 +74,22 @@ function buildSystemPrompt(def: Definition): string {
     );
   }
 
+  // 全系統可申請的表單清單：讓助理在被問到「有哪些表單可以申請」時能完整回答，
+  // 而非只知道自己這場對話的表單。
+  const currentTitle = def.data.title ?? def.agent.description;
+  const allForms = listDefinitions()
+    .map((d) => `- ${d.data.title ?? d.agent.intent}：${d.agent.description}`)
+    .join('\n');
+
   const lines = [
     `你是公司 OA 系統的「${def.agent.description}」助理，全程使用繁體中文。`,
     `今天日期是 ${today}；請把相對日期（明天、下週一等）換算成 YYYY-MM-DD。`,
+    '',
+    '本系統目前可申請的表單（使用者詢問「有哪些表單可以申請」時，請完整列出以下全部，',
+    `勿只回答目前這張表單）：`,
+    allForms,
+    `這場對話正在協助你填寫「${currentTitle}」。若使用者想改申請其他表單，請告知對方可直接`,
+    '說出該表單名稱或需求（例如「我要外出登記」）即可另開申請。',
     '',
     '表單欄位（填入 fill_fields 時請用機器值，例如假別 annual/sick、是否需報銷 yes/no）：',
     describeFields(def),

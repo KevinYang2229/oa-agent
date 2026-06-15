@@ -86,6 +86,7 @@ const zhHant = {
       "對話連線已重置（伺服器可能重新啟動或逾時），已清空目前進度。請直接輸入需求重新開始。",
     cancelledMsg: "已取消這張表單。可按「重新開始」建立新的需求。",
     submittedMsg: "已送出 ✅ OA 單號：{{id}}",
+    submittedHint: "這張表單已完成。若要申請其他表單（如外出登記、請假等），請按「重新開始」或直接輸入新的需求。",
     cancelFailed: "取消失敗：",
     loadFormFailed: "無法載入表單畫面：",
     requestFailed: "請求失敗",
@@ -231,6 +232,8 @@ const en = {
     cancelledMsg:
       "This form has been cancelled. Click “Restart” to begin a new request.",
     submittedMsg: "Submitted ✅ OA No.: {{id}}",
+    submittedHint:
+      "This form is complete. To apply for another form (e.g. outing registration, leave), click “Restart” or just type a new request.",
     cancelFailed: "Cancel failed: ",
     loadFormFailed: "Failed to load form view: ",
     requestFailed: "Request failed",
