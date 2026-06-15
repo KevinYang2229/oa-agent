@@ -93,6 +93,20 @@
   .app-reset {
     @apply inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 font-medium text-[var(--text-secondary)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-primary)];
   }
+  /* 嵌入模式精簡標題列：取代整頁 chrome，只留標題 + 重新開始 + 關閉 */
+  .embed-header {
+    @apply relative z-10 flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-4 py-2.5;
+    @apply shadow-[0_4px_20px_-14px_rgba(11,55,102,0.28)];
+  }
+  .embed-title {
+    @apply min-w-0 truncate text-base font-bold leading-tight text-[var(--text-primary)];
+  }
+  .embed-actions {
+    @apply flex shrink-0 items-center gap-1;
+  }
+  .embed-btn {
+    @apply inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-primary)];
+  }
   .app-body {
     @apply flex min-h-0 flex-1;
     /* 窄螢幕（≤720px）：左右改為上下堆疊，側欄移到聊天下方 */

@@ -58,6 +58,9 @@ const STATUS_BADGE: Record<SessionStatus, StatusBadgeVariant> = {
 let seq = 0;
 const nextId = () => ++seq;
 
+// 嵌入模式：以 ?embed=1 載入（widget iframe 用），隱藏整頁頁首讓畫面像純聊天 widget。
+const EMBED = new URLSearchParams(window.location.search).get('embed') === '1';
+
 // 逐字浮現：Agent 回覆抵達後一字一字顯示，營造「正在回覆」的動態感。
 // 元件以 message id 為 key，狀態隨實例保留 → 既有訊息不會在重繪（如切主題）時重播。
 function TypewriterText({ text, onTick }: { text: string; onTick?: () => void }) {
@@ -404,6 +407,11 @@ export default function App() {
     taRef.current?.focus();
   }
 
+  // 嵌入模式：通知外層 widget.js 收起彈窗（widget.js 監聽此 message）。未被嵌入時 parent===self，無副作用。
+  function closeWidget() {
+    window.parent.postMessage({ type: 'oa-agent:close' }, '*');
+  }
+
   const valueEntries = Object.entries(values).filter(
     ([, v]) =>
       v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
@@ -419,7 +427,8 @@ export default function App() {
   if (!authUser) return <LoginView onLogin={handleLogin} />;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${EMBED ? ' app-shell-embed' : ''}`}>
+      {!EMBED && (
       <header className="app-header">
         {/* 品牌：AI 小幫手 + 連線狀態圓點（綠＝已連線，AI 可正常呼叫） */}
         <div className="app-brand">
@@ -485,6 +494,61 @@ export default function App() {
           />
         </div>
       </header>
+      )}
+
+      {/* 嵌入模式專用的精簡標題列：標題 + 重新開始 + 關閉（取代整頁 chrome） */}
+      {EMBED && (
+        <header className="embed-header">
+          <span className="embed-title">{t('app.aiName')}</span>
+          <div className="embed-actions">
+            <button
+              type="button"
+              className="embed-btn"
+              onClick={reset}
+              title={t('app.reset')}
+              aria-label={t('app.reset')}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="embed-btn"
+              onClick={closeWidget}
+              title={t('app.close')}
+              aria-label={t('app.close')}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </header>
+      )}
 
       <div className="app-body">
         <div className="chat-pane">

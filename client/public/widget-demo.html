@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>第三方網站（widget 接入示範）</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+        color: #1f2937;
+        background: #f3f4f6;
+      }
+      .demo-hero {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 80px 24px;
+      }
+      .demo-hero h1 { font-size: 28px; }
+      .demo-hero p { line-height: 1.7; color: #4b5563; }
+      code {
+        background: #111827;
+        color: #e5e7eb;
+        padding: 12px 16px;
+        border-radius: 8px;
+        display: block;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-hero">
+      <h1>這是一個「別人的網站」</h1>
+      <p>
+        這個頁面模擬第三方網站。它本身與 OA 系統無關，只在頁尾加入了一行
+        widget 載入碼，右下角就會出現浮動按鈕；點擊後彈出聊天視窗即可串接後端 AI。
+      </p>
+      <p>接入方式（對方只需貼這一行）：</p>
+      <code>&lt;script src="https://你的網域/widget.js"&gt;&lt;/script&gt;</code>
+    </div>
+
+    <!-- ↓↓↓ widget 接入碼（POC：同源載入本機 widget.js）↓↓↓ -->
+    <script src="/widget.js"></script>
+  </body>
+</html>
