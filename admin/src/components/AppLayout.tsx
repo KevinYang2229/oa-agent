@@ -1,0 +1,86 @@
+import type { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth';
+import { IconLogout, IconTenants } from './icons';
+
+/**
+ * 控制台外殼：深色側邊欄 + 頂部列 + 內容區。
+ * 各頁傳入麵包屑、標題、右上動作與內容。
+ */
+export default function AppLayout({
+  crumb,
+  title,
+  actions,
+  children,
+}: {
+  crumb?: string;
+  title: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const loc = useLocation();
+  const onTenants = loc.pathname === '/' || loc.pathname.startsWith('/tenants');
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">OA</div>
+          <div>
+            <div className="brand-name">OA Agent</div>
+            <div className="brand-sub">管理後台</div>
+          </div>
+        </div>
+
+        <div className="nav-label">營運</div>
+        <nav className="nav">
+          <div
+            className={`nav-item${onTenants ? ' active' : ''}`}
+            onClick={() => navigate('/')}
+            role="button"
+            tabIndex={0}
+          >
+            <IconTenants className="nav-ico" />
+            租戶
+          </div>
+        </nav>
+
+        <div className="sidebar-foot">
+          OA Agent 多租戶控制台
+          <br />
+          <code>v0.1.0</code>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <div className="topbar-title">
+            {crumb && <span className="topbar-crumb">{crumb}</span>}
+            <span className="topbar-h">{title}</span>
+          </div>
+          <div className="topbar-actions">
+            {actions}
+            <div className="user-chip">
+              <span className="avatar">A</span>
+              管理員
+            </div>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+            >
+              <IconLogout />
+              登出
+            </button>
+          </div>
+        </header>
+
+        <main className="content">{children}</main>
+      </div>
+    </div>
+  );
+}

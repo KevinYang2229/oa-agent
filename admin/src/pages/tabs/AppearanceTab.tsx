@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import type { TenantAppearance } from '@oa-agent/shared';
-import { Button } from '@oa-agent/ui';
 import { api, type Tenant } from '../../api';
 
 const POSITIONS = [
@@ -44,92 +43,109 @@ export default function AppearanceTab({
     return `http://localhost:5173/?${params.toString()}`;
   }, [form.theme, form.defaultLocale]);
 
+  const primary = form.primaryColor ?? '#4f46e5';
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>
-          主色
-          <input
-            type="color"
-            value={form.primaryColor ?? '#0057ff'}
-            onChange={(e) => set('primaryColor', e.target.value)}
-            style={{ display: 'block', marginTop: 4 }}
-          />
-        </label>
+    <div className="appearance-grid">
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">Widget 外觀</div>
+            <div className="card-desc">儲存後依租戶套用；widget 載入時讀取，data-* 參數仍優先。</div>
+          </div>
+        </div>
+        <div className="card-body">
+          <div className="form-grid">
+            <div className="field">
+              <span className="field-label">主色</span>
+              <div className="color-field">
+                <input
+                  type="color"
+                  value={primary}
+                  onChange={(e) => set('primaryColor', e.target.value)}
+                />
+                <span className="color-hex">{primary.toUpperCase()}</span>
+              </div>
+            </div>
 
-        <label>
-          主題
-          <select
-            value={form.theme ?? 'light'}
-            onChange={(e) => set('theme', e.target.value as TenantAppearance['theme'])}
-            style={{ display: 'block', marginTop: 4 }}
-          >
-            <option value="light">淺色</option>
-            <option value="dark">深色</option>
-          </select>
-        </label>
+            <div className="field">
+              <label className="field-label">主題</label>
+              <select
+                className="select"
+                value={form.theme ?? 'light'}
+                onChange={(e) => set('theme', e.target.value as TenantAppearance['theme'])}
+              >
+                <option value="light">淺色</option>
+                <option value="dark">深色</option>
+              </select>
+            </div>
 
-        <label>
-          按鈕位置
-          <select
-            value={form.position ?? 'br'}
-            onChange={(e) => set('position', e.target.value as TenantAppearance['position'])}
-            style={{ display: 'block', marginTop: 4 }}
-          >
-            {POSITIONS.map((p) => (
-              <option key={p.v} value={p.v}>{p.label}</option>
-            ))}
-          </select>
-        </label>
+            <div className="field">
+              <label className="field-label">啟動按鈕位置</label>
+              <select
+                className="select"
+                value={form.position ?? 'br'}
+                onChange={(e) => set('position', e.target.value as TenantAppearance['position'])}
+              >
+                {POSITIONS.map((p) => (
+                  <option key={p.v} value={p.v}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <label>
-          Logo URL
-          <input
-            type="url"
-            value={form.logoUrl ?? ''}
-            onChange={(e) => set('logoUrl', e.target.value)}
-            placeholder="https://…/logo.png"
-            style={{ display: 'block', marginTop: 4, width: '100%' }}
-          />
-        </label>
+            <div className="field">
+              <label className="field-label">預設語言</label>
+              <input
+                className="input"
+                value={form.defaultLocale ?? ''}
+                onChange={(e) => set('defaultLocale', e.target.value)}
+                placeholder="zh-Hant"
+              />
+            </div>
+          </div>
 
-        <label>
-          歡迎語
-          <input
-            type="text"
-            value={form.welcomeMessage ?? ''}
-            onChange={(e) => set('welcomeMessage', e.target.value)}
-            maxLength={200}
-            style={{ display: 'block', marginTop: 4, width: '100%' }}
-          />
-        </label>
+          <div className="field" style={{ marginTop: 18 }}>
+            <label className="field-label">Logo URL</label>
+            <input
+              className="input"
+              type="url"
+              value={form.logoUrl ?? ''}
+              onChange={(e) => set('logoUrl', e.target.value)}
+              placeholder="https://…/logo.png"
+            />
+          </div>
 
-        <label>
-          預設語言
-          <input
-            type="text"
-            value={form.defaultLocale ?? ''}
-            onChange={(e) => set('defaultLocale', e.target.value)}
-            placeholder="zh-Hant"
-            style={{ display: 'block', marginTop: 4 }}
-          />
-        </label>
+          <div className="field">
+            <label className="field-label">歡迎語</label>
+            <input
+              className="input"
+              value={form.welcomeMessage ?? ''}
+              onChange={(e) => set('welcomeMessage', e.target.value)}
+              maxLength={200}
+              placeholder="嗨！我可以協助你填寫表單。"
+            />
+          </div>
 
-        <div>
-          <Button variant="confirm" onClick={save} disabled={busy}>{busy ? '儲存中…' : '儲存外觀'}</Button>
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={save} disabled={busy}>
+              {busy ? '儲存中…' : '儲存外觀'}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div>
-        <p style={{ fontSize: 12, color: '#888' }}>即時預覽（widget）</p>
-        <iframe
-          title="widget-preview"
-          src={previewSrc}
-          style={{ width: 340, height: 520, border: '1px solid #ddd', borderRadius: 8 }}
-        />
-        <p style={{ fontSize: 11, color: '#aaa' }}>
-          需同時執行 widget client（5173）。主色預覽以儲存後套用為準。
-        </p>
+      <div className="card preview-card">
+        <div className="card-head">
+          <div className="card-title">即時預覽</div>
+        </div>
+        <div className="card-body">
+          <iframe title="widget-preview" src={previewSrc} className="preview-frame" />
+          <p className="field-hint" style={{ marginTop: 10 }}>
+            需同時執行 widget client（5173）。主色以儲存後套用為準。
+          </p>
+        </div>
       </div>
     </div>
   );

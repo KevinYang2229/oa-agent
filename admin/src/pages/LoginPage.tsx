@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input } from '@oa-agent/ui';
 import { useAuth } from '../auth';
 
 export default function LoginPage() {
@@ -26,23 +25,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: '15vh auto', padding: 24 }}>
-      <h1 style={{ fontSize: 22, marginBottom: 4 }}>OA Agent 管理後台</h1>
-      <p style={{ color: '#666', marginBottom: 24 }}>請輸入管理密碼登入</p>
-      <form onSubmit={submit}>
-        <Input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="管理密碼"
-        />
-        {err && <p style={{ color: '#c00', marginTop: 8 }}>{err}</p>}
-        <div style={{ marginTop: 16 }}>
-          <Button type="submit" variant="confirm" disabled={busy}>
-            {busy ? '登入中…' : '登入'}
-          </Button>
+    <div className="login">
+      <div className="login-card">
+        <div className="login-brand">
+          <div className="brand-mark" style={{ width: 44, height: 44, borderRadius: 13 }}>
+            OA
+          </div>
+          <div>
+            <div className="login-title">管理後台</div>
+            <div className="login-sub">OA Agent 多租戶控制台</div>
+          </div>
         </div>
-      </form>
+
+        <form onSubmit={submit}>
+          <div className="field">
+            <label className="field-label" htmlFor="pw">
+              管理密碼
+            </label>
+            <input
+              id="pw"
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="請輸入管理密碼"
+              autoFocus
+            />
+          </div>
+          {err && <p className="login-err">{err}</p>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? '登入中…' : '登入控制台'}
+          </button>
+        </form>
+
+        <div className="login-foot">受 ADMIN_PASSWORD 保護 · 僅限管理員</div>
+      </div>
     </div>
   );
 }

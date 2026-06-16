@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@oa-agent/ui';
 import { api, type WebhookEndpoint } from '../../api';
+import { IconPlus } from '../../components/icons';
 
 export default function WebhookTab({ tenantId, onError }: { tenantId: string; onError: (e: unknown) => void }) {
   const [list, setList] = useState<WebhookEndpoint[]>([]);
   const [url, setUrl] = useState('');
   const [secret, setSecret] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -20,7 +21,8 @@ export default function WebhookTab({ tenantId, onError }: { tenantId: string; on
   }, [load]);
 
   async function add() {
-    if (!url.trim()) return;
+    if (!url.trim() || busy) return;
+    setBusy(true);
     try {
       await api.createWebhook(tenantId, { url: url.trim(), ...(secret.trim() ? { secret: secret.trim() } : {}) });
       setUrl('');
@@ -28,6 +30,8 @@ export default function WebhookTab({ tenantId, onError }: { tenantId: string; on
       await load();
     } catch (e) {
       onError(e);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -50,29 +54,59 @@ export default function WebhookTab({ tenantId, onError }: { tenantId: string; on
   }
 
   return (
-    <div style={{ maxWidth: 640 }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://接收端/hook" style={{ flex: 1 }} />
-        <input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="簽章密鑰（選填）" />
-        <Button variant="confirm" onClick={add}>新增</Button>
+    <div className="card">
+      <div className="card-head">
+        <div>
+          <div className="card-title">Webhook 端點</div>
+          <div className="card-desc">表單送出成功後以 HMAC 簽章推送 form.submitted。</div>
+        </div>
       </div>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <div className="card-body" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="toolbar">
+          <input
+            className="input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://接收端/hook"
+          />
+          <input
+            className="input"
+            style={{ maxWidth: 200 }}
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+            placeholder="簽章密鑰（選填）"
+          />
+          <button className="btn btn-primary" onClick={add} disabled={busy}>
+            <IconPlus />
+            新增
+          </button>
+        </div>
+      </div>
+
+      <ul className="list">
         {list.map((w) => (
-          <li key={w.id} style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 13, color: w.disabledAt ? '#999' : '#222' }}>
-                {w.url} {w.disabledAt ? '（已停用）' : ''}
-              </span>
-              <span style={{ display: 'flex', gap: 8 }}>
-                <Button variant="reset" onClick={() => toggle(w)}>{w.disabledAt ? '啟用' : '停用'}</Button>
-                <Button variant="delete" onClick={() => remove(w)}>刪除</Button>
-              </span>
+          <li key={w.id} className="row">
+            <div className="row-main">
+              <div className="row-title">
+                <span className={`badge ${w.disabledAt ? 'badge-off' : 'badge-on'}`}>
+                  {w.disabledAt ? '已停用' : '啟用中'}
+                </span>
+                <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 500 }}>{w.url}</span>
+              </div>
+              <div className="row-sub">secret: {w.secret}</div>
             </div>
-            <div style={{ fontSize: 11, color: '#aaa' }}>secret: {w.secret}</div>
+            <div className="row-actions">
+              <button className="btn btn-ghost btn-sm" onClick={() => toggle(w)}>
+                {w.disabledAt ? '啟用' : '停用'}
+              </button>
+              <button className="btn btn-danger btn-sm" onClick={() => remove(w)}>
+                刪除
+              </button>
+            </div>
           </li>
         ))}
-        {list.length === 0 && <li style={{ color: '#999' }}>尚無 webhook 端點</li>}
+        {list.length === 0 && <li className="empty">尚無 webhook 端點。</li>}
       </ul>
     </div>
   );

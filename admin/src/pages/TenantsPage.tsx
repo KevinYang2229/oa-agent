@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button, Input } from '@oa-agent/ui';
+import { useNavigate } from 'react-router-dom';
 import { api, UnauthorizedError, type Tenant } from '../api';
 import { useAuth } from '../auth';
+import AppLayout from '../components/AppLayout';
+import { IconChevron, IconInfo, IconPlus } from '../components/icons';
 
 export default function TenantsPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -34,44 +37,94 @@ export default function TenantsPage() {
   }, []);
 
   async function create() {
-    if (!name.trim()) return;
+    if (!name.trim() || busy) return;
+    setBusy(true);
     try {
       const { publishableKey } = await api.createTenant({ name: name.trim() });
       setName('');
+      setCreating(false);
       setNewKey(publishableKey);
       await load();
     } catch (e) {
       handleErr(e);
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 22 }}>租戶</h1>
-        <Button variant="cancel" onClick={() => { logout(); navigate('/login'); }}>登出</Button>
-      </div>
-
-      {err && <p style={{ color: '#c00' }}>{err}</p>}
+    <AppLayout
+      crumb="營運"
+      title="租戶"
+      actions={
+        <button className="btn btn-primary btn-sm" onClick={() => setCreating((v) => !v)}>
+          <IconPlus />
+          新增租戶
+        </button>
+      }
+    >
+      {err && (
+        <div className="banner banner-err">
+          <IconInfo />
+          {err}
+        </div>
+      )}
       {newKey && (
-        <p style={{ background: '#eef', padding: 8, borderRadius: 6 }}>
-          已建立，公開金鑰：<code>{newKey}</code>（請妥善保存）
-        </p>
+        <div className="banner banner-key">
+          <IconInfo />
+          <span>
+            租戶已建立，公開金鑰 <span className="code-pill">{newKey}</span> — 僅顯示一次，請妥善保存。
+          </span>
+        </div>
       )}
 
-      <div style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="新租戶名稱" />
-        <Button variant="confirm" onClick={create}>建立租戶</Button>
-      </div>
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">所有租戶</div>
+            <div className="card-desc">{tenants.length} 個整合方</div>
+          </div>
+        </div>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {tenants.map((t) => (
-          <li key={t.id} style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
-            <Link to={`/tenants/${t.id}`}>{t.name}</Link>
-            <span style={{ color: '#999', marginLeft: 8, fontSize: 12 }}>{t.id}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+        {creating && (
+          <div className="card-body" style={{ borderBottom: '1px solid var(--border)' }}>
+            <div className="toolbar">
+              <input
+                className="input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && create()}
+                placeholder="新租戶名稱，例如 Acme Inc."
+                autoFocus
+              />
+              <button className="btn btn-primary" onClick={create} disabled={busy}>
+                {busy ? '建立中…' : '建立'}
+              </button>
+              <button className="btn btn-ghost" onClick={() => setCreating(false)}>
+                取消
+              </button>
+            </div>
+          </div>
+        )}
+
+        <ul className="list">
+          {tenants.map((t) => (
+            <li
+              key={t.id}
+              className="row row-link"
+              onClick={() => navigate(`/tenants/${t.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="row-main">
+                <div className="row-title">{t.name}</div>
+                <div className="row-sub">{t.id}</div>
+              </div>
+              <IconChevron className="chev" />
+            </li>
+          ))}
+          {tenants.length === 0 && <li className="empty">尚無租戶，點右上「新增租戶」開始。</li>}
+        </ul>
+      </div>
+    </AppLayout>
   );
 }

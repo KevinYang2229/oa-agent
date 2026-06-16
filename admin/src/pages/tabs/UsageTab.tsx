@@ -17,7 +17,13 @@ export default function UsageTab({ tenantId, onError }: { tenantId: string; onEr
     };
   }, [tenantId, onError]);
 
-  if (!usage) return <p style={{ color: '#999' }}>載入中…</p>;
+  if (!usage) {
+    return (
+      <div className="card">
+        <div className="empty">載入中…</div>
+      </div>
+    );
+  }
 
   const items: { label: string; value: number }[] = [
     { label: '對話數', value: usage.conversations ?? 0 },
@@ -26,11 +32,11 @@ export default function UsageTab({ tenantId, onError }: { tenantId: string; onEr
   ];
 
   return (
-    <div style={{ display: 'flex', gap: 24 }}>
+    <div className="stats">
       {items.map((it) => (
-        <div key={it.label} style={{ padding: 16, border: '1px solid #eee', borderRadius: 8, minWidth: 120 }}>
-          <div style={{ fontSize: 12, color: '#888' }}>{it.label}</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{it.value}</div>
+        <div key={it.label} className="stat">
+          <div className="stat-label">{it.label}</div>
+          <div className="stat-value">{it.value.toLocaleString()}</div>
         </div>
       ))}
     </div>

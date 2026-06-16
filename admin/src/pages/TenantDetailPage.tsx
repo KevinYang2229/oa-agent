@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api, UnauthorizedError, type Tenant } from '../api';
 import { useAuth } from '../auth';
+import AppLayout from '../components/AppLayout';
+import { IconBack, IconInfo } from '../components/icons';
 import AppearanceTab from './tabs/AppearanceTab';
 import SettingsTab from './tabs/SettingsTab';
 import WebhookTab from './tabs/WebhookTab';
@@ -38,8 +40,7 @@ export default function TenantDetailPage() {
   const reload = useCallback(async () => {
     try {
       const list = await api.listTenants();
-      const found = list.find((t) => t.id === id) ?? null;
-      setTenant(found);
+      setTenant(list.find((t) => t.id === id) ?? null);
     } catch (e) {
       handleErr(e);
     }
@@ -49,37 +50,48 @@ export default function TenantDetailPage() {
     void reload();
   }, [reload]);
 
-  if (err) return <p style={{ padding: 24, color: '#c00' }}>{err}</p>;
-  if (!tenant) return <p style={{ padding: 24 }}>載入中…</p>;
-
   return (
-    <div style={{ maxWidth: 880, margin: '40px auto', padding: 24 }}>
-      <Link to="/">← 租戶清單</Link>
-      <h1 style={{ fontSize: 22, margin: '8px 0' }}>{tenant.name}</h1>
+    <AppLayout
+      crumb="租戶"
+      title={tenant?.name ?? '載入中…'}
+      actions={
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')}>
+          <IconBack />
+          租戶清單
+        </button>
+      }
+    >
+      {err && (
+        <div className="banner banner-err">
+          <IconInfo />
+          {err}
+        </div>
+      )}
 
-      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #eee', marginBottom: 16 }}>
-        {TABS.map((tb) => (
-          <button
-            key={tb.key}
-            onClick={() => setTab(tb.key)}
-            style={{
-              padding: '8px 14px',
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              borderBottom: tab === tb.key ? '2px solid var(--primary-color, #0057ff)' : '2px solid transparent',
-              fontWeight: tab === tb.key ? 600 : 400,
-            }}
-          >
-            {tb.label}
-          </button>
-        ))}
-      </div>
+      {!tenant ? (
+        <div className="card">
+          <div className="empty">載入中…</div>
+        </div>
+      ) : (
+        <>
+          <div className="tabs">
+            {TABS.map((tb) => (
+              <button
+                key={tb.key}
+                className={`tab${tab === tb.key ? ' active' : ''}`}
+                onClick={() => setTab(tb.key)}
+              >
+                {tb.label}
+              </button>
+            ))}
+          </div>
 
-      {tab === 'appearance' && <AppearanceTab tenant={tenant} onSaved={reload} onError={handleErr} />}
-      {tab === 'settings' && <SettingsTab tenant={tenant} onSaved={reload} onError={handleErr} />}
-      {tab === 'webhook' && <WebhookTab tenantId={tenant.id} onError={handleErr} />}
-      {tab === 'usage' && <UsageTab tenantId={tenant.id} onError={handleErr} />}
-    </div>
+          {tab === 'appearance' && <AppearanceTab tenant={tenant} onSaved={reload} onError={handleErr} />}
+          {tab === 'settings' && <SettingsTab tenant={tenant} onSaved={reload} onError={handleErr} />}
+          {tab === 'webhook' && <WebhookTab tenantId={tenant.id} onError={handleErr} />}
+          {tab === 'usage' && <UsageTab tenantId={tenant.id} onError={handleErr} />}
+        </>
+      )}
+    </AppLayout>
   );
 }
