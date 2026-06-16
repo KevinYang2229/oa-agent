@@ -71,3 +71,25 @@ curl -X POST http://localhost:3000/api/v1/admin/tenants \
 # 4. 互動式 API 文件
 open http://localhost:3000/api/docs
 ```
+
+---
+
+## 四、管理後台（admin）
+
+獨立的 `admin/` workspace（Vite + React），以單一管理密碼登入後，可在 Web 介面設定 widget 外觀、租戶與 webhook。
+
+```bash
+export ADMIN_PASSWORD=$(openssl rand -hex 24)
+npm run dev:server   # 後端 3000
+npm run dev:admin    # 後台 5174
+# 瀏覽器開 http://localhost:5174，以 ADMIN_PASSWORD 登入
+```
+
+- **登入**：`POST /api/v1/admin/auth/login`（密碼比對 `ADMIN_PASSWORD`）換發 admin JWT；`require-admin` 同時接受 `x-admin-key` 或此 JWT（既有腳本不受影響）。
+- **分頁**：
+  - **外觀** — 主色 / 主題 / 按鈕位置 / logo / 歡迎語 / 預設語言，存於租戶，widget 載入時讀 `GET /api/v1/widget/config` 套用（`data-*` 參數仍優先）。
+  - **設定** — 名稱、允許嵌入來源、SSO 密鑰、API Keys（產生 pk_/sk_）。
+  - **Webhook** — 端點列表 / 新增 / 啟用停用 / 刪除。
+  - **用量** — 對話 / 訊息 / 送出計數（唯讀）。
+
+> `ADMIN_PASSWORD` 留空＝停用後台登入（回 403）。與機器對機器用的 `ADMIN_API_KEY` 分開，避免主控金鑰外洩到瀏覽器。
