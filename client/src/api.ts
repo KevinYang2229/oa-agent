@@ -60,9 +60,17 @@ interface LoginData {
   user: Applicant;
 }
 
+import { embedConfig } from './embedConfig';
+
 // API 來源網域：dev 留空 → 走相對路徑由 Vite proxy 代理；
 // production 設 VITE_API_BASE=https://<server-domain> 直接打後端（前後端分開部署）。
 const API_ORIGIN = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '');
+
+// 租戶公開金鑰（pk_…）：嵌入時由 widget 帶入，附在每個請求的 x-api-key 供後端解析租戶。
+// 未帶（一般首方使用）則不附，後端落到預設租戶（向後相容）。
+function apiKeyHeader(): Record<string, string> {
+  return embedConfig.apiKey ? { 'x-api-key': embedConfig.apiKey } : {};
+}
 
 const BASE = `${API_ORIGIN}/api/v1/conversations`;
 const AUTH = `${API_ORIGIN}/api/v1/auth`;
@@ -111,6 +119,8 @@ function headers(userId: string): HeadersInit {
 function withAuth(init: RequestInit): RequestInit {
   const h = new Headers(init.headers);
   if (accessToken) h.set('authorization', `Bearer ${accessToken}`);
+  // 嵌入時附租戶金鑰（每個受保護請求都需解析租戶）
+  if (embedConfig.apiKey) h.set('x-api-key', embedConfig.apiKey);
   return { ...init, headers: h };
 }
 
@@ -169,6 +179,20 @@ export const auth = {
     const data = await unwrap<LoginData>(res);
     setTokens(data.accessToken, data.refreshToken);
     return data.user;
+  },
+
+  /**
+   * SSO handoff：以宿主簽發的終端使用者 token 換發本系統 token（嵌入情境免內部帳密登入）。
+   * 需附租戶金鑰（x-api-key）讓後端以該租戶的 ssoSecret 驗章。
+   */
+  async ssoExchange(userToken: string): Promise<void> {
+    const res = await fetch(`${AUTH}/sso/exchange`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...apiKeyHeader() },
+      body: JSON.stringify({ userToken }),
+    });
+    const data = await unwrap<{ accessToken: string; refreshToken: string }>(res);
+    setTokens(data.accessToken, data.refreshToken);
   },
 
   /** 取目前登入者資料（重整時還原登入狀態；401 會經 request 自動登出） */

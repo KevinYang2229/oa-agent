@@ -1,0 +1,73 @@
+# 對外整合與多租戶產品化 — 異動與變數說明
+
+把 OA Agent 從「單一示範 widget」升級為可提供給多個外部系統整合的多租戶服務。
+**全程向後相容**：未帶 API Key 的舊 widget（`<script src=".../widget.js">`）落到內建的「預設租戶」，行為與改造前完全相同。
+
+---
+
+## 一、異動摘要
+
+### 1. 多租戶地基（後端核心）
+- **租戶 / API Key 模型**：每個整合方＝一個租戶，配發 `pk_`（公開，可放瀏覽器）與 `sk_`（秘密，伺服器端）金鑰。
+  - `server/src/modules/tenant/`（types / store / service）
+- **資料隔離**：對話全流程掛 `tenantId`，跨租戶讀取一律 `404`。
+  - `server/src/modules/conversation/`（store / service / controller）
+- **API Key 中介層**：`x-api-key` / `Authorization: ApiKey` / `?key=pk_` → 解析租戶；未帶 key 落預設租戶。
+  - `server/src/middlewares/resolve-tenant.ts`
+- **動態 CORS**：放行來源＝第一方設定 ∪ 任一租戶白名單；預設租戶為 `*` 時維持全放行。
+- **SSO handoff**：每租戶可設 `ssoSecret`，宿主簽發的使用者 token 經 `POST /api/v1/auth/sso/exchange` 換發本系統 token（嵌入免帳密登入）。
+- **每租戶 rate limit**：`server/src/middlewares/tenant-rate-limit.ts`。
+
+### 2. 三種整合方式
+- **Surface 1 — 嵌入 widget 產品化**：`client/public/widget.js` 支援 `data-key/form/locale/theme/position/user-token`，參數化 iframe URL，轉發 `oa-agent:submitted` 等事件，提供 `OAAgent.open/close/toggle` 控制 API。
+  - client：`embedConfig.ts`、`api.ts`（帶 `x-api-key` + SSO 換發）、`App.tsx`（套用 locale/theme/form、送出事件）。
+- **Surface 2 — 開發者 SDK**：新 workspace `@oa-agent/sdk`（`sdk/`），headless REST + widget 事件/控制橋接 + SSO。
+- **Surface 3 — 表單結果 webhook 回拋**：每租戶可登記端點，送出成功後以 **HMAC 簽章 + 行內非同步投遞 + 指數退避重試** 推送 `form.submitted`。
+  - `server/src/modules/webhook/`
+
+### 3. 營運面（cross-cutting）
+- **管理 API**：`/api/v1/admin/*`，受 `x-admin-key` 保護，可建租戶 / 發金鑰 / 登記 webhook / 查用量。
+  - `server/src/modules/admin/`、`server/src/middlewares/require-admin.ts`
+- **每租戶用量追蹤**：對話 / 訊息 / 送出計數（`server/src/modules/usage/`）。
+- **API 文件**：OpenAPI 規格於 `/api/openapi.json`，Swagger UI 於 `/api/docs`。
+
+> 基礎設施沿用既有「in-memory + 磁碟、介面可抽換」模式：租戶 / webhook / 用量 store 都可在無 DB/Redis 下運作；正式上線時再換 Prisma（持久化）與 BullMQ（webhook 佇列）。
+
+---
+
+## 二、新增環境變數
+
+| 變數 | 預設 | 必填 | 說明 |
+|------|------|------|------|
+| `DEFAULT_TENANT_ORIGINS` | `*` | 否 | 預設租戶（未帶 API Key 的舊 widget 落點）允許嵌入的網域。`*`＝全放行（向後相容）；或逗號分隔網域收緊，如 `https://a.com,https://b.com`。 |
+| `ADMIN_API_KEY` | （空） | 否 | 管理 API 的主控密鑰，**自訂**。留空＝停用管理 API（預設關閉，回 403）。啟用請填一段夠長的隨機字串，呼叫時於 header 帶 `x-admin-key: <此值>`。建議 `openssl rand -hex 32` 產生並存於部署 secret。 |
+
+> 既有變數（`CORS_ORIGIN`、`RATE_LIMIT_*`、`REDIS_URL`、`JWT_*` 等）沿用，行為不變。完整清單見 [server/.env.example](server/.env.example)。
+
+### 金鑰種類釐清
+| 金鑰 | 誰產生 | 用途 |
+|------|--------|------|
+| `pk_…` / `sk_…` | 系統自動產生（建租戶 / 發金鑰時） | 租戶金鑰：解析租戶、資料隔離 |
+| `ssoSecret` | 建租戶時由你提供 | 該租戶 SSO 驗章用的共享密鑰 |
+| `ADMIN_API_KEY` | 你自訂（環境變數） | 系統管理者主控密鑰，凌駕所有租戶 |
+
+---
+
+## 三、快速啟用
+
+```bash
+# 1. 啟用管理 API
+export ADMIN_API_KEY=$(openssl rand -hex 32)
+npm run dev:server
+
+# 2. 建立租戶（回傳一把公開金鑰 pk_…）
+curl -X POST http://localhost:3000/api/v1/admin/tenants \
+  -H "x-admin-key: $ADMIN_API_KEY" -H 'content-type: application/json' \
+  -d '{"name":"Acme","allowedOrigins":["https://acme.com"],"ssoSecret":"<選填>"}'
+
+# 3. 對方網站嵌入（帶 pk）
+# <script src="https://你的網域/widget.js" data-key="pk_..." data-form="leave-request"></script>
+
+# 4. 互動式 API 文件
+open http://localhost:3000/api/docs
+```

@@ -6,6 +6,7 @@
   "workspaces": [
     "shared",
     "ui",
+    "sdk",
     "server",
     "client"
   ],
@@ -13,7 +14,7 @@
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
     "build": "npm run build -w server && npm run build -w client",
-    "typecheck": "npm run typecheck -w ui && npm run typecheck -w server && npm run typecheck -w client",
+    "typecheck": "npm run typecheck -w ui && npm run typecheck -w sdk && npm run typecheck -w server && npm run typecheck -w client",
     "smoke": "npm run smoke -w server"
   },
   "engines": {

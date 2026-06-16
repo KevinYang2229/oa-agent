@@ -1,0 +1,29 @@
+{
+  "name": "@oa-agent/sdk",
+  "version": "0.1.0",
+  "description": "OA Agent 整合 SDK（瀏覽器端）：headless REST 客戶端 + widget 事件/控制橋接。",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oa-agent/shared": "*",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
+    "typescript": "^5.6.3"
+  }
+}

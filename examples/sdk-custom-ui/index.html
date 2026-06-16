@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beta Cloud（SDK 自訂聊天室 · header 按鈕開啟）</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <!--OA_CONFIG-->
+  </head>
+  <body>
+    <!-- ── 網站 header：右上「線上客服」按鈕 ── -->
+    <header class="site-header">
+      <div class="brand"><span class="logo">B</span> Beta Cloud</div>
+      <nav class="links">
+        <a href="#">功能</a>
+        <a href="#">定價</a>
+        <a href="#">文件</a>
+      </nav>
+      <button id="open-chat" class="chat-btn" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+        </svg>
+        線上客服
+      </button>
+    </header>
+
+    <!-- ── landing 內容 ── -->
+    <main>
+      <section class="hero">
+        <h1>用 SDK 打造你自己的對話體驗</h1>
+        <p>本頁的聊天室完全自建（非 widget／非 iframe），只用 <code>@oa-agent/sdk</code> 取得資料、自己渲染。</p>
+        <button id="hero-chat" class="cta" type="button">開始對話 →</button>
+      </section>
+      <section class="features">
+        <div class="feature"><h3>🎨 UI 全自訂</h3><p>版面、配色、元件、動畫都你說了算。</p></div>
+        <div class="feature"><h3>🧩 headless SDK</h3><p>後端只給資料，前端怎麼呈現由你決定。</p></div>
+        <div class="feature"><h3>🔐 SSO 免登入</h3><p>沿用本站登入身分，開啟即用。</p></div>
+      </section>
+    </main>
+
+    <!-- ── 自建聊天室（預設隱藏，點 header 按鈕才開）── -->
+    <div id="chat-panel" class="chat-panel" role="dialog" aria-label="線上客服" aria-hidden="true">
+      <header class="panel-head">
+        <span class="bot-avatar">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="2.6" r="1.5" />
+            <rect x="11.25" y="3.6" width="1.5" height="2.2" rx="0.75" />
+            <rect x="2" y="10" width="2" height="5" rx="1" />
+            <rect x="20" y="10" width="2" height="5" rx="1" />
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M7 5.5h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3Zm2 5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" />
+          </svg>
+          <span class="dot"></span>
+        </span>
+        <div class="titles">
+          <strong>OA 智能助理</strong>
+          <span class="state">狀態：<span id="status">—</span></span>
+        </div>
+        <button id="close-chat" class="icon-btn" type="button" aria-label="關閉">✕</button>
+      </header>
+
+      <div id="messages"></div>
+      <div id="suggest"></div>
+
+      <div id="values-wrap">
+        <div class="values-title">已收集欄位</div>
+        <div id="values"><div class="empty">尚無資料</div></div>
+        <button id="submit">確認送出表單</button>
+      </div>
+
+      <div class="composer">
+        <input id="input" placeholder="輸入訊息，按 Enter 送出…" autocomplete="off" />
+        <button class="primary" id="send">送出</button>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

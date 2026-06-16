@@ -7,6 +7,8 @@ import { businessTripService } from '@/modules/business-trip/business-trip.servi
 import { leaveService } from '@/modules/leave/leave.service';
 import { outingService } from '@/modules/outing/outing.service';
 import { getApplicant } from '@/modules/user/user.directory';
+import { usageStore } from '@/modules/usage/usage.store';
+import { webhookDispatcher } from '@/modules/webhook/webhook.dispatcher';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
 import { runTurn } from './conversation.agent';
@@ -51,29 +53,38 @@ export interface UpdateFieldsResult extends TurnResult {
 
 export const conversationService = {
   async start(
+    tenantId: string,
     userId: string,
     message?: string,
     formId?: string,
   ): Promise<{ session: Session; turn?: TurnResult }> {
     // 表單選擇：明確指定優先，否則依首句意圖路由（皆驗證表單存在）
     const def = getDefinition(formId ?? routeIntent(message));
-    const session = conversationStore.create(userId, def.formId);
+    const session = conversationStore.create(tenantId, userId, def.formId);
+    usageStore.increment(tenantId, 'conversations');
     // 申請人／外出人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
     if ('applicant' in def.data.properties) {
       session.values.applicant = formatApplicant(userId);
     }
     conversationStore.save(session);
     if (message && message.trim()) {
+      usageStore.increment(tenantId, 'messages');
       const turn = await runTurn(session, message);
       return { session, turn };
     }
     return { session };
   },
 
-  async sendMessage(userId: string, id: string, message: string): Promise<TurnResult> {
-    const session = conversationStore.get(id, userId);
+  async sendMessage(
+    tenantId: string,
+    userId: string,
+    id: string,
+    message: string,
+  ): Promise<TurnResult> {
+    const session = conversationStore.get(id, tenantId, userId);
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
+    usageStore.increment(tenantId, 'messages');
     return runTurn(session, message);
   },
 
@@ -81,8 +92,8 @@ export const conversationService = {
    * 確認送出（不經 LLM）：確認畫面按「送出」時呼叫。直接驗證 session.values 並送出，
    * 不依賴模型是否於對話中呼叫 submit 工具——避免「第一次按送出沒送出、要按第二次」。
    */
-  async submit(userId: string, id: string): Promise<TurnResult> {
-    const session = conversationStore.get(id, userId);
+  async submit(tenantId: string, userId: string, id: string): Promise<TurnResult> {
+    const session = conversationStore.get(id, tenantId, userId);
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
 
@@ -124,6 +135,20 @@ export const conversationService = {
       content: [{ type: 'text', text: `已送出，OA 單號：${session.submission.oaRequestId}。` }],
     });
     conversationStore.save(session);
+    usageStore.increment(tenantId, 'submissions');
+
+    // 表單送出成功 → 回拋 webhook 給租戶登記的端點（行內非同步，不阻塞此回應）
+    webhookDispatcher.dispatch({
+      type: 'form.submitted',
+      tenantId,
+      data: {
+        conversationId: session.id,
+        formId: session.formId,
+        userId,
+        values: session.values,
+        submission: session.submission,
+      },
+    });
 
     return {
       reply: '',
@@ -138,8 +163,13 @@ export const conversationService = {
    * 確認畫面手動編輯欄位（不經 LLM）：每欄走 form.engine 的 coerce + 驗證，
    * 重算 slot 狀態並同步 collecting/confirming，確保送出時 session.values 與畫面一致。
    */
-  updateFields(userId: string, id: string, fields: Record<string, unknown>): UpdateFieldsResult {
-    const session = conversationStore.get(id, userId);
+  updateFields(
+    tenantId: string,
+    userId: string,
+    id: string,
+    fields: Record<string, unknown>,
+  ): UpdateFieldsResult {
+    const session = conversationStore.get(id, tenantId, userId);
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
 
@@ -201,25 +231,26 @@ export const conversationService = {
    * 不直接寫入 session.values；附件清單由確認畫面經 updateFields 持久化（單一寫入路徑）。
    */
   addAttachment(
+    tenantId: string,
     userId: string,
     id: string,
     file: { name: string; mime: string; buffer: Buffer },
   ): Attachment {
-    const session = conversationStore.get(id, userId);
+    const session = conversationStore.get(id, tenantId, userId);
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
     return attachmentStore.save(session.id, file);
   },
 
   /** 刪除一個附件（檔案內容）；對話歸屬驗證後才動作 */
-  removeAttachment(userId: string, id: string, attachmentId: string): void {
-    const session = conversationStore.get(id, userId);
+  removeAttachment(tenantId: string, userId: string, id: string, attachmentId: string): void {
+    const session = conversationStore.get(id, tenantId, userId);
     const ok = attachmentStore.remove(session.id, attachmentId);
     if (!ok) throw AppError.notFound('Attachment not found');
   },
 
-  get(userId: string, id: string): Session {
-    const session = conversationStore.get(id, userId);
+  get(tenantId: string, userId: string, id: string): Session {
+    const session = conversationStore.get(id, tenantId, userId);
     // 查詢時即時反映目前簽核進度（依送出時間重算關卡狀態）
     if (session.submission?.approvals?.length) {
       session.submission = {
@@ -233,8 +264,8 @@ export const conversationService = {
     return session;
   },
 
-  cancel(userId: string, id: string): Session {
-    const session = conversationStore.get(id, userId);
+  cancel(tenantId: string, userId: string, id: string): Session {
+    const session = conversationStore.get(id, tenantId, userId);
     if (session.status !== 'submitted') {
       session.status = 'cancelled';
       // 已取消的對話不會送出，清掉暫存附件內容避免記憶體累積

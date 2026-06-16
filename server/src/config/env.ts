@@ -23,6 +23,15 @@ const envSchema = z.object({
     .default('*')
     .transform((s) => s.replace(/\/+$/, '')),
 
+  // 預設租戶（向後相容）的允許嵌入網域：'*' 放行全部（維持改造前行為），或逗號分隔網域收緊
+  DEFAULT_TENANT_ORIGINS: z
+    .string()
+    .default('*')
+    .transform((s) => s.replace(/\/+$/, '')),
+
+  // 管理 API（建立租戶 / 金鑰 / webhook）的主控密鑰；留空＝停用管理 API（預設關閉以策安全）
+  ADMIN_API_KEY: z.string().default(''),
+
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),

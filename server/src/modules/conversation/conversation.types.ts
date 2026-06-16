@@ -6,6 +6,8 @@ export type { SessionStatus, SubmissionInfo };
 
 export interface Session {
   id: string;
+  /** 所屬租戶；多租戶資料隔離的關鍵。未帶 key 的舊請求為 'default'（向後相容） */
+  tenantId: string;
   userId: string;
   formId: string;
   values: FormValues;

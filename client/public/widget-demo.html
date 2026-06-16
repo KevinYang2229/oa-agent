@@ -7,7 +7,11 @@
     <style>
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Noto Sans TC",
+          sans-serif;
         color: #1f2937;
         background: #f3f4f6;
       }
@@ -16,8 +20,13 @@
         margin: 0 auto;
         padding: 80px 24px;
       }
-      .demo-hero h1 { font-size: 28px; }
-      .demo-hero p { line-height: 1.7; color: #4b5563; }
+      .demo-hero h1 {
+        font-size: 28px;
+      }
+      .demo-hero p {
+        line-height: 1.7;
+        color: #4b5563;
+      }
       code {
         background: #111827;
         color: #e5e7eb;
@@ -32,14 +41,44 @@
     <div class="demo-hero">
       <h1>這是一個「別人的網站」</h1>
       <p>
-        這個頁面模擬第三方網站。它本身與 OA 系統無關，只在頁尾加入了一行
-        widget 載入碼，右下角就會出現浮動按鈕；點擊後彈出聊天視窗即可串接後端 AI。
+        這個頁面模擬第三方網站。它本身與 OA 系統無關，只在頁尾加入了一行 widget
+        載入碼，右下角就會出現浮動按鈕；點擊後彈出聊天視窗即可串接後端 AI。
       </p>
-      <p>接入方式（對方只需貼這一行）：</p>
-      <code>&lt;script src="https://你的網域/widget.js"&gt;&lt;/script&gt;</code>
+      <p>最簡接入（對方只需貼這一行，落到預設租戶，向後相容）：</p>
+      <code
+        >&lt;script src="https://你的網域/widget.js"&gt;&lt;/script&gt;</code
+      >
+
+      <p>產品化接入（多租戶、預選表單、語言、外觀、SSO）：</p>
+      <code
+        >&lt;script src="https://你的網域/widget.js" data-title="客服小幫手"
+        data-key="pk_xxxxx" data-form="leave-request" data-locale="zh-Hant"
+        data-theme="light" data-position="right" data-user-token="&lt;宿主簽發的
+        JWT&gt;"&gt;&lt;/script&gt;</code
+      >
+
+      <p>宿主頁可監聽事件、或程式化控制：</p>
+      <code
+        >// 監聽「表單已送出」 window.addEventListener('oa-agent:submitted',
+        function (e) { console.log('已送出', e.detail.submission); }); //
+        程式化開關 OAAgent.open(); OAAgent.close(); OAAgent.toggle();</code
+      >
     </div>
 
-    <!-- ↓↓↓ widget 接入碼（POC：同源載入本機 widget.js）↓↓↓ -->
-    <script src="/widget.js"></script>
+    <!-- ↓↓↓ widget 接入碼（POC：同源載入本機 widget.js；此處示範可設定化屬性）↓↓↓ -->
+    <script>
+      // 示範：監聽 widget 事件
+      window.addEventListener("oa-agent:submitted", function (e) {
+        console.log("[demo] 表單已送出：", e.detail && e.detail.submission);
+      });
+    </script>
+    <script
+      src="/widget.js"
+      data-title="OA 小幫手"
+      data-form="leave-request"
+      data-locale="zh-Hant"
+      data-position="right"
+      data-theme="dark"
+    ></script>
   </body>
 </html>

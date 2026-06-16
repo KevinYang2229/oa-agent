@@ -41,9 +41,10 @@ function persist(): void {
 }
 
 export const conversationStore = {
-  create(userId: string, formId: string): Session {
+  create(tenantId: string, userId: string, formId: string): Session {
     const session: Session = {
       id: randomUUID(),
+      tenantId,
       userId,
       formId,
       values: {},
@@ -56,9 +57,12 @@ export const conversationStore = {
     return session;
   },
 
-  get(id: string, userId: string): Session {
+  get(id: string, tenantId: string, userId: string): Session {
     const session = sessions.get(id);
     if (!session) throw AppError.notFound('Conversation not found');
+    // 租戶隔離：跨租戶一律當作不存在（不洩漏其他租戶有此 id）。
+    // 既有磁碟資料無 tenantId → 視為預設租戶，維持向後相容。
+    if ((session.tenantId ?? 'default') !== tenantId) throw AppError.notFound('Conversation not found');
     if (session.userId !== userId) throw AppError.forbidden('Not your conversation');
     return session;
   },

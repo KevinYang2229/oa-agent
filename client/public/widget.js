@@ -30,9 +30,37 @@
     return;
   }
   var origin = new URL(script.src).origin;
-  // 可選設定：<script src=".../widget.js" data-title="客服小幫手">
-  var title = script.getAttribute('data-title') || 'OA 小幫手';
-  var panelUrl = origin + '/?embed=1';
+
+  // ---- 可選設定（全部 data-*，未帶則維持預設，向後相容）----
+  //   data-title       浮動按鈕文案
+  //   data-key         租戶公開金鑰 pk_…（多租戶資料隔離；不帶則後端落到預設租戶）
+  //   data-form        預選表單類型，如 leave-request
+  //   data-locale      介面語言，如 zh-Hant / en
+  //   data-theme       外觀 light / dark
+  //   data-position    浮動按鈕位置 right（預設）/ left
+  //   data-user-token  SSO handoff：宿主簽發的終端使用者 token（免內部帳密登入）
+  function attr(name) {
+    var v = script.getAttribute(name);
+    return v && v.trim() ? v.trim() : null;
+  }
+  var title = attr('data-title') || 'OA 小幫手';
+  var position = attr('data-position') === 'left' ? 'left' : 'right';
+  // data-launcher="none"：不顯示預設浮動按鈕，由宿主自己的按鈕呼叫 OAAgent.open() 開啟
+  var showLauncher = attr('data-launcher') !== 'none';
+
+  // 把設定組成 panel iframe 的 query；只附帶有值的參數
+  var panelParams = ['embed=1'];
+  var cfg = {
+    key: attr('data-key'),
+    form: attr('data-form'),
+    locale: attr('data-locale'),
+    theme: attr('data-theme'),
+    userToken: attr('data-user-token'),
+  };
+  for (var ck in cfg) {
+    if (cfg[ck]) panelParams.push(ck + '=' + encodeURIComponent(cfg[ck]));
+  }
+  var panelUrl = origin + '/?' + panelParams.join('&');
 
   var Z = 2147483000; // 盡量蓋在宿主頁面之上
   var open = false;
@@ -164,15 +192,38 @@
   }
 
   btn.addEventListener('click', function () { setOpen(!open); });
-  // panel 內聊天頁可 postMessage({type:'oa-agent:close'}) 來關閉（之後 embed 模式加關閉鈕用）
+
+  // 左側擺放：覆寫預設的右下定位（CSS 預設 right:20px）
+  if (position === 'left') {
+    btn.style.right = 'auto';
+    btn.style.left = '20px';
+    panel.style.right = 'auto';
+    panel.style.left = '20px';
+  }
+
+  // panel 內聊天頁透過 postMessage 與宿主溝通：oa-agent:close 收起、oa-agent:submitted 已送出…
   window.addEventListener('message', function (e) {
-    if (e.origin === origin && e.data && e.data.type === 'oa-agent:close') setOpen(false);
+    if (e.origin !== origin || !e.data || typeof e.data.type !== 'string') return;
+    var type = e.data.type;
+    if (type === 'oa-agent:close') setOpen(false);
+    // 轉發給宿主頁：DOM CustomEvent（window.addEventListener('oa-agent:submitted', …)）＋可選全域 callback
+    try { window.dispatchEvent(new CustomEvent(type, { detail: e.data })); } catch (_e) {}
+    if (window.OAAgent && typeof window.OAAgent.onEvent === 'function') {
+      try { window.OAAgent.onEvent(e.data); } catch (_e2) {}
+    }
   });
+
+  // 宿主頁可程式化控制：OAAgent.open() / close() / toggle()；onEvent 可在載入前先指定（保留之）
+  window.OAAgent = window.OAAgent || {};
+  window.OAAgent.open = function () { setOpen(true); };
+  window.OAAgent.close = function () { setOpen(false); };
+  window.OAAgent.toggle = function () { setOpen(!open); };
 
   // 宿主頁可能把 script 放在 <head>，此時 body 尚未存在 → 等 DOM ready 再掛載
   function mount() {
     document.body.appendChild(panel);
-    document.body.appendChild(btn);
+    // 預設掛上浮動按鈕；data-launcher="none" 時略過（由宿主自己的按鈕觸發）
+    if (showLauncher) document.body.appendChild(btn);
   }
   if (document.body) {
     mount();

@@ -8,11 +8,17 @@ function resolveUserId(req: Request): string {
   return req.user?.sub ?? req.header('x-user-id') ?? 'demo-user';
 }
 
+// 租戶由 resolveTenant middleware 注入；未帶 key 落到預設租戶（向後相容）
+function resolveTenantId(req: Request): string {
+  return req.tenant?.id ?? 'default';
+}
+
 export const conversationController = {
   async start(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
     const { message, formId } = req.body as StartInput;
-    const { session, turn } = await conversationService.start(userId, message, formId);
+    const { session, turn } = await conversationService.start(tenantId, userId, message, formId);
     res.status(201).json({
       data: {
         id: session.id,
@@ -26,29 +32,43 @@ export const conversationController = {
   },
 
   async sendMessage(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
     const { message } = req.body as MessageInput;
-    const turn = await conversationService.sendMessage(userId, String(req.params.id), message);
+    const turn = await conversationService.sendMessage(
+      tenantId,
+      userId,
+      String(req.params.id),
+      message,
+    );
     res.status(200).json({ data: turn });
   },
 
   /** 確認送出（不經 LLM，確認畫面按「送出」用）；回傳含 submission 的 turn */
   async submit(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
-    const turn = await conversationService.submit(userId, String(req.params.id));
+    const turn = await conversationService.submit(tenantId, userId, String(req.params.id));
     res.status(200).json({ data: turn });
   },
 
   async updateFields(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
     const { fields } = req.body as UpdateFieldsInput;
-    const result = conversationService.updateFields(userId, String(req.params.id), fields);
+    const result = conversationService.updateFields(
+      tenantId,
+      userId,
+      String(req.params.id),
+      fields,
+    );
     res.status(200).json({ data: result });
   },
 
   async get(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
-    const session = conversationService.get(userId, String(req.params.id));
+    const session = conversationService.get(tenantId, userId, String(req.params.id));
     res.status(200).json({
       data: {
         id: session.id,
@@ -61,17 +81,19 @@ export const conversationController = {
   },
 
   async cancel(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
-    const session = conversationService.cancel(userId, String(req.params.id));
+    const session = conversationService.cancel(tenantId, userId, String(req.params.id));
     res.status(200).json({ data: { id: session.id, status: session.status } });
   },
 
   /** 上傳附件（multipart，欄位名 file）；回傳附件 metadata 供前端加入表單值 */
   async uploadAttachment(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
     const file = req.file;
     if (!file) throw AppError.unprocessable('缺少上傳檔案（欄位名須為 file）');
-    const meta = conversationService.addAttachment(userId, String(req.params.id), {
+    const meta = conversationService.addAttachment(tenantId, userId, String(req.params.id), {
       name: file.originalname,
       mime: file.mimetype,
       buffer: file.buffer,
@@ -81,8 +103,10 @@ export const conversationController = {
 
   /** 刪除附件 */
   async deleteAttachment(req: Request, res: Response): Promise<void> {
+    const tenantId = resolveTenantId(req);
     const userId = resolveUserId(req);
     conversationService.removeAttachment(
+      tenantId,
       userId,
       String(req.params.id),
       String(req.params.attachmentId),

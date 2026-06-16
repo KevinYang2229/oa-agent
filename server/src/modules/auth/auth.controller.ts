@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
+import { AppError } from '@/utils/app-error';
 import { authService } from './auth.service';
-import type { LoginInput, RefreshInput } from './auth.schema';
+import type { LoginInput, RefreshInput, SsoExchangeInput } from './auth.schema';
 
 export const authController = {
   // 公開：帳密登入 → access/refresh + 使用者資料
@@ -14,6 +15,15 @@ export const authController = {
   async refresh(req: Request, res: Response): Promise<void> {
     const { refreshToken } = req.body as RefreshInput;
     const tokens = authService.refresh(refreshToken);
+    res.status(200).json({ data: tokens });
+  },
+
+  // 公開（需帶 API Key 解析租戶）：SSO handoff，宿主簽發的 user token → 換發本系統 token
+  async ssoExchange(req: Request, res: Response): Promise<void> {
+    const tenant = req.tenant;
+    if (!tenant) throw AppError.unauthorized('缺少 API Key，無法解析租戶');
+    const { userToken } = req.body as SsoExchangeInput;
+    const tokens = authService.ssoExchange(tenant, userToken);
     res.status(200).json({ data: tokens });
   },
 

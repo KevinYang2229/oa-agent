@@ -1,14 +1,20 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
+import { openapiSpec } from '@/modules/docs/openapi';
 import { env } from '@/config/env';
 import { requestLogger } from '@/middlewares/request-logger';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
 import { requireAuth } from '@/middlewares/require-auth';
+import { resolveTenant } from '@/middlewares/resolve-tenant';
+import { tenantRateLimit } from '@/middlewares/tenant-rate-limit';
+import { tenantService } from '@/modules/tenant/tenant.service';
 import { authRouter } from '@/modules/auth/auth.routes';
 import { conversationRouter } from '@/modules/conversation/conversation.routes';
 import { formRouter } from '@/modules/form/form.routes';
 import { leaveRouter } from '@/modules/leave/leave.routes';
+import { adminRouter } from '@/modules/admin/admin.routes';
 
 /**
  * MVP app：只掛對話與表單路由，不連 DB / Redis / Socket。
@@ -19,14 +25,33 @@ export function createApp(): Express {
 
   app.disable('x-powered-by');
   app.use(helmet());
-  // CORS 來源：支援以逗號分隔的多個來源（例如前端在 5173 / 5174 都能呼叫）；'*' 則全部放行
-  const corsOrigin =
+
+  // 動態 CORS：放行來源 = 第一方設定（CORS_ORIGIN，SPA 自身）∪ 任一租戶的 allowedOrigins。
+  // 預設租戶為 '*' 時恆放行，維持改造前行為（向後相容）；租戶收緊網域後，CORS 隨之收緊。
+  // 真正的資料隔離由 resolveTenant（API Key）在路由層把關，此處僅為瀏覽器層閘門。
+  const firstPartyOrigins =
     env.CORS_ORIGIN === '*'
       ? '*'
       : env.CORS_ORIGIN.split(',')
           .map((s) => s.trim())
           .filter(Boolean);
-  app.use(cors({ origin: corsOrigin, credentials: true }));
+  app.use(
+    cors((req, callback) => {
+      const origin = req.header('origin');
+      // 同源或非瀏覽器請求（無 Origin，如 curl / server-to-server）一律放行
+      if (!origin) {
+        callback(null, { origin: true, credentials: true });
+        return;
+      }
+      const stripped = origin.replace(/\/+$/, '');
+      const allowed =
+        firstPartyOrigins === '*' ||
+        (Array.isArray(firstPartyOrigins) && firstPartyOrigins.includes(stripped)) ||
+        tenantService.isOriginAllowedByAnyTenant(origin);
+      // 允許則回 origin: true（反射來源），否則 false（瀏覽器擋下）
+      callback(null, { origin: allowed, credentials: true });
+    }),
+  );
   app.use(express.json({ limit: '1mb' }));
   app.use(requestLogger);
 
@@ -39,13 +64,22 @@ export function createApp(): Express {
     });
   });
 
+  // API 文件（互動式）：OpenAPI 規格 + Swagger UI
+  app.get('/api/openapi.json', (_req, res) => res.status(200).json(openapiSpec));
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec as object));
+
   // 公開：登入 / 換發 token
   app.use('/api/v1/auth', authRouter);
 
   // 受保護：需帶有效 access token 才能操作
-  app.use('/api/v1/conversations', requireAuth, conversationRouter);
-  app.use('/api/v1/forms', requireAuth, formRouter);
+  // resolveTenant 先解析 API Key → 租戶（未帶 key 落到預設租戶，向後相容），
+  // tenantRateLimit 依租戶限流，再 requireAuth 驗證使用者身分
+  app.use('/api/v1/conversations', resolveTenant, tenantRateLimit, requireAuth, conversationRouter);
+  app.use('/api/v1/forms', resolveTenant, tenantRateLimit, requireAuth, formRouter);
   app.use('/api/v1/leave', requireAuth, leaveRouter);
+
+  // 管理 API：建立租戶 / 金鑰 / webhook、查用量（自帶 requireAdmin，x-admin-key 保護）
+  app.use('/api/v1/admin', adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -1,0 +1,37 @@
+/**
+ * 多租戶核心型別。
+ *
+ * 設計原則：對外整合（widget / SDK / webhook）都掛在「租戶」之下，資料以 tenantId 隔離。
+ * 為向後相容，系統內建一個 id='default' 的預設租戶：未帶 API Key 的舊 widget 一律落到此租戶，
+ * 行為與改造前相同（見 resolve-tenant middleware 與 tenant.store 的種子資料）。
+ */
+
+/** 公開金鑰（pk_）可放瀏覽器；秘密金鑰（sk_）只在伺服器端用。 */
+export type ApiKeyType = 'publishable' | 'secret';
+
+export interface ApiKey {
+  /** 完整金鑰字串：pk_... 或 sk_...（MVP 以明文比對；接 DB 後改存雜湊） */
+  key: string;
+  tenantId: string;
+  type: ApiKeyType;
+  createdAt: string;
+  /** 撤銷後仍保留紀錄，但驗證時視為無效 */
+  revokedAt?: string;
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  /**
+   * widget/SDK 允許嵌入的來源網域清單；['*'] 代表全部放行（預設租戶用，維持改造前的 CORS '*' 行為）。
+   * 動態 CORS 與 embed 來源驗證都讀這份清單。
+   */
+  allowedOrigins: string[];
+  /**
+   * SSO 共享密鑰（選填）：宿主後端用此密鑰簽發「終端使用者 token」，
+   * 我方 /auth/sso/exchange 以此驗章後換發本系統的 access/refresh token。
+   * 未設定代表此租戶不啟用 SSO handoff。
+   */
+  ssoSecret?: string;
+  createdAt: string;
+}

@@ -17,6 +17,7 @@ import {
   type TurnData,
 } from './api';
 import { changeLanguage } from './i18n';
+import { embedConfig } from './embedConfig';
 import FormView from './FormView';
 import LoginView from './LoginView';
 import SettingsMenu, { FONT_MAX, FONT_MIN } from './SettingsMenu';
@@ -59,7 +60,7 @@ let seq = 0;
 const nextId = () => ++seq;
 
 // 嵌入模式：以 ?embed=1 載入（widget iframe 用），隱藏整頁頁首讓畫面像純聊天 widget。
-const EMBED = new URLSearchParams(window.location.search).get('embed') === '1';
+const EMBED = embedConfig.embed;
 
 // 逐字浮現：Agent 回覆抵達後一字一字顯示，營造「正在回覆」的動態感。
 // 元件以 message id 為 key，狀態隨實例保留 → 既有訊息不會在重繪（如切主題）時重播。
@@ -118,11 +119,13 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   // 可辦理的表單清單與目前選取的類型（新對話開始時帶給 server；未選則由 server 意圖路由）
   const [forms, setForms] = useState<FormSummary[]>([]);
-  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+  // 嵌入時可由 data-form 預選表單類型（widget → URL ?form=）
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(embedConfig.formId);
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
   const [paneOpen, setPaneOpen] = useState(true);
+  // 嵌入時可由 data-theme 指定外觀（優先於本地記憶）
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('oa-theme') as Theme) || 'light',
+    () => embedConfig.theme ?? ((localStorage.getItem('oa-theme') as Theme) || 'light'),
   );
   // 系統字級（百分比）：縮放整個介面的 root font-size
   const [fontScale, setFontScale] = useState<number>(() => {
@@ -151,15 +154,23 @@ export default function App() {
       setAuthUser(null);
       resetSessionState();
     });
-    if (auth.isAuthenticated()) {
-      auth
-        .me()
-        .then(setAuthUser)
-        .catch(() => setAuthUser(null))
-        .finally(() => setAuthReady(true));
-    } else {
-      setAuthReady(true);
-    }
+    // 嵌入時若帶 data-locale，套用介面語言
+    if (embedConfig.locale) void changeLanguage(embedConfig.locale);
+    void (async () => {
+      try {
+        // 嵌入 SSO handoff：帶 userToken 且尚未登入 → 以宿主 token 換發本系統 token（免帳密登入）
+        if (embedConfig.userToken && !auth.isAuthenticated()) {
+          await auth.ssoExchange(embedConfig.userToken);
+        }
+        if (auth.isAuthenticated()) {
+          setAuthUser(await auth.me());
+        }
+      } catch {
+        setAuthUser(null);
+      } finally {
+        setAuthReady(true);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -265,6 +276,13 @@ export default function App() {
     // 剛送出（→submitted）：一個 session 只處理一張表單，提醒使用者要申請其他表單需重新開始
     if (data.status === 'submitted' && prevStatus !== 'submitted') {
       pushMsg('sys', t('app.submittedHint'));
+      // 通知宿主頁：表單已送出（widget.js 轉成 DOM 事件 / callback 供整合方接手，如關閉彈窗或導頁）
+      if (EMBED) {
+        window.parent.postMessage(
+          { type: 'oa-agent:submitted', submission: data.submission ?? null },
+          '*',
+        );
+      }
     }
   }
 
