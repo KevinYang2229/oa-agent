@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/auth.tsx","./src/main.tsx","./src/pages/loginpage.tsx","./src/pages/tenantdetailpage.tsx","./src/pages/tenantspage.tsx","./src/pages/tabs/appearancetab.tsx","./src/pages/tabs/settingstab.tsx","./src/pages/tabs/usagetab.tsx","./src/pages/tabs/webhooktab.tsx","./vite.config.ts"],"version":"5.9.3"}

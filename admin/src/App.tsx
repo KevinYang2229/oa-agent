@@ -1,0 +1,42 @@
+import type { ReactNode } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './auth';
+import LoginPage from './pages/LoginPage';
+import TenantsPage from './pages/TenantsPage';
+import TenantDetailPage from './pages/TenantDetailPage';
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { authed } = useAuth();
+  const loc = useLocation();
+  if (!authed) return <Navigate to="/login" replace state={{ from: loc.pathname }} />;
+  return <>{children}</>;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <TenantsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/tenants/:id"
+            element={
+              <RequireAuth>
+                <TenantDetailPage />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

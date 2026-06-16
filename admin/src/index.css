@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "@oa-agent/ui/index.css";
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+}
