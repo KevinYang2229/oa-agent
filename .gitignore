@@ -17,3 +17,5 @@ npm-debug.log*
 
 prisma/migrations/dev.db*
 .playwright-cli
+
+*.tsbuildinfo
