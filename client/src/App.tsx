@@ -17,7 +17,7 @@ import {
   type TurnData,
 } from './api';
 import { changeLanguage } from './i18n';
-import { embedConfig } from './embedConfig';
+import { embedConfig, fetchAppearance } from './embedConfig';
 import FormView from './FormView';
 import LoginView from './LoginView';
 import SettingsMenu, { FONT_MAX, FONT_MIN } from './SettingsMenu';
@@ -147,6 +147,24 @@ export default function App() {
     document.documentElement.style.fontSize = `${fontScale}%`;
     localStorage.setItem('oa-font-scale', String(fontScale));
   }, [fontScale]);
+
+  // 後端外觀：依租戶（apiKey）讀 /widget/config 套用。
+  // 優先序：data-*（embedConfig.theme）> 使用者本地記憶（oa-theme）> 後端 theme > 預設。
+  // primaryColor 一律寫 --primary-color CSS 變數（App 的 theme 狀態不管它）。
+  useEffect(() => {
+    let cancelled = false;
+    void fetchAppearance().then((a) => {
+      if (cancelled) return;
+      if (a.primaryColor) document.documentElement.style.setProperty('--primary-color', a.primaryColor);
+      // 只有在 data-theme 與本地記憶都沒有時，才採用後端 theme（不覆蓋使用者/宿主的明確選擇）
+      if (a.theme && !embedConfig.theme && !localStorage.getItem('oa-theme')) {
+        setTheme(a.theme);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 啟動：還原登入狀態（有 token 就用 /me 取使用者）；並註冊 401（refresh 失敗）→ 登出
   useEffect(() => {

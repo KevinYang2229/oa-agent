@@ -6,6 +6,8 @@
  *
  * 全部選填——未帶任何參數時等同改造前的純 ?embed=1 行為（向後相容）。
  */
+import type { TenantAppearance } from '@oa-agent/shared';
+
 type Theme = 'light' | 'dark';
 
 const params = new URLSearchParams(window.location.search);
@@ -29,3 +31,20 @@ export const embedConfig = {
   /** SSO handoff：宿主簽發的終端使用者 token，換發本系統 token（免內部帳密登入） */
   userToken: pick('userToken'),
 };
+
+/**
+ * 讀後端外觀（依 apiKey 對應租戶）。失敗或未帶 key 回 {}。
+ * 與 data-* 合併由呼叫端處理：data-* 優先。
+ */
+export async function fetchAppearance(): Promise<TenantAppearance> {
+  if (!embedConfig.apiKey) return {};
+  try {
+    const url = `/api/v1/widget/config?key=${encodeURIComponent(embedConfig.apiKey)}`;
+    const res = await fetch(url);
+    if (!res.ok) return {};
+    const json = (await res.json()) as { data?: { appearance?: TenantAppearance } };
+    return json.data?.appearance ?? {};
+  } catch {
+    return {};
+  }
+}
