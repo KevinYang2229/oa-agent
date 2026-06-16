@@ -63,4 +63,16 @@ export const webhookStore = {
     persist();
     return true;
   },
+
+  /** 啟用/停用端點：disabled=true 設 disabledAt，false 清除。回 undefined＝查無或不屬此租戶 */
+  setDisabled(tenantId: string, id: string, disabled: boolean): WebhookEndpoint | undefined {
+    const e = endpoints.get(id);
+    if (!e || e.tenantId !== tenantId) return undefined;
+    const next: WebhookEndpoint = { ...e };
+    if (disabled) next.disabledAt = new Date().toISOString();
+    else delete next.disabledAt;
+    endpoints.set(id, next);
+    persist();
+    return next;
+  },
 };

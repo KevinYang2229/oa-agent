@@ -7,7 +7,13 @@ import { tenantStore } from '@/modules/tenant/tenant.store';
 import { webhookStore } from '@/modules/webhook/webhook.store';
 import { usageStore } from '@/modules/usage/usage.store';
 import { AppError } from '@/utils/app-error';
-import type { CreateKeyInput, CreateTenantInput, CreateWebhookInput } from './admin.schema';
+import type {
+  CreateKeyInput,
+  CreateTenantInput,
+  CreateWebhookInput,
+  PatchTenantInput,
+  ToggleWebhookInput,
+} from './admin.schema';
 
 function ensureTenant(id: string) {
   const tenant = tenantStore.getTenant(id);
@@ -26,6 +32,13 @@ export const adminController = {
 
   async listTenants(_req: Request, res: Response): Promise<void> {
     res.status(200).json({ data: tenantStore.listTenants() });
+  },
+
+  async updateTenant(req: Request, res: Response): Promise<void> {
+    ensureTenant(String(req.params.id));
+    const patch = req.body as PatchTenantInput;
+    const updated = tenantStore.updateTenant(String(req.params.id), patch);
+    res.status(200).json({ data: updated });
   },
 
   async createKey(req: Request, res: Response): Promise<void> {
@@ -52,6 +65,14 @@ export const adminController = {
     const ok = webhookStore.remove(tenant.id, String(req.params.webhookId));
     if (!ok) throw AppError.notFound('Webhook 不存在');
     res.status(200).json({ data: { id: String(req.params.webhookId) } });
+  },
+
+  async setWebhookEnabled(req: Request, res: Response): Promise<void> {
+    const tenant = ensureTenant(String(req.params.id));
+    const { disabled } = req.body as ToggleWebhookInput;
+    const updated = webhookStore.setDisabled(tenant.id, String(req.params.webhookId), disabled);
+    if (!updated) throw AppError.notFound('Webhook 不存在');
+    res.status(200).json({ data: updated });
   },
 
   async getUsage(req: Request, res: Response): Promise<void> {

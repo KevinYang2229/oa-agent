@@ -125,4 +125,25 @@ export const tenantStore = {
     persist();
     return apiKey;
   },
+
+  /** 部分更新租戶（admin 後台用）；回 undefined 代表查無此租戶 */
+  updateTenant(
+    id: string,
+    patch: Partial<Pick<Tenant, 'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance'>>,
+  ): Tenant | undefined {
+    const tenant = tenants.get(id);
+    if (!tenant) return undefined;
+    const next: Tenant = {
+      ...tenant,
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.allowedOrigins !== undefined ? { allowedOrigins: patch.allowedOrigins } : {}),
+      ...(patch.ssoSecret !== undefined ? { ssoSecret: patch.ssoSecret } : {}),
+      ...(patch.appearance !== undefined
+        ? { appearance: { ...tenant.appearance, ...patch.appearance } }
+        : {}),
+    };
+    tenants.set(id, next);
+    persist();
+    return next;
+  },
 };

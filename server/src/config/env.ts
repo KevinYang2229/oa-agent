@@ -32,6 +32,9 @@ const envSchema = z.object({
   // 管理 API（建立租戶 / 金鑰 / webhook）的主控密鑰；留空＝停用管理 API（預設關閉以策安全）
   ADMIN_API_KEY: z.string().default(''),
 
+  // 後台登入密碼（換發 admin JWT 用）；留空＝停用後台登入（回 403）。與 ADMIN_API_KEY 分開避免主控金鑰外洩瀏覽器。
+  ADMIN_PASSWORD: z.string().default(''),
+
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),

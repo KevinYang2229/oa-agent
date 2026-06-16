@@ -24,6 +24,13 @@ export function signRefreshToken(payload: JwtPayload): string {
   } as SignOptions);
 }
 
+/** 後台管理 token：role=admin，效期較長（8h）。與一般 access token 同密鑰，由 role 區分。 */
+export function signAdminToken(): string {
+  return jwt.sign({ sub: 'admin', role: 'admin', via: 'password' } satisfies JwtPayload, env.JWT_ACCESS_SECRET, {
+    expiresIn: '8h',
+  } as SignOptions);
+}
+
 export function verifyAccessToken(token: string): JwtPayload {
   return jwt.verify(token, env.JWT_ACCESS_SECRET) as JwtPayload;
 }

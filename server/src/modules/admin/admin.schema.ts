@@ -1,10 +1,32 @@
 import { z } from 'zod';
 
+export const adminLoginSchema = z.object({
+  password: z.string().min(1),
+});
+
 export const createTenantSchema = z.object({
   name: z.string().trim().min(1),
   allowedOrigins: z.array(z.string().trim().min(1)).optional(),
   ssoSecret: z.string().min(16).optional(),
 });
+
+export const appearanceSchema = z.object({
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  theme: z.enum(['light', 'dark']).optional(),
+  position: z.enum(['br', 'bl']).optional(),
+  logoUrl: z.string().url().optional().or(z.literal('')),
+  welcomeMessage: z.string().max(200).optional(),
+  defaultLocale: z.string().max(20).optional(),
+});
+
+export const patchTenantSchema = z
+  .object({
+    name: z.string().trim().min(1).optional(),
+    allowedOrigins: z.array(z.string().trim().min(1)).optional(),
+    ssoSecret: z.string().min(16).optional(),
+    appearance: appearanceSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: '至少需提供一個欄位' });
 
 export const createKeySchema = z.object({
   type: z.enum(['publishable', 'secret']),
@@ -16,6 +38,10 @@ export const createWebhookSchema = z.object({
   events: z.array(z.literal('form.submitted')).optional(),
 });
 
+export const toggleWebhookSchema = z.object({
+  disabled: z.boolean(),
+});
+
 export const tenantParamSchema = z.object({
   id: z.string().min(1),
 });
@@ -25,6 +51,9 @@ export const webhookParamSchema = z.object({
   webhookId: z.string().min(1),
 });
 
+export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 export type CreateTenantInput = z.infer<typeof createTenantSchema>;
+export type PatchTenantInput = z.infer<typeof patchTenantSchema>;
 export type CreateKeyInput = z.infer<typeof createKeySchema>;
 export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
+export type ToggleWebhookInput = z.infer<typeof toggleWebhookSchema>;

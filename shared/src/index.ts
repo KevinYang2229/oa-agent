@@ -217,3 +217,19 @@ export interface Attachment {
   /** 使用者填寫的附件說明 */
   description?: string;
 }
+
+// ---- 租戶 widget 外觀（admin 後台設定、widget 端套用）----
+export interface TenantAppearance {
+  /** 主色（hex，如 #0057ff）；未設用 widget 內建預設 */
+  primaryColor?: string;
+  /** 外觀模式 */
+  theme?: 'light' | 'dark';
+  /** 啟動按鈕位置：右下 / 左下 */
+  position?: 'br' | 'bl';
+  /** 自訂 logo 圖片 URL */
+  logoUrl?: string;
+  /** 對話開場歡迎語 */
+  welcomeMessage?: string;
+  /** 預設介面語言（如 zh-Hant） */
+  defaultLocale?: string;
+}
