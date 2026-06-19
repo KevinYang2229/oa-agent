@@ -170,11 +170,11 @@ export const auth = {
   isAuthenticated: (): boolean => !!accessToken,
 
   /** 帳密登入 → 儲存 token、回使用者資料 */
-  async login(userId: string, password: string): Promise<Applicant> {
+  async login(username: string, password: string): Promise<Applicant> {
     const res = await fetch(`${AUTH}/login`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ userId, password }),
+      body: JSON.stringify({ username, password }),
     });
     const data = await unwrap<LoginData>(res);
     setTokens(data.accessToken, data.refreshToken);

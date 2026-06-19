@@ -10,18 +10,18 @@ export default function LoginView({
   onLogin: (user: Applicant) => void;
 }) {
   const { t } = useTranslation();
-  const [userId, setUserId] = useState("hyweb");
+  const [username, setUsername] = useState("hyweb");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (busy || !userId.trim() || !password) return;
+    if (busy || !username.trim() || !password) return;
     setErr(null);
     setBusy(true);
     try {
-      const user = await auth.login(userId.trim(), password);
+      const user = await auth.login(username.trim(), password);
       onLogin(user);
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : t("auth.loginFailed"));
@@ -37,12 +37,12 @@ export default function LoginView({
         <p className="login-sub">{t("auth.subtitle")}</p>
 
         <label className="login-field">
-          <span className="login-label">{t("auth.userId")}</span>
+          <span className="login-label">{t("auth.username")}</span>
           <Input
-            value={userId}
+            value={username}
             autoFocus
             placeholder="hyweb"
-            onChange={(e) => setUserId(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </label>
 

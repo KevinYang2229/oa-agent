@@ -6,8 +6,8 @@ import type { LoginInput, RefreshInput, SsoExchangeInput } from './auth.schema';
 export const authController = {
   // 公開：帳密登入 → access/refresh + 使用者資料
   async login(req: Request, res: Response): Promise<void> {
-    const { userId, password } = req.body as LoginInput;
-    const result = authService.login(userId, password);
+    const { username, password } = req.body as LoginInput;
+    const result = authService.login(username, password);
     res.status(200).json({ data: result });
   },
 
