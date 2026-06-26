@@ -11,8 +11,8 @@ import {
 } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 
-const def = getDefinition('leave-request');
-const tripDef = getDefinition('business-trip-domestic');
+const def = getDefinition('default', 'leave-request');
+const tripDef = getDefinition('default', 'business-trip-domestic');
 
 /** 一份通過所有必填與商規的完整請假值 */
 function fullLeave() {

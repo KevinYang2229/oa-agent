@@ -5,3 +5,5 @@
  * jest 會自動把 NODE_ENV 設為 'test'，故 production 守門（dev 預設密鑰 fail-fast）不會觸發。
  */
 process.env.ANTHROPIC_API_KEY ??= 'test-anthropic-key';
+// 啟用管理 API（Form Designer 端點測試用）
+process.env.ADMIN_API_KEY ??= 'test-admin-key';

@@ -38,3 +38,11 @@ export type { DialogProps, DialogConfirmVariant } from './components/common/Dial
 export { default as FileUploader } from './components/common/FileUploader/FileUploader';
 export type { FileUploaderProps } from './components/common/FileUploader/FileUploader';
 export type { CommittedFile, UploadResult } from './components/common/FileUploader/useFileUploader';
+
+export { default as SchemaFormPreview } from './components/common/SchemaFormPreview/SchemaFormPreview';
+export type {
+  SchemaFormPreviewProps,
+  PreviewDefinition,
+  PreviewFieldSpec,
+  PreviewFieldComponent,
+} from './components/common/SchemaFormPreview/SchemaFormPreview';

@@ -20,8 +20,12 @@ export interface BusinessTripSubmission {
 }
 
 export const businessTripService = {
-  async submit(userId: string, values: FormValues): Promise<BusinessTripSubmission> {
-    const def = getDefinition(FORM_ID);
+  async submit(
+    tenantId: string,
+    userId: string,
+    values: FormValues,
+  ): Promise<BusinessTripSubmission> {
+    const def = getDefinition(tenantId, FORM_ID);
     const issues = validateAll(def, values);
     if (issues.length > 0) {
       throw AppError.unprocessable('Business trip reimbursement validation failed', issues);

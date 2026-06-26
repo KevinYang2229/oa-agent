@@ -1,15 +1,20 @@
 /**
  * formId → 送出 service 的查表式 registry（送出接縫）。
  *
- * 取代原本散在 conversation.service / conversation.agent 兩處的硬編碼三元判斷。
- * 新增一張「會真的送出 OA」的表單 = 在 server/src/modules/<form>/ 寫一個 service，
- * 然後在這裡加一行；編排層（conversation.service / conversation.agent）不需改動。
+ * 內建三張表單有各自的領域 service（請假需算時數等）；其餘（含 Designer 自建表單）
+ * 一律走「通用送出」：驗證 → 有 oa.schema 則經連接器送 OA、否則合成本地單號 → 依 workflow 算簽核。
+ * 因此任何設計出來的表單都可送出，無需逐張寫 service。
  *
- * 各 service 的 submit 簽名一致：(userId, values) => Promise<FormSubmission>，
+ * 各 service 的 submit 簽名一致：(tenantId, userId, values) => Promise<FormSubmission>，
  * 不認識 express，可在 worker 執行。
  */
+import { randomUUID } from 'node:crypto';
 import type { ApprovalStep } from '@oa-agent/shared';
 import { businessTripService } from '@/modules/business-trip/business-trip.service';
+import { getOAConnector } from '@/lib/oa';
+import { computeApprovals, stepDefs } from '@/modules/form/approvals';
+import { validateAll } from '@/modules/form/form.engine';
+import { getDefinition } from '@/modules/form/form.registry';
 import type { FormValues } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
 import { outingService } from '@/modules/outing/outing.service';
@@ -23,9 +28,13 @@ export interface FormSubmission {
   approvals: ApprovalStep[];
 }
 
-export type FormSubmitFn = (userId: string, values: FormValues) => Promise<FormSubmission>;
+export type FormSubmitFn = (
+  tenantId: string,
+  userId: string,
+  values: FormValues,
+) => Promise<FormSubmission>;
 
-/** formId → 送出 service。新增送出型表單時於此註冊一行。 */
+/** formId → 專屬送出 service。需要客製衍生邏輯（如請假算時數）的表單才在此註冊。 */
 const submitRegistry: Record<string, FormSubmitFn> = {
   'leave-request': leaveService.submit,
   'business-trip-domestic': businessTripService.submit,
@@ -33,14 +42,41 @@ const submitRegistry: Record<string, FormSubmitFn> = {
 };
 
 /**
- * 取得指定表單的送出 service。
- * 找不到代表該 formId 尚未實作領域 service（設定疏漏），丟 500 明確報錯，
- * 而非靜默 fallback 成其他表單。
+ * 通用送出：適用任何沒有專屬 service 的表單（含 Designer 自建）。
+ * 驗證表單值 → 有 oa.schema 則映射送 OA、否則合成本地單號 → 依 workflow.steps 算簽核進度。
+ */
+function makeGenericSubmit(formId: string): FormSubmitFn {
+  return async (tenantId, userId, values) => {
+    const def = getDefinition(tenantId, formId);
+    const issues = validateAll(def, values);
+    if (issues.length > 0) {
+      throw AppError.unprocessable('表單尚有欄位未完成，無法送出', issues);
+    }
+
+    let oaRequestId: string;
+    let status: string;
+    if (def.oa) {
+      const result = await getOAConnector().submitForm({
+        formId,
+        oa: def.oa,
+        source: { ...values, userId },
+      });
+      oaRequestId = result.oaRequestId;
+      status = result.status;
+    } else {
+      // 未設定 OA 送出映射：此表單尚未串真後端，先給本地單號讓流程可完成
+      oaRequestId = `LOCAL-${randomUUID().slice(0, 8).toUpperCase()}`;
+      status = 'accepted';
+    }
+
+    const submittedAt = new Date().toISOString();
+    return { oaRequestId, status, submittedAt, approvals: computeApprovals(stepDefs(def), submittedAt) };
+  };
+}
+
+/**
+ * 取得指定表單的送出 service：有專屬則用之，否則回通用送出（schema 驅動）。
  */
 export function resolveSubmit(formId: string): FormSubmitFn {
-  const submit = submitRegistry[formId];
-  if (!submit) {
-    throw AppError.internal(`No submit service registered for form "${formId}"`);
-  }
-  return submit;
+  return submitRegistry[formId] ?? makeGenericSubmit(formId);
 }

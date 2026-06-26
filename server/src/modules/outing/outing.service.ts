@@ -20,8 +20,8 @@ export interface OutingSubmission {
 }
 
 export const outingService = {
-  async submit(userId: string, values: FormValues): Promise<OutingSubmission> {
-    const def = getDefinition(FORM_ID);
+  async submit(tenantId: string, userId: string, values: FormValues): Promise<OutingSubmission> {
+    const def = getDefinition(tenantId, FORM_ID);
     const issues = validateAll(def, values);
     if (issues.length > 0) {
       throw AppError.unprocessable('Outing registration validation failed', issues);

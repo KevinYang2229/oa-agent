@@ -11,11 +11,11 @@ function check(name: string, cond: boolean): void {
 }
 
 // 0. 兩張表單都註冊
-const ids = listDefinitions().map((d) => d.formId).sort();
+const ids = listDefinitions('default').map((d) => d.formId).sort();
 check(`registry 含 leave-request 與 outing-registration（${ids.join(', ')}）`,
   ids.includes('leave-request') && ids.includes('outing-registration'));
 
-const def = getDefinition('outing-registration');
+const def = getDefinition('default', 'outing-registration');
 
 // 1. required 欄位都存在於 data.properties
 check('required 欄位皆有對應 property',
@@ -69,7 +69,7 @@ check(`外出工具僅 fill_fields/submit（${outingTools.join(', ')}）`,
   outingTools.length === 2 && outingTools.includes('fill_fields') && outingTools.includes('submit'));
 
 // 8. 請假仍保有 leave 專屬工具（回歸）
-const leaveTools = buildTools(getDefinition('leave-request')).map((t) => t.name);
+const leaveTools = buildTools(getDefinition('default', 'leave-request')).map((t) => t.name);
 check('請假含 get_leave_balances / find_deputy_candidates / compute_leave_hours',
   ['get_leave_balances', 'find_deputy_candidates', 'compute_leave_hours'].every((n) => leaveTools.includes(n)));
 

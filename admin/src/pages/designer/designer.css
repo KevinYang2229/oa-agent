@@ -1,0 +1,402 @@
+.designer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-meta {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.meta-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.meta-grid .meta-wide {
+  grid-column: 1 / -1;
+}
+
+.designer-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 300px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* 元件面板 */
+.palette {
+  padding: 14px;
+}
+.palette h4,
+.canvas h4,
+.inspector h4,
+.designer-preview h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.palette-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: grab;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  user-select: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.palette-item:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-xs);
+}
+.palette-item.dragging {
+  opacity: 0.5;
+}
+.palette-icon {
+  width: 20px;
+  text-align: center;
+}
+
+/* 畫布 */
+.canvas {
+  padding: 14px;
+  min-height: 320px;
+}
+/* 步驟頁籤列 */
+.canvas-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.canvas-step-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.canvas-step-tab span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 11px;
+}
+.canvas-step-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.canvas-step-tab.active span {
+  background: var(--accent);
+  color: #fff;
+}
+.canvas-step-add {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.canvas-step-add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.canvas-step-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.canvas-step-head .input {
+  flex: 1;
+}
+.canvas-drop {
+  min-height: 120px;
+}
+.checkbox-row.disabled {
+  opacity: 0.5;
+}
+/* 一列：兩欄並排；單欄時佔滿整行 */
+.canvas-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+.canvas-grid-row.single {
+  grid-template-columns: 1fr;
+}
+/* 列與列之間的放置線（拖到這裡＝獨立成一行）：置中 3px 細線 */
+.row-gap {
+  height: 8px;
+  position: relative;
+}
+.row-gap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.12s;
+}
+.row-gap.over::after {
+  background: var(--accent);
+}
+.row-gap.empty {
+  height: auto;
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border-strong);
+  color: var(--text-faint);
+  font-size: 14px;
+}
+.row-gap.empty.over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.canvas-tip {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.field-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-card.dragging {
+  opacity: 0.4;
+}
+/* 卡片內左/右放置半區（並排用）：拖到哪半邊就在該側顯示 3px 垂直細線（與水平線同樣式） */
+.drop-half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+}
+.drop-half.left {
+  left: 0;
+}
+.drop-half.right {
+  right: 0;
+}
+.drop-half.over::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.drop-half.left.over::after {
+  left: -6px;
+}
+.drop-half.right.over::after {
+  right: -6px;
+}
+.field-card:hover {
+  border-color: var(--border-strong);
+}
+.field-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-ring);
+}
+.field-card-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.field-card-main strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.field-card-main small {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.field-card-main .req {
+  color: var(--danger);
+  margin-right: 3px;
+  font-weight: 700;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--text-faint);
+  font-size: 16px;
+  line-height: 1;
+  touch-action: none;
+}
+.field-del {
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 13px;
+}
+.field-del:hover {
+  color: var(--danger);
+}
+
+/* 屬性面板 */
+.inspector {
+  padding: 14px;
+}
+.inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.inspector-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.inspector-body .checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.options-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.options-title {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.option-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+}
+
+/* 預覽（避免與外觀分頁的 .preview-card 撞名） */
+.designer-preview {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.issue-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.issue-list code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* 進階層 */
+.advanced-card {
+  margin-top: 16px;
+  padding: 14px 16px;
+}
+.adv-tabs {
+  margin-bottom: 12px;
+}
+.adv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adv-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0;
+}
+.adv-subtitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 4px;
+  color: var(--text);
+}
+.adv-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.adv-row .input {
+  flex: 1;
+  min-width: 0;
+}
+.adv-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.adv-err {
+  color: var(--danger);
+  font-size: 12px;
+}
+.input.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}

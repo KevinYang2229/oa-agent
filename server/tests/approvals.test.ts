@@ -46,7 +46,7 @@ describe('stepDefs', () => {
   });
 
   it('真實表單回關卡定義（每關有 type）', () => {
-    const defs = stepDefs(getDefinition('leave-request'));
+    const defs = stepDefs(getDefinition('default', 'leave-request'));
     expect(defs.length).toBeGreaterThan(0);
     expect(defs[0]).toHaveProperty('type');
     expect(defs[0]).toHaveProperty('name');

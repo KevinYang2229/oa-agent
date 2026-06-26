@@ -9,7 +9,7 @@ function check(name: string, cond: boolean): void {
   if (!cond) failures += 1;
 }
 
-const def = getDefinition('leave-request');
+const def = getDefinition('default', 'leave-request');
 let values: FormValues = {};
 
 // 1. 空表單：四個必填皆 missing

@@ -1,0 +1,138 @@
+/*
+ * SchemaFormPreview — 重現 client FormView 的「假單」外觀（純 CSS，可攜，不依賴 Tailwind）。
+ * class 對應 FormView：form-sheet / form-sheet-head / form-body / form-section / form-grid /
+ * form-row / form-field / form-label / form-required / form-value。
+ */
+.schema-preview-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 512px;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 40, 0.18);
+  overflow: hidden;
+}
+
+.schema-preview-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #e6e8ee;
+  background: #f8f9fc;
+  padding: 18px 24px 12px;
+}
+.schema-preview-title {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.schema-preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+/* 步驟頁籤（比照 FormView 的 form-tabs） */
+.schema-preview-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid #e6e8ee;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+.schema-preview-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: max-content;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.15s;
+}
+.schema-preview-tab span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+}
+.schema-preview-tab.active {
+  border-color: var(--prev-primary, #4f46e5);
+  background: color-mix(in srgb, var(--prev-primary, #4f46e5) 10%, transparent);
+  color: var(--prev-primary, #4f46e5);
+}
+.schema-preview-tab.active span {
+  background: var(--prev-primary, #4f46e5);
+  color: #fff;
+}
+
+.schema-preview-section {
+  min-width: 0;
+}
+.schema-preview-section-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.schema-preview-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.schema-preview-row {
+  display: grid;
+  grid-template-columns: repeat(var(--prev-cols, 1), minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+.schema-preview-field {
+  border-bottom: 1px solid #e6e8ee;
+  padding: 10px 0;
+  min-width: 0;
+}
+.schema-preview-field.full {
+  grid-column: 1 / -1;
+}
+
+.schema-preview-label {
+  margin-bottom: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+.schema-preview-required {
+  margin-right: 2px;
+  color: #dc2626;
+}
+.schema-preview-value {
+  margin: 0;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.schema-preview-upload {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}

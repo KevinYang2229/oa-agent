@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './auth';
 import LoginPage from './pages/LoginPage';
 import TenantsPage from './pages/TenantsPage';
 import TenantDetailPage from './pages/TenantDetailPage';
+import FormDesignerPage from './pages/FormDesignerPage';
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { authed } = useAuth();
@@ -31,6 +32,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <TenantDetailPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/tenants/:id/forms/:formId/design"
+            element={
+              <RequireAuth>
+                <FormDesignerPage />
               </RequireAuth>
             }
           />

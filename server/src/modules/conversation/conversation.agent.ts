@@ -36,7 +36,7 @@ function describeFields(def: Definition): string {
     .join('\n');
 }
 
-function buildSystemPrompt(def: Definition): string {
+function buildSystemPrompt(tenantId: string, def: Definition): string {
   const today = new Date().toISOString().slice(0, 10);
   const hasLeaveType = 'leaveType' in def.data.properties;
   const hasDeputy = 'deputy' in def.data.properties;
@@ -77,7 +77,7 @@ function buildSystemPrompt(def: Definition): string {
   // 全系統可申請的表單清單：讓助理在被問到「有哪些表單可以申請」時能完整回答，
   // 而非只知道自己這場對話的表單。
   const currentTitle = def.data.title ?? def.agent.description;
-  const allForms = listDefinitions()
+  const allForms = listDefinitions(tenantId)
     .map((d) => `- ${d.data.title ?? d.agent.intent}：${d.agent.description}`)
     .join('\n');
 
@@ -156,7 +156,7 @@ async function dispatchTool(
     try {
       // 依表單類型查表選送出 service（外出登記 / 出差報銷 / 請假…）
       const submit = resolveSubmit(session.formId);
-      const result = await submit(session.userId, session.values);
+      const result = await submit(session.tenantId, session.userId, session.values);
       session.status = 'submitted';
       session.submission = {
         oaRequestId: result.oaRequestId,
@@ -189,7 +189,7 @@ async function dispatchTool(
   }
 
   if (name === 'compute_leave_hours') {
-    const estimate = leaveService.estimateHours(session.userId, session.values);
+    const estimate = leaveService.estimateHours(session.tenantId, session.userId, session.values);
     if (!estimate) {
       return JSON.stringify({ ok: false, error: '尚無法計算（缺起訖日期或此表單未設定工時政策）' });
     }
@@ -250,10 +250,10 @@ async function generateSuggestions(
 }
 
 export async function runTurn(session: Session, userText: string): Promise<TurnResult> {
-  const def = getDefinition(session.formId);
+  const def = getDefinition(session.tenantId, session.formId);
   const llm = getLLMProvider();
   const tools = buildTools(def);
-  const system = buildSystemPrompt(def);
+  const system = buildSystemPrompt(session.tenantId, def);
 
   // 守門快照：只有「使用者本輪訊息抵達時已是 confirming」才允許 submit
   const canSubmit = session.status === 'confirming';

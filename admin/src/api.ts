@@ -1,4 +1,19 @@
-import type { TenantAppearance } from '@oa-agent/shared';
+import type { Definition, TenantAppearance } from '@oa-agent/shared';
+
+export type { Definition };
+
+export interface FormSummary {
+  formId: string;
+  title: string;
+  description: string;
+  source: 'base' | 'tenant' | 'override';
+  editable: boolean;
+}
+
+export interface FormExport {
+  formId: string;
+  files: Record<string, unknown>;
+}
 
 const TOKEN_KEY = 'oa-admin-token';
 
@@ -81,4 +96,17 @@ export const api = {
     req<{ id: string }>('DELETE', `/admin/tenants/${id}/webhooks/${webhookId}`),
 
   getUsage: (id: string) => req<Usage>('GET', `/admin/tenants/${id}/usage`),
+
+  // ---- Form Designer ----
+  listForms: (id: string) => req<FormSummary[]>('GET', `/admin/tenants/${id}/forms`),
+  getForm: (id: string, formId: string) =>
+    req<Definition>('GET', `/admin/tenants/${id}/forms/${formId}`),
+  createForm: (id: string, def: Definition) =>
+    req<Definition>('POST', `/admin/tenants/${id}/forms`, def),
+  updateForm: (id: string, formId: string, def: Definition) =>
+    req<Definition>('PUT', `/admin/tenants/${id}/forms/${formId}`, def),
+  deleteForm: (id: string, formId: string) =>
+    req<{ formId: string }>('DELETE', `/admin/tenants/${id}/forms/${formId}`),
+  exportForm: (id: string, formId: string) =>
+    req<FormExport>('GET', `/admin/tenants/${id}/forms/${formId}/export`),
 };

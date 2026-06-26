@@ -1,6 +1,6 @@
 /**
  * form-submit.registry 單元測試：formId → 送出 service 的查表解析。
- * 已註冊回函式；未註冊丟錯（取代舊版靜默 fallback 成請假的隱性行為）。
+ * 內建表單回專屬 service；其餘（含 Designer 自建）回通用送出函式（schema 驅動），皆為函式。
  */
 import { resolveSubmit } from '@/modules/conversation/form-submit.registry';
 
@@ -12,7 +12,7 @@ describe('resolveSubmit', () => {
     },
   );
 
-  it('未註冊表單丟出明確錯誤（不靜默 fallback）', () => {
-    expect(() => resolveSubmit('unknown-form')).toThrow(/No submit service registered/);
+  it('未註冊表單回傳通用送出函式（schema 驅動，不丟錯）', () => {
+    expect(typeof resolveSubmit('any-designed-form')).toBe('function');
   });
 });

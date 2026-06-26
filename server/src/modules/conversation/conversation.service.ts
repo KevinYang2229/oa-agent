@@ -26,12 +26,12 @@ function formatApplicant(userId: string): string {
  * 意圖路由：使用者未明確指定表單時，以訊息比對各表單 agent.keywords 命中數，取最高分者；
  * 無命中或無訊息則回預設表單（維持原請假行為）。
  */
-function routeIntent(message?: string): string {
+function routeIntent(tenantId: string, message?: string): string {
   const text = message?.trim();
   if (!text) return DEFAULT_FORM_ID;
   let best = DEFAULT_FORM_ID;
   let bestScore = 0;
-  for (const def of listDefinitions()) {
+  for (const def of listDefinitions(tenantId)) {
     const score = (def.agent.keywords ?? []).reduce(
       (n, kw) => (kw && text.includes(kw) ? n + 1 : n),
       0,
@@ -57,7 +57,7 @@ export const conversationService = {
     formId?: string,
   ): Promise<{ session: Session; turn?: TurnResult }> {
     // 表單選擇：明確指定優先，否則依首句意圖路由（皆驗證表單存在）
-    const def = getDefinition(formId ?? routeIntent(message));
+    const def = getDefinition(tenantId, formId ?? routeIntent(tenantId, message));
     const session = conversationStore.create(tenantId, userId, def.formId);
     usageStore.increment(tenantId, 'conversations');
     // 申請人／外出人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
@@ -95,7 +95,7 @@ export const conversationService = {
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
 
-    const def = getDefinition(session.formId);
+    const def = getDefinition(tenantId, session.formId);
     const issues = validateAll(def, session.values);
     if (issues.length > 0) {
       throw AppError.unprocessable('表單尚有欄位未完成，無法送出', issues);
@@ -105,7 +105,7 @@ export const conversationService = {
     try {
       // 依表單類型查表選送出 service（外出登記 / 出差報銷 / 請假…），與 agent 工具一致
       const submitForm = resolveSubmit(session.formId);
-      const result = await submitForm(userId, session.values);
+      const result = await submitForm(tenantId, userId, session.values);
       session.status = 'submitted';
       session.submission = {
         oaRequestId: result.oaRequestId,
@@ -166,7 +166,7 @@ export const conversationService = {
     if (session.status === 'submitted') throw AppError.conflict('Conversation already submitted');
     if (session.status === 'cancelled') throw AppError.conflict('Conversation cancelled');
 
-    const def = getDefinition(session.formId);
+    const def = getDefinition(tenantId, session.formId);
     const applied: string[] = [];
     const rejected: FieldIssue[] = [];
 

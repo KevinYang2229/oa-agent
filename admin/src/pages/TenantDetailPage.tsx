@@ -8,10 +8,12 @@ import AppearanceTab from './tabs/AppearanceTab';
 import SettingsTab from './tabs/SettingsTab';
 import WebhookTab from './tabs/WebhookTab';
 import UsageTab from './tabs/UsageTab';
+import FormsTab from './tabs/FormsTab';
 
-type TabKey = 'appearance' | 'settings' | 'webhook' | 'usage';
+type TabKey = 'appearance' | 'forms' | 'settings' | 'webhook' | 'usage';
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'appearance', label: '外觀' },
+  { key: 'forms', label: '表單' },
   { key: 'settings', label: '設定' },
   { key: 'webhook', label: 'Webhook' },
   { key: 'usage', label: '用量' },
@@ -87,6 +89,7 @@ export default function TenantDetailPage() {
           </div>
 
           {tab === 'appearance' && <AppearanceTab tenant={tenant} onSaved={reload} onError={handleErr} />}
+          {tab === 'forms' && <FormsTab tenantId={tenant.id} onError={handleErr} />}
           {tab === 'settings' && <SettingsTab tenant={tenant} onSaved={reload} onError={handleErr} />}
           {tab === 'webhook' && <WebhookTab tenantId={tenant.id} onError={handleErr} />}
           {tab === 'usage' && <UsageTab tenantId={tenant.id} onError={handleErr} />}

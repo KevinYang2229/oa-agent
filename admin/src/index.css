@@ -292,9 +292,9 @@ a {
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
 }
-.card + .card {
+/* .card + .card {
   margin-top: 18px;
-}
+} */
 .card-head {
   display: flex;
   align-items: center;

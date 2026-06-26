@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { validate } from '@/middlewares/validate';
 import { requireAdmin } from '@/middlewares/require-admin';
 import { asyncHandler } from '@/utils/async-handler';
+import { formAdminController } from '@/modules/form/form.admin.controller';
+import {
+  definitionBodySchema,
+  tenantFormParamSchema,
+} from '@/modules/form/form.admin.schema';
 import { adminController } from './admin.controller';
 import { adminAuthController } from './admin.auth.controller';
 import {
@@ -63,6 +68,38 @@ router.get(
   '/tenants/:id/usage',
   validate({ params: tenantParamSchema }),
   asyncHandler(adminController.getUsage),
+);
+
+// ---- Form Designer：租戶表單 CRUD + 匯出 ----
+router.get(
+  '/tenants/:id/forms',
+  validate({ params: tenantParamSchema }),
+  asyncHandler(formAdminController.list),
+);
+router.post(
+  '/tenants/:id/forms',
+  validate({ params: tenantParamSchema, body: definitionBodySchema }),
+  asyncHandler(formAdminController.create),
+);
+router.get(
+  '/tenants/:id/forms/:formId',
+  validate({ params: tenantFormParamSchema }),
+  asyncHandler(formAdminController.get),
+);
+router.put(
+  '/tenants/:id/forms/:formId',
+  validate({ params: tenantFormParamSchema, body: definitionBodySchema }),
+  asyncHandler(formAdminController.update),
+);
+router.delete(
+  '/tenants/:id/forms/:formId',
+  validate({ params: tenantFormParamSchema }),
+  asyncHandler(formAdminController.remove),
+);
+router.get(
+  '/tenants/:id/forms/:formId/export',
+  validate({ params: tenantFormParamSchema }),
+  asyncHandler(formAdminController.export),
 );
 
 export const adminRouter = router;

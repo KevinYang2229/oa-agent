@@ -23,8 +23,8 @@ export interface LeaveSubmission {
 }
 
 export const leaveService = {
-  async submit(userId: string, values: FormValues): Promise<LeaveSubmission> {
-    const def = getDefinition(FORM_ID);
+  async submit(tenantId: string, userId: string, values: FormValues): Promise<LeaveSubmission> {
+    const def = getDefinition(tenantId, FORM_ID);
     const issues = validateAll(def, values);
     if (issues.length > 0) {
       throw AppError.unprocessable('Leave request validation failed', issues);
@@ -64,8 +64,12 @@ export const leaveService = {
    * 依申請人地區工時政策估算目前表單值的請假時數（供對話中送出前告知）。
    * 表單無 policy 或缺起訖日期時回 null。
    */
-  estimateHours(userId: string, values: FormValues): { hours: number; region?: string } | null {
-    const def = getDefinition(FORM_ID);
+  estimateHours(
+    tenantId: string,
+    userId: string,
+    values: FormValues,
+  ): { hours: number; region?: string } | null {
+    const def = getDefinition(tenantId, FORM_ID);
     if (!def.policy) return null;
     const region = getApplicant(userId).region;
     const { hours } = computeLeaveHours(values, def.policy, region);
