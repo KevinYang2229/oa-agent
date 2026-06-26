@@ -130,7 +130,7 @@ export default function TimePicker({
       window.removeEventListener("scroll", reposition, true);
       window.removeEventListener("resize", reposition);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isOpen]);
 
   // 開啟時把目前選取的時/分捲到欄位中央（在欄位容器內捲動，不影響整頁）

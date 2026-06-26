@@ -60,7 +60,7 @@ export interface FieldSpec {
 
 export type FieldSchema = Record<string, FieldSpec>;
 
-// ---- ③ Layout Schema（optional seam，MVP 不渲染）----
+// ---- ③ Layout Schema（選用；有定義時前端依此分組／排序／多步驟渲染，無則扁平單頁）----
 export interface LayoutSection {
   title?: string;
   fields: string[][];
@@ -84,7 +84,7 @@ export interface ValidationSchema {
   rules?: BusinessRule[];
 }
 
-// ---- ⑤ Workflow Schema（optional seam，MVP 不執行）----
+// ---- ⑤ Workflow Schema（選用；有定義時送出後依關卡計算簽核進度，Demo 以時間自動推進）----
 export interface WorkflowStep {
   type: string;
   name?: string;

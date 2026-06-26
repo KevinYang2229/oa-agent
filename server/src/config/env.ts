@@ -1,6 +1,11 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+// dev 預設密鑰：僅供本機開發。production 啟動時若仍沿用這些值會 fail-fast（見 superRefine）。
+const DEV_JWT_ACCESS_SECRET = 'dev-access-secret-please-change-32chars';
+const DEV_JWT_REFRESH_SECRET = 'dev-refresh-secret-please-change-32char';
+const DEV_AUTH_PASSWORD = 'oa1234';
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
@@ -9,13 +14,13 @@ const envSchema = z.object({
   // MVP：以 in-memory session 運作，DB/JWT 先給預設值（之後接 Prisma 再收緊）
   DATABASE_URL: z.string().default('postgresql://localhost:5432/oa_agent'),
 
-  JWT_ACCESS_SECRET: z.string().min(32).default('dev-access-secret-please-change-32chars'),
-  JWT_REFRESH_SECRET: z.string().min(32).default('dev-refresh-secret-please-change-32char'),
+  JWT_ACCESS_SECRET: z.string().min(32).default(DEV_JWT_ACCESS_SECRET),
+  JWT_REFRESH_SECRET: z.string().min(32).default(DEV_JWT_REFRESH_SECRET),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
   // MVP 登入：固定 dev 密碼（所有 mock 帳號共用）。之後接真實認證時換掉驗證邏輯即可。
-  AUTH_DEV_PASSWORD: z.string().default('oa1234'),
+  AUTH_DEV_PASSWORD: z.string().default(DEV_AUTH_PASSWORD),
 
   // 結尾斜線容錯：瀏覽器送的 Origin 不帶結尾斜線，env 多打一個 `/` 會比對不到而擋掉
   CORS_ORIGIN: z
@@ -61,11 +66,37 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().default(''),
   OPENAI_API_KEY: z.string().default(''),
 
-  // ---- OA 連接器（MVP 預設 stub）----
-  OA_CONNECTOR: z.enum(['stub']).default('stub'),
+  // ---- OA 連接器（MVP 預設 stub；http 為真 OA 連接器）----
+  OA_CONNECTOR: z.enum(['stub', 'http']).default('stub'),
   OA_BASE_URL: z.string().optional(),
   OA_API_KEY: z.string().optional(),
 }).superRefine((val, ctx) => {
+  // production 不得沿用 dev 預設密鑰/密碼，boot 時 fail-fast（避免帶著佔位密鑰上線）
+  if (val.NODE_ENV === 'production') {
+    const insecureDefaults: Array<[string, boolean]> = [
+      ['JWT_ACCESS_SECRET', val.JWT_ACCESS_SECRET === DEV_JWT_ACCESS_SECRET],
+      ['JWT_REFRESH_SECRET', val.JWT_REFRESH_SECRET === DEV_JWT_REFRESH_SECRET],
+      ['AUTH_DEV_PASSWORD', val.AUTH_DEV_PASSWORD === DEV_AUTH_PASSWORD],
+    ];
+    for (const [key, isDefault] of insecureDefaults) {
+      if (isDefault) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: `${key} must be overridden in production (still using insecure dev default)`,
+        });
+      }
+    }
+  }
+
+  // OA_CONNECTOR=http 時必須提供 OA_BASE_URL，boot 時 fail-fast
+  if (val.OA_CONNECTOR === 'http' && !val.OA_BASE_URL) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['OA_BASE_URL'],
+      message: 'OA_BASE_URL is required when OA_CONNECTOR=http',
+    });
+  }
   // 依 provider 要求對應的 API key，boot 時 fail-fast
   if (val.LLM_PROVIDER === 'anthropic' && !val.ANTHROPIC_API_KEY) {
     ctx.addIssue({

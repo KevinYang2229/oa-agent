@@ -34,8 +34,12 @@ const s1 = computeStatus(def, values);
 check('endDate<startDate 觸發商規 invalid',
   s1.invalid.some((i) => i.message.includes('結束日期不可早於開始日期')));
 
-// 5. 修正日期 + 補事由 → 完整
+// 5. 修正日期 + 補齊其餘必填（applicant/deputy/起訖時間/事由）→ 完整
 values = setField(def, values, 'endDate', '2026-06-03').values;
+values = setField(def, values, 'applicant', '王小明').values;
+values = setField(def, values, 'deputy', '李小華').values;
+values = setField(def, values, 'startTime', '09:00').values;
+values = setField(def, values, 'endTime', '18:00').values;
 values = setField(def, values, 'reason', '家裡有事').values;
 const s2 = computeStatus(def, values);
 check('補齊後 isComplete=true', s2.isComplete === true);

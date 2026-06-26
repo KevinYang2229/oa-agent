@@ -4,6 +4,9 @@
  * schema 的 field.component（'Select' / 'DatePicker'…）在此對應到 @oa-agent/ui 的設計系統元件。
  * 要新增/替換元件：在這裡 import，寫一個把 FieldControlProps 轉成該元件 props 的 adapter，
  * 再加進 fieldRegistry。FormView 只查表，不需改動。
+ *
+ * 例外：'Upload' 不在此註冊。其值為 Attachment[]（非字串），且需非同步上傳到後端，
+ * 不符 registry「value 一律字串」的契約，故由 FormView 特例渲染 FileUploader 處理。
  */
 import { Checkbox, DatePicker, Input, Select, Textarea, TimePicker } from '@oa-agent/ui';
 import type { FieldComponent } from '@oa-agent/shared';
@@ -62,7 +65,7 @@ const makeInput =
     />
   );
 
-/** field.component → renderer。未列出的型別走 fallback（純文字輸入）。 */
+/** field.component → renderer。未列出的型別走 fallback（純文字輸入）；'Upload' 例外，由 FormView 處理。 */
 export const fieldRegistry: Partial<Record<FieldComponent, FieldRenderer>> = {
   Select: renderSelect,
   Textarea: renderTextarea,

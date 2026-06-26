@@ -11,13 +11,12 @@ import { computeStatus, setField, validateAll } from '@/modules/form/form.engine
 import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
-import { businessTripService } from '@/modules/business-trip/business-trip.service';
 import { leaveService } from '@/modules/leave/leave.service';
-import { outingService } from '@/modules/outing/outing.service';
 import { listDeputyCandidates } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
 import { conversationStore } from './conversation.store';
+import { resolveSubmit } from './form-submit.registry';
 import type { Session, TurnResult } from './conversation.types';
 
 const MAX_ITERATIONS = 6;
@@ -155,13 +154,8 @@ async function dispatchTool(
     }
     session.status = 'submitting';
     try {
-      // 依表單類型選擇送出 service（外出登記 / 出差報銷 / 請假…）
-      const submit =
-        session.formId === 'outing-registration'
-          ? outingService.submit
-          : session.formId === 'business-trip-domestic'
-            ? businessTripService.submit
-            : leaveService.submit;
+      // 依表單類型查表選送出 service（外出登記 / 出差報銷 / 請假…）
+      const submit = resolveSubmit(session.formId);
       const result = await submit(session.userId, session.values);
       session.status = 'submitted';
       session.submission = {

@@ -3,15 +3,13 @@ import { refreshApprovals } from '@/modules/form/approvals';
 import { computeStatus, setField, validateAll } from '@/modules/form/form.engine';
 import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
-import { businessTripService } from '@/modules/business-trip/business-trip.service';
-import { leaveService } from '@/modules/leave/leave.service';
-import { outingService } from '@/modules/outing/outing.service';
 import { getApplicant } from '@/modules/user/user.directory';
 import { usageStore } from '@/modules/usage/usage.store';
 import { webhookDispatcher } from '@/modules/webhook/webhook.dispatcher';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
 import { runTurn } from './conversation.agent';
+import { resolveSubmit } from './form-submit.registry';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
 
@@ -105,13 +103,8 @@ export const conversationService = {
 
     session.status = 'submitting';
     try {
-      // 依表單類型選擇送出 service（外出登記 / 出差報銷 / 請假…），與 agent 工具一致
-      const submitForm =
-        session.formId === 'outing-registration'
-          ? outingService.submit
-          : session.formId === 'business-trip-domestic'
-            ? businessTripService.submit
-            : leaveService.submit;
+      // 依表單類型查表選送出 service（外出登記 / 出差報銷 / 請假…），與 agent 工具一致
+      const submitForm = resolveSubmit(session.formId);
       const result = await submitForm(userId, session.values);
       session.status = 'submitted';
       session.submission = {
