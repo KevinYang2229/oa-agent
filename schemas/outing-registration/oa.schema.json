@@ -1,0 +1,31 @@
+{
+  "endpoint": "/api/outing-registrations",
+  "method": "POST",
+  "request": {
+    "fieldMap": {
+      "userId": "userId",
+      "onBehalf": "onBehalf",
+      "applicant": "applicant",
+      "subject": "subject",
+      "fromLocation": "fromLocation",
+      "toLocation": "toLocation",
+      "departDate": "departDate",
+      "departTime": "departTime",
+      "returnDate": "returnDate",
+      "returnTime": "returnTime",
+      "needReimbursement": "needReimbursement",
+      "notifyPersons": "notifyPersons",
+      "remark": "remark"
+    },
+    "constants": {}
+  },
+  "response": {
+    "idField": "requestId",
+    "statusField": "status",
+    "statusMap": {
+      "accepted": "accepted",
+      "pending": "pending",
+      "rejected": "rejected"
+    }
+  }
+}

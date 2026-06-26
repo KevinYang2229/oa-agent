@@ -11,6 +11,7 @@ import type {
   Definition,
   FieldSchema,
   LayoutSchema,
+  OASchema,
   PolicySchema,
   ValidationSchema,
   WorkflowSchema,
@@ -40,6 +41,7 @@ export function loadDefinitionFromDir(formId: string): Definition {
     workflow: readJson<WorkflowSchema>(path.join(dir, 'workflow.schema.json')),
     agent: readJson<AgentSchema>(path.join(dir, 'agent.schema.json')),
     policy: readJsonOptional<PolicySchema>(path.join(dir, 'policy.schema.json')),
+    oa: readJsonOptional<OASchema>(path.join(dir, 'oa.schema.json')),
   };
 }
 

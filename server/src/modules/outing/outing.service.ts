@@ -27,21 +27,12 @@ export const outingService = {
       throw AppError.unprocessable('Outing registration validation failed', issues);
     }
 
+    if (!def.oa) throw AppError.internal(`${FORM_ID} 缺少 oa.schema.json`);
     const connector = getOAConnector();
-    const result = await connector.submitOutingRegistration({
-      userId,
-      onBehalf: values.onBehalf as boolean | undefined,
-      applicant: values.applicant as string,
-      subject: values.subject as string,
-      fromLocation: values.fromLocation as string,
-      toLocation: values.toLocation as string,
-      departDate: values.departDate as string,
-      departTime: values.departTime as string,
-      returnDate: values.returnDate as string,
-      returnTime: values.returnTime as string,
-      needReimbursement: values.needReimbursement as string,
-      notifyPersons: values.notifyPersons as string | undefined,
-      remark: values.remark as string | undefined,
+    const result = await connector.submitForm({
+      formId: FORM_ID,
+      oa: def.oa,
+      source: { ...values, userId },
     });
 
     const submittedAt = new Date().toISOString();

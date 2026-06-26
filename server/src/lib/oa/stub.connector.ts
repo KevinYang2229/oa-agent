@@ -1,49 +1,30 @@
 /**
  * StubOAConnector：不接真 OA，記錄送出並回合成 oaRequestId，
  * 讓整條 chat→submit 流程零外部依賴即可 demo。
+ *
+ * body 仍依各表單 oa.schema.json 經 oa.mapper 組出（與 http 路徑一致），方便 demo 後檢視。
  */
 import { randomUUID } from 'node:crypto';
 import { logger } from '@/lib/logger';
-import type {
-  BusinessTripDomesticPayload,
-  LeaveBalance,
-  LeaveRequestPayload,
-  OAConnector,
-  OASubmitResult,
-  OutingRegistrationPayload,
-} from './types';
+import { buildOABody } from './oa.mapper';
+import type { LeaveBalance, OAConnector, OASubmitInput, OASubmitResult } from './types';
 
-// MVP 以記憶體保存送出紀錄，方便 demo 後檢視
-export const stubSubmissions: Array<LeaveRequestPayload & { oaRequestId: string }> = [];
-export const stubOutingSubmissions: Array<OutingRegistrationPayload & { oaRequestId: string }> = [];
-export const stubBusinessTripSubmissions: Array<
-  BusinessTripDomesticPayload & { oaRequestId: string }
-> = [];
+/** MVP 以記憶體保存送出紀錄，方便 demo 後檢視（依 oa.schema 映射後的 body） */
+export const stubSubmissions: Array<{
+  formId: string;
+  oaRequestId: string;
+  body: Record<string, unknown>;
+}> = [];
 
 export const stubOAConnector: OAConnector = {
   name: 'stub',
 
-  async submitLeaveRequest(payload: LeaveRequestPayload): Promise<OASubmitResult> {
+  async submitForm({ formId, oa, source }: OASubmitInput): Promise<OASubmitResult> {
+    const body = buildOABody(oa.request, source);
     const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
-    stubSubmissions.push({ ...payload, oaRequestId });
-    logger.info({ oaRequestId, payload }, '[oa:stub] leave request submitted');
-    return { oaRequestId, status: 'accepted', raw: { echo: payload } };
-  },
-
-  async submitOutingRegistration(payload: OutingRegistrationPayload): Promise<OASubmitResult> {
-    const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
-    stubOutingSubmissions.push({ ...payload, oaRequestId });
-    logger.info({ oaRequestId, payload }, '[oa:stub] outing registration submitted');
-    return { oaRequestId, status: 'accepted', raw: { echo: payload } };
-  },
-
-  async submitBusinessTripDomestic(
-    payload: BusinessTripDomesticPayload,
-  ): Promise<OASubmitResult> {
-    const oaRequestId = `STUB-${randomUUID().slice(0, 8).toUpperCase()}`;
-    stubBusinessTripSubmissions.push({ ...payload, oaRequestId });
-    logger.info({ oaRequestId, payload }, '[oa:stub] business trip (domestic) submitted');
-    return { oaRequestId, status: 'accepted', raw: { echo: payload } };
+    stubSubmissions.push({ formId, oaRequestId, body });
+    logger.info({ oaRequestId, formId, body }, '[oa:stub] form submitted');
+    return { oaRequestId, status: 'accepted', raw: { echo: body } };
   },
 
   async getLeaveBalance(_userId: string): Promise<LeaveBalance[]> {

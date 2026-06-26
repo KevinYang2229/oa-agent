@@ -1,0 +1,39 @@
+{
+  "endpoint": "/api/business-trips",
+  "method": "POST",
+  "request": {
+    "fieldMap": {
+      "userId": "userId",
+      "onBehalf": "onBehalf",
+      "applicant": "applicant",
+      "company": "company",
+      "purpose": "purpose",
+      "tripDate": "tripDate",
+      "routeFrom": "routeFrom",
+      "routeTo": "routeTo",
+      "taxiFee": "taxiFee",
+      "hsrFee": "hsrFee",
+      "transitFee": "transitFee",
+      "privateCarKm": "privateCarKm",
+      "privateCarFee": "privateCarFee",
+      "lodgingFee": "lodgingFee",
+      "mealFee": "mealFee",
+      "parkingFee": "parkingFee",
+      "carpoolFee": "carpoolFee",
+      "carpoolMembers": "carpoolMembers",
+      "subtotal": "subtotal",
+      "hsrCarbon": "hsrCarbon",
+      "attachments": "attachments"
+    },
+    "constants": {}
+  },
+  "response": {
+    "idField": "requestId",
+    "statusField": "status",
+    "statusMap": {
+      "accepted": "accepted",
+      "pending": "pending",
+      "rejected": "rejected"
+    }
+  }
+}

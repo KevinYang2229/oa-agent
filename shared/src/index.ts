@@ -125,6 +125,32 @@ export interface PolicySchema {
   holidays?: string[];
 }
 
+// ---- ⑧ OA Schema（optional seam：送出至真 OA 系統的端點 + 欄位映射 + 回應解析）----
+/** 送出請求映射：本系統來源欄位 → OA body 欄位 */
+export interface OARequestMapping {
+  /** `來源欄位名 → OA body 欄位名`；同時為 allowlist（只送出列出的欄位），值為 undefined 不帶 */
+  fieldMap: Record<string, string>;
+  /** 固定欄位（如 { FormType: "LEAVE" }），直接併入 body */
+  constants?: Record<string, unknown>;
+}
+/** OA 回應解析映射：自原始回應取 id 與狀態 */
+export interface OAResponseMapping {
+  /** OA 回應中的請求 id 欄位名（缺值時 fallback `id`） */
+  idField: string;
+  /** OA 回應中的狀態欄位名；省略用 `status` */
+  statusField?: string;
+  /** OA 狀態字串 → 本系統狀態；未命中 fallback `pending` */
+  statusMap?: Record<string, 'accepted' | 'pending' | 'rejected'>;
+}
+export interface OASchema {
+  /** 真 OA 的端點路徑（接在 OA_BASE_URL 後） */
+  endpoint: string;
+  /** HTTP 方法；省略視為 POST */
+  method?: 'POST' | 'PUT';
+  request: OARequestMapping;
+  response: OAResponseMapping;
+}
+
 // ---- 組合：一份 Definition ----
 export interface Definition {
   formId: string;
@@ -136,6 +162,8 @@ export interface Definition {
   agent: AgentSchema;
   /** 時數計算政策（僅請假類表單有；其他表單可無） */
   policy?: PolicySchema;
+  /** OA 送出映射（僅需真正送出至 OA 的表單才有） */
+  oa?: OASchema;
 }
 
 // ---- slot-filling 用的衍生型別 ----

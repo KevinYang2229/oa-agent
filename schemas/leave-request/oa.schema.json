@@ -1,0 +1,32 @@
+{
+  "endpoint": "/api/leave-requests",
+  "method": "POST",
+  "request": {
+    "fieldMap": {
+      "userId": "userId",
+      "onBehalf": "onBehalf",
+      "applicant": "applicant",
+      "deputy": "deputy",
+      "deputyAllForms": "deputyAllForms",
+      "leaveType": "leaveType",
+      "startDate": "startDate",
+      "endDate": "endDate",
+      "startTime": "startTime",
+      "endTime": "endTime",
+      "reason": "reason",
+      "hours": "hours",
+      "region": "region",
+      "attachments": "attachments"
+    },
+    "constants": {}
+  },
+  "response": {
+    "idField": "requestId",
+    "statusField": "status",
+    "statusMap": {
+      "accepted": "accepted",
+      "pending": "pending",
+      "rejected": "rejected"
+    }
+  }
+}

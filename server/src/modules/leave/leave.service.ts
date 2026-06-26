@@ -2,7 +2,7 @@
  * 請假領域 service：最終 payload 驗證 → 透過 OA 連接器送出 + 簽核流程（workflow）。
  * 不 import express（可在 worker 執行）。
  */
-import type { ApprovalStep, Attachment } from '@oa-agent/shared';
+import type { ApprovalStep } from '@oa-agent/shared';
 import { getOAConnector } from '@/lib/oa';
 import type { LeaveBalance } from '@/lib/oa/types';
 import { computeApprovals, stepDefs } from '@/modules/form/approvals';
@@ -36,22 +36,13 @@ export const leaveService = {
       ? computeLeaveHours(values, def.policy, region).hours
       : undefined;
 
+    if (!def.oa) throw AppError.internal(`${FORM_ID} 缺少 oa.schema.json`);
     const connector = getOAConnector();
-    const result = await connector.submitLeaveRequest({
-      userId,
-      onBehalf: values.onBehalf as boolean | undefined,
-      applicant: values.applicant as string,
-      deputy: values.deputy as string,
-      deputyAllForms: values.deputyAllForms as boolean | undefined,
-      leaveType: values.leaveType as string,
-      startDate: values.startDate as string,
-      endDate: values.endDate as string,
-      startTime: values.startTime as string | undefined,
-      endTime: values.endTime as string | undefined,
-      reason: values.reason as string,
-      hours,
-      region,
-      attachments: values.attachments as Attachment[] | undefined,
+    const result = await connector.submitForm({
+      formId: FORM_ID,
+      oa: def.oa,
+      // 來源 = 表單值 + 衍生欄位（hours/region）；由 oa.schema fieldMap 決定送出哪些
+      source: { ...values, userId, region, hours },
     });
 
     const submittedAt = new Date().toISOString();

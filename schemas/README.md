@@ -16,6 +16,7 @@
   - [⑤ Layout — `layout.schema.json`](#-layout--layoutschemajson選用)
   - [⑥ Workflow — `workflow.schema.json`](#-workflow--workflowschemajson選用)
   - [⑦ Policy — `policy.schema.json`](#-policy--policyschemajson選用僅時數計算表單)
+  - [⑧ OA — `oa.schema.json`](#-oa--oaschemajson選用僅需送出至-oa-的表單)
 - [引擎如何消費這些 schema](#引擎如何消費這些-schema)
 - [如何新增/設定一張表單](#如何新增設定一張表單)
 - [常見問題](#常見問題)
@@ -33,10 +34,11 @@
 | ⑤ | Layout | `layout.schema.json` | 🔸 選用 | 版面：分組、顯示順序、多步驟 | 前端 `FormView` |
 | ⑥ | Workflow | `workflow.schema.json` | 🔸 選用 | 簽核關卡 | 送出後簽核進度計算 |
 | ⑦ | Policy | `policy.schema.json` | 🔸 選用 | 工時政策（請假時數計算）| `compute_leave_hours` 工具 |
+| ⑧ | OA | `oa.schema.json` | 🔸 選用 | OA 端點 + 送出欄位映射 + 回應解析 | OA 連接器（`submitForm` / `oa.mapper`）|
 
-> **必要 vs 選用**：loader（[`form.loader.ts`](../server/src/modules/form/form.loader.ts)）對 ①②③④⑤⑥ 直接讀檔，對 ⑦ policy 用 `readJsonOptional`（不存在回 `undefined`）。雖然 ⑤⑥ 目前在 loader 是直接讀，但型別上為選用、且引擎對缺值有 fallback；實務上建議每張表單至少提供 ①②③④，⑤⑥ 視需要。
+> **必要 vs 選用**：loader（[`form.loader.ts`](../server/src/modules/form/form.loader.ts)）對 ①②③④⑤⑥ 直接讀檔，對 ⑦ policy、⑧ oa 用 `readJsonOptional`（不存在回 `undefined`）。雖然 ⑤⑥ 目前在 loader 是直接讀，但型別上為選用、且引擎對缺值有 fallback；實務上建議每張表單至少提供 ①②③④，⑤⑥ 視需要。
 >
-> 現況：三張表單皆有 ①〜⑥；只有 `leave-request` 額外有 ⑦ `policy.schema.json`。
+> 現況：三張表單皆有 ①〜⑥與 ⑧；只有 `leave-request` 額外有 ⑦ `policy.schema.json`。要真正送出至 OA 的表單才需 ⑧（領域 service 找不到 `def.oa` 會擲錯）。
 
 ---
 
@@ -54,6 +56,7 @@ interface Definition {
   layout?: LayoutSchema;     // ⑤ 選用
   workflow?: WorkflowSchema; // ⑥ 選用
   policy?: PolicySchema;     // ⑦ 選用
+  oa?: OASchema;             // ⑧ 選用
 }
 ```
 
@@ -318,6 +321,45 @@ interface Definition {
 
 ---
 
+### ⑧ OA — `oa.schema.json`（選用，僅需送出至 OA 的表單）
+
+把「表單值 → 真 OA 系統」的送出**完全 schema 化**：OA 端點、送出欄位映射、回應解析全由此檔決定。由 OA 連接器（[`submitForm`](../server/src/lib/oa/types.ts)）透過純函式 mapper（[`oa.mapper.ts`](../server/src/lib/oa/oa.mapper.ts)）消費。**OA 真欄位名／狀態值改動時只改此 JSON，不動程式。**
+
+> 領域 service（`leave` / `outing` / `business-trip`）送出前會把表單值與衍生欄位（如請假的 `hours` / `region`、所有表單的 `userId`）合成「來源」，交給 `submitForm`；缺 `oa.schema.json` 時 service 會擲錯。
+
+| 屬性 | 必要 | 說明 |
+|------|------|------|
+| `endpoint` | ✅ | OA 端點路徑（接在 `OA_BASE_URL` 後）|
+| `method` | | `POST`（預設）/ `PUT` |
+| `request.fieldMap` | ✅ | `來源欄位 → OA body 欄位名`。**同時是 allowlist**：只有列出的欄位會送出；值為 `undefined` 不帶 |
+| `request.constants` | | 固定欄位（如 `{ "FormType": "LEAVE" }`），直接併入 body |
+| `response.idField` | ✅ | OA 回應的請求 id 欄位名（缺值時 fallback `id`）|
+| `response.statusField` | | OA 回應的狀態欄位名；省略用 `status` |
+| `response.statusMap` | | OA 狀態字串 → `accepted`/`pending`/`rejected`；未命中 fallback `pending` |
+
+**範例**（節錄自 `leave-request`，目前為 identity 範本；OA 規格到位後改各 value 即可）
+
+```json
+{
+  "endpoint": "/api/leave-requests",
+  "method": "POST",
+  "request": {
+    "fieldMap": {
+      "applicant": "applicant", "leaveType": "leaveType",
+      "startDate": "startDate", "endDate": "endDate",
+      "hours": "hours", "region": "region", "attachments": "attachments"
+    },
+    "constants": {}
+  },
+  "response": {
+    "idField": "requestId", "statusField": "status",
+    "statusMap": { "accepted": "accepted", "pending": "pending", "rejected": "rejected" }
+  }
+}
+```
+
+---
+
 ## 引擎如何消費這些 schema
 
 | 程式 | 讀哪幾層 | 做什麼 |
@@ -326,6 +368,7 @@ interface Definition {
 | [`form.engine.ts`](../server/src/modules/form/form.engine.ts) | Data + Validation + Field | Ajv 欄位/整表驗證、型別 coerce、跨欄商規、`computeStatus`、`setField` |
 | [`form.tools.ts`](../server/src/modules/form/form.tools.ts) | Data + Agent + Policy | 由 schema 生成 LLM 工具（見下）|
 | [`approvals.ts`](../server/src/modules/form/approvals.ts) | Workflow | 計算各關卡簽核狀態 |
+| [`oa.mapper.ts`](../server/src/lib/oa/oa.mapper.ts) + 連接器 `submitForm` | OA | 依 `oa` 組 OA body、解析回應（送出時）|
 | [`conversation.service.ts`](../server/src/modules/conversation/conversation.service.ts) | Agent.keywords | 意圖路由：未指定表單時比對命中數選 formId |
 | [`conversation.agent.ts`](../server/src/modules/conversation/conversation.agent.ts) | Agent | 用 `askOrder` / `fieldGuidance` / `confirmationTemplate` 組系統提示 |
 | [`FormView.tsx`](../client/src/FormView.tsx) + [`registry.tsx`](../client/src/form/registry.tsx) | Field + Layout | 依 `field.component` 查 registry 渲染、依 layout 分組/多步驟 |
@@ -365,9 +408,11 @@ interface Definition {
 
 8. **`policy.schema.json`（選用）** — 只有需要「依工時政策算時數」的表單才加（會自動啟用 `compute_leave_hours` 工具）。
 
-9. **領域 service（若要真的送出）** — 在 `server/src/modules/<form>/` 加最終驗證 → 送 OA 的 service，參考既有的 `leave` / `business-trip` / `outing`。純對話/驗證不送出則可先略過。
+9. **`oa.schema.json`（選用，要真送 OA 才需）** — 定義 `endpoint` + `request.fieldMap`（來源欄位→OA 欄位）+ `response`（id/status 解析）。送出邏輯由 `submitForm` 通用處理，不必改連接器。
 
-10. **驗證**：
+10. **領域 service（若要真的送出）** — 在 `server/src/modules/<form>/` 加最終驗證 → `connector.submitForm({ formId, oa: def.oa, source })` 的 service，參考既有的 `leave` / `business-trip` / `outing`。純對話/驗證不送出則可先略過 ⑨⑩。
+
+11. **驗證**：
 
     ```bash
     npm run smoke       # 離線驗證 schema 引擎，不需 API key
@@ -390,7 +435,7 @@ A：把該欄位 `data` 的 `description` 與 `agent.fieldGuidance` 寫清楚（
 A：該 `component` 未在 [`registry.tsx`](../client/src/form/registry.tsx) 註冊，fallback 成文字輸入；需自行加 adapter。（`Upload` 例外：已由 [`FormView.tsx`](../client/src/FormView.tsx) 特例渲染 `FileUploader`，不經 registry，無需另加 adapter。）
 
 **Q：哪些檔可以省略？**
-A：`layout` / `workflow` / `policy` 為選用；`data` / `field` / `validation` / `agent` 為必要。
+A：`layout` / `workflow` / `policy` / `oa` 為選用；`data` / `field` / `validation` / `agent` 為必要。（要真送 OA 的表單才需 `oa`。）
 
 **Q：表單路由怎麼決定？**
 A：使用者明確指定則用該 formId；否則比對各表單 `agent.keywords` 命中數，最高者勝出（見 [`conversation.service.ts`](../server/src/modules/conversation/conversation.service.ts)）。
