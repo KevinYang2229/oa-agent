@@ -26,6 +26,13 @@ export default function LoginPage() {
 
   return (
     <div className="login">
+      {/* 裝飾：漂浮光暈球（純視覺） */}
+      <div className="login-orbs" aria-hidden>
+        <span className="login-orb orb-1" />
+        <span className="login-orb orb-2" />
+        <span className="login-orb orb-3" />
+      </div>
+
       <div className="login-card">
         <div className="login-brand">
           <div className="brand-mark" style={{ width: 44, height: 44, borderRadius: 13 }}>

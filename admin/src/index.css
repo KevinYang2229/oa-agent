@@ -296,7 +296,7 @@ a {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 5px 5px 5px 12px;
+  padding: 5px 12px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
@@ -840,22 +840,102 @@ a {
    登入頁
    ============================================================ */
 .login {
+  position: relative;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: radial-gradient(1200px 600px at 15% -10%, #e9ebfb 0%, transparent 55%),
-    radial-gradient(1000px 500px at 110% 110%, #e6f0fb 0%, transparent 50%), var(--bg);
+  overflow: hidden;
+  /* 深色漸層 mesh：品牌靛藍/紫 + 一抹青，斜向暗底 */
+  background:
+    radial-gradient(900px 620px at 12% 6%, rgba(99, 102, 241, 0.34), transparent 60%),
+    radial-gradient(820px 600px at 88% 94%, rgba(124, 58, 237, 0.3), transparent 55%),
+    radial-gradient(680px 520px at 78% 8%, rgba(34, 211, 238, 0.12), transparent 52%),
+    linear-gradient(160deg, #0b1120 0%, #0e1525 45%, #131c30 100%);
 }
+/* 細點陣 overlay，中心淡出，增添科技感 */
+.login::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+  pointer-events: none;
+}
+
+/* ---- 漂浮光暈球 ---- */
+.login-orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.login-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.login-orb.orb-1 {
+  width: 460px;
+  height: 460px;
+  left: -120px;
+  top: -130px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.85), transparent 66%);
+  animation: orbFloat 16s ease-in-out infinite;
+}
+.login-orb.orb-2 {
+  width: 520px;
+  height: 520px;
+  right: -160px;
+  bottom: -180px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.8), transparent 66%);
+  animation: orbFloat 20s ease-in-out infinite reverse;
+}
+.login-orb.orb-3 {
+  width: 320px;
+  height: 320px;
+  right: 18%;
+  top: 12%;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.5), transparent 68%);
+  animation: orbFloat 24s ease-in-out infinite;
+  animation-delay: -6s;
+}
+@keyframes orbFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(70px, 56px) scale(1.14);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-orb {
+    animation: none;
+  }
+}
+
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 400px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: 34px 32px;
-  animation: rise 0.45s ease both;
+  max-width: 408px;
+  /* 玻璃擬態：淺色高透明 + 背景模糊，浮在深色 mesh 上 */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: saturate(160%) blur(20px);
+  -webkit-backdrop-filter: saturate(160%) blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  box-shadow:
+    0 30px 80px -24px rgba(2, 6, 23, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 36px 34px;
+  animation: rise 0.5s ease both;
 }
 .login-brand {
   display: flex;
