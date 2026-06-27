@@ -535,7 +535,7 @@ export default function FormDesignerPage() {
       {/* 即時預覽 */}
       <div className="card designer-preview">
         <h4>即時預覽</h4>
-        <SchemaFormPreview def={preview} />
+        <SchemaFormPreview def={preview} step={step} onStepChange={setActiveStep} />
       </div>
     </AppLayout>
   );

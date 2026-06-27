@@ -52,6 +52,10 @@ export interface SchemaFormPreviewProps {
   title?: string | null;
   /** 主題主色（hex），反映租戶 widget 外觀；預設靛藍 */
   primaryColor?: string;
+  /** 受控目前步驟索引（選填）；給定則由外部控制，可與設計器畫布 tab 連動。不給則內部自管 */
+  step?: number;
+  /** 步驟切換回呼（點預覽 tab 時觸發）；搭配 step 達成雙向連動 */
+  onStepChange?: (step: number) => void;
 }
 
 interface RenderSection {
@@ -148,9 +152,17 @@ export function SchemaFormPreview({
   disabled,
   title,
   primaryColor = "#4f46e5",
+  step,
+  onStepChange,
 }: SchemaFormPreviewProps): React.ReactElement {
   const [internal, setInternal] = useState<Record<string, string>>({});
-  const [step, setStep] = useState(0);
+  const [internalStep, setInternalStep] = useState(0);
+  // step 受控（外部給）或自管；切換時通知外部 + 在非受控下更新內部
+  const activeStep = step ?? internalStep;
+  const setStep = (i: number) => {
+    onStepChange?.(i);
+    if (step === undefined) setInternalStep(i);
+  };
   const current = values ?? internal;
   const required = new Set(def.validation?.required ?? []);
   const headTitle = title === null ? null : (title ?? def.data.title ?? "表單預覽");
@@ -165,7 +177,7 @@ export function SchemaFormPreview({
   const allSections = sectionsOf(def);
   // 多區塊 → 比照真實畫面以步驟頁籤分段完成
   const hasSteps = allSections.length > 1;
-  const currentStep = Math.min(step, allSections.length - 1);
+  const currentStep = Math.min(Math.max(activeStep, 0), allSections.length - 1);
   const visibleSections = hasSteps ? [allSections[currentStep]] : allSections;
 
   return (

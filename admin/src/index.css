@@ -50,6 +50,30 @@
   --sidebar-w: 248px;
 }
 
+/* ============================================================
+   @oa-agent/ui 控制項所需的 OA 設計 token（light theme）
+   ------------------------------------------------------------
+   表單預覽 <SchemaFormPreview> 內的 Input / Select / DatePicker 等
+   元件用的是 OA 設計系統 token（canonical 定義於 ui/index.css）。
+   admin 採獨立的控制台設計系統、未引入該套，故在此補上這些 token。
+   放 :root（而非 scope 到預覽容器）是因為 DatePicker / TimePicker 的
+   下拉以 createPortal 掛在 document.body，需全域可取得這些變數。
+   這些變數名 admin 自身未使用，不會覆蓋既有樣式。
+   ============================================================ */
+:root {
+  --bg-color: #e7edf2;
+  --bg-secondary: #f8fbfe;
+  --input-bg: #f8fbfe;
+  --card-bg: #ffffff;
+  --border-color: #cad7e2;
+  --text-primary: #002d5c;
+  --text-secondary: #5e7e96;
+  --primary-color: #0060d5;
+  --primary-color-rgb: 1, 86, 162;
+  --highlight-color: #0399f7;
+  --nav-active-bg: #ecf2f9;
+}
+
 * {
   box-sizing: border-box;
 }
