@@ -173,6 +173,32 @@ export function toDefinition(d: DraftForm): Definition {
   };
 }
 
+/**
+ * 匯出檔（schemas/<formId>/ 多檔 map）→ Definition（匯入用）。
+ * 與後端 form.admin.controller.toSchemaFiles 對稱；缺必要層則拋錯。
+ */
+export function fromSchemaFiles(files: Record<string, unknown>, formId: string): Definition {
+  const pick = <T>(name: string): T | undefined => files[name] as T | undefined;
+  const data = pick<Definition['data']>('data.schema.json');
+  const field = pick<Definition['field']>('field.schema.json');
+  const validation = pick<Definition['validation']>('validation.schema.json');
+  const agent = pick<Definition['agent']>('agent.schema.json');
+  if (!data || !field || !validation || !agent) {
+    throw new Error('匯入檔缺少必要層（data / field / validation / agent）');
+  }
+  return {
+    formId,
+    data,
+    field,
+    validation,
+    agent,
+    layout: pick<Definition['layout']>('layout.schema.json'),
+    workflow: pick<Definition['workflow']>('workflow.schema.json'),
+    policy: pick<Definition['policy']>('policy.schema.json'),
+    oa: pick<Definition['oa']>('oa.schema.json'),
+  };
+}
+
 /** Definition → DraftForm（載入既有表單編輯用，best-effort） */
 export function fromDefinition(def: Definition): DraftForm {
   const required = new Set(def.validation?.required ?? []);

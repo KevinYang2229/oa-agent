@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
@@ -19,6 +19,7 @@ import {
   emptyDraft,
   fieldsOfStep,
   fromDefinition,
+  fromSchemaFiles,
   newField,
   toDefinition,
   type DraftField,
@@ -156,6 +157,7 @@ export default function FormDesignerPage() {
   const [issues, setIssues] = useState<{ field: string; message: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -295,7 +297,8 @@ export default function FormDesignerPage() {
   async function doExport() {
     try {
       const out = await api.exportForm(id, isNew ? draft.formId : formId);
-      const blob = new Blob([JSON.stringify(out.files, null, 2)], { type: 'application/json' });
+      // 自描述：含 formId 與 files，讓匯入可無損還原（仍相容舊的純 files 格式）
+      const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -304,6 +307,32 @@ export default function FormDesignerPage() {
       URL.revokeObjectURL(url);
     } catch (e) {
       handleErr(e);
+    }
+  }
+
+  /** 匯入匯出檔 → 還原成 Definition → 灌進設計器（檢視後按「儲存」才落地） */
+  async function doImport(file: File) {
+    setErr(null);
+    setIssues([]);
+    try {
+      const parsed = JSON.parse(await file.text()) as
+        | { formId?: string; files?: Record<string, unknown> }
+        | Record<string, unknown>;
+      // 相容兩種形狀：自描述 { formId, files } 或舊版純 files map
+      const wrapped =
+        parsed && typeof parsed === 'object' && 'files' in parsed && !!(parsed as { files?: unknown }).files;
+      const files = (wrapped ? (parsed as { files: Record<string, unknown> }).files : parsed) as Record<
+        string,
+        unknown
+      >;
+      const stem = file.name.replace(/\.schema-files\.json$/i, '').replace(/\.json$/i, '');
+      const fid = (wrapped && (parsed as { formId?: string }).formId) || draft.formId.trim() || stem;
+      const def = fromSchemaFiles(files, fid);
+      setDraft(fromDefinition(def));
+      setActiveStep(0);
+      setSelectedKey(null);
+    } catch (e) {
+      setErr(e instanceof Error ? `匯入失敗：${e.message}` : '匯入失敗：檔案格式不正確');
     }
   }
 
@@ -325,6 +354,20 @@ export default function FormDesignerPage() {
         <div className="designer-actions">
           <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/tenants/${id}`)}>
             返回
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void doImport(file);
+              e.target.value = ''; // 允許再次匯入同一檔
+            }}
+          />
+          <button className="btn btn-ghost btn-sm" onClick={() => fileInputRef.current?.click()}>
+            匯入 schema
           </button>
           {!isNew && (
             <button className="btn btn-ghost btn-sm" onClick={doExport}>
