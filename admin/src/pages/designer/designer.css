@@ -1,16 +1,27 @@
 .designer-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 
 .form-meta {
-  margin-bottom: 16px;
   padding: 16px;
+  margin-bottom: 16px;
 }
+/* 三短欄填滿一列（ID／名稱／關鍵字），描述跨整列 */
 .meta-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+/* 區塊作用說明（標題下一行的灰字） */
+.block-desc {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 .meta-grid label {
   display: flex;
@@ -26,19 +37,59 @@
 
 .designer-grid {
   display: grid;
-  grid-template-columns: 200px 1fr 300px;
+  /* 右欄固定容下 512 寬預覽（512 + 卡片內距）；左欄畫布吃剩餘 */
+  grid-template-columns: minmax(0, 1fr) 552px;
   gap: 16px;
+  /* 兩欄等高：較矮一欄由內部填充元素長高，避免死白 */
   align-items: stretch;
 }
 
+/* 右欄即時預覽：自然高度 + sticky 貼著畫布（不被 stretch 撐高留白） */
+.designer-preview {
+  align-self: start;
+  position: sticky;
+  top: 12px;
+}
+
 /* 元件面板 */
+/* 元件面板：滿版橫向工具列（固定高度帶，不與動態欄並列） */
 .palette {
-  padding: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.palette-bar-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.palette-bar-head h4 {
+  margin: 0;
+}
+.palette-bar-head .block-desc {
+  margin: 0;
+}
+.palette-items {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 元件 chips 平均撐滿整列，不留右側空白 */
+.palette-item-wrap {
+  flex: 1 1 96px;
+}
+.palette-item {
+  white-space: nowrap;
+  justify-content: center;
 }
 .palette h4,
 .canvas h4,
 .inspector h4,
-.designer-preview h4 {
+.designer-preview h4,
+.form-meta h4,
+.advanced-card h4 {
   margin: 0 0 10px;
   font-size: 14px;
   font-weight: 700;
@@ -55,7 +106,6 @@
   padding: 9px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  margin-bottom: 8px;
   cursor: grab;
   background: var(--surface);
   font-size: 13px;
@@ -76,10 +126,11 @@
   text-align: center;
 }
 
-/* 畫布 */
+/* 畫布（動態高度：隨欄位增減）。flex 直欄讓放置區長高填滿整欄 */
 .canvas {
   padding: 14px;
-  min-height: 320px;
+  display: flex;
+  flex-direction: column;
 }
 /* 步驟頁籤列 */
 .canvas-steps {
@@ -149,6 +200,7 @@
 }
 .canvas-drop {
   min-height: 120px;
+  flex: 1;
 }
 .checkbox-row.disabled {
   opacity: 0.5;
@@ -281,20 +333,98 @@
   line-height: 1;
   touch-action: none;
 }
+.field-cog,
 .field-del {
   border: none;
   background: none;
   color: var(--text-faint);
   cursor: pointer;
   font-size: 13px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.field-cog {
+  font-size: 14px;
+}
+.field-cog:hover {
+  color: var(--accent);
 }
 .field-del:hover {
   color: var(--danger);
 }
 
-/* 屬性面板 */
-.inspector {
-  padding: 14px;
+/* ============================================================
+   屬性抽屜：由欄位 ⚙ 設定鈕開啟，固定於右側滑出，平常不佔版面。
+   off-canvas layer：fixed 鋪滿視窗 + overflow:hidden，裁掉離屏的 absolute 抽屜，
+   讓水平方向不會被撐出捲動條；pointer-events 由子層接管，關閉時不擋頁面操作。
+   ============================================================ */
+.inspector-layer {
+  position: fixed;
+  /* 填滿 .main（側邊欄之右的整個區域，含 topbar） */
+  top: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 55;
+}
+.inspector-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 92vw);
+  pointer-events: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -16px 0 40px rgba(16, 24, 40, 0.18);
+  padding: 16px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.25s ease, visibility 0.25s;
+}
+.inspector-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+.inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.inspector-head h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.inspector-close {
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.inspector-close:hover {
+  color: var(--text);
+  background: var(--border);
+}
+.inspector-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: rgba(16, 24, 40, 0.4);
 }
 .inspector-body {
   display: flex;
@@ -334,7 +464,6 @@
 
 /* 預覽（避免與外觀分頁的 .preview-card 撞名） */
 .designer-preview {
-  margin-top: 16px;
   padding: 16px;
 }
 
@@ -399,4 +528,42 @@
 .input.mono {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 12px;
+}
+
+/* ============================================================
+   響應式：<1200px 畫布與預覽改上下單欄（屬性抽屜不受影響，恆為 overlay）
+   ============================================================ */
+@media (max-width: 1200px) {
+  .designer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* 單欄時預覽接在畫布之後，不再 sticky */
+  .designer-preview {
+    position: static;
+  }
+}
+
+/* 手機：屬性抽屜改由底部滑出（bottom sheet）較好單手操作 */
+@media (max-width: 560px) {
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .canvas-grid-row {
+    grid-template-columns: 1fr;
+  }
+  .inspector-drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: 85vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -16px 40px rgba(16, 24, 40, 0.18);
+    transform: translateY(100%);
+  }
+  .inspector-drawer.open {
+    transform: translateY(0);
+  }
 }

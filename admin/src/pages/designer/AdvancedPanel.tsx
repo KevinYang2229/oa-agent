@@ -20,6 +20,8 @@ export default function AdvancedPanel({
 
   return (
     <div className="card advanced-card">
+      <h4>⑥ 進階設定</h4>
+      <p className="block-desc">非必填。設定簽核關卡、送出到 OA 的欄位映射、對話確認話術，以及工時政策。</p>
       <div className="tabs adv-tabs">
         {(['workflow', 'oa', 'agent', 'policy'] as AdvTab[]).map((t) => (
           <button key={t} className={`tab${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>

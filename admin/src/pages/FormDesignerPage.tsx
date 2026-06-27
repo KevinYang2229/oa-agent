@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
@@ -89,9 +90,6 @@ function DraggableCard({
     <div
       ref={drag.setNodeRef}
       className={`field-card${selected ? ' selected' : ''}${drag.isDragging ? ' dragging' : ''}`}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
     >
       <span className="drag-handle" {...drag.listeners} {...drag.attributes} title="拖曳搬移／並排">
         ⠿
@@ -105,6 +103,16 @@ function DraggableCard({
           {field.component} · {field.key}
         </small>
       </span>
+      <button
+        className="field-cog"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+        title="設定屬性"
+      >
+        ⚙
+      </button>
       <button
         className="field-del"
         onClick={(e) => {
@@ -393,8 +401,10 @@ export default function FormDesignerPage() {
         </div>
       )}
 
-      {/* 表單基本資料 */}
+      {/* ① 基本資料（滿版） */}
       <div className="card form-meta">
+        <h4>① 基本資料</h4>
+        <p className="block-desc">表單的識別與路由：ID、名稱，以及餵給 AI 判斷意圖用的描述與關鍵字。</p>
         <div className="meta-grid">
           <label>
             <span>表單 ID（formId）</span>
@@ -415,17 +425,7 @@ export default function FormDesignerPage() {
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
             />
           </label>
-          <label className="meta-wide">
-            <span>用途描述（agent.description，會餵給 LLM）</span>
-            <textarea
-              className="input"
-              rows={3}
-              value={draft.description}
-              placeholder="員工請假申請，需要申請人、假別、起訖日期、事由"
-              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-            />
-          </label>
-          <label className="meta-wide">
+          <label>
             <span>意圖關鍵字（逗號分隔，用於路由）</span>
             <input
               className="input"
@@ -439,27 +439,44 @@ export default function FormDesignerPage() {
               }
             />
           </label>
+          <label className="meta-wide">
+            <span>用途描述（agent.description，會餵給 LLM）</span>
+            <textarea
+              className="input"
+              rows={3}
+              value={draft.description}
+              placeholder="員工請假申請，需要申請人、假別、起訖日期、事由"
+              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+            />
+          </label>
         </div>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={onDragEnd}>
-        <div className="designer-grid">
-          {/* 元件面板 */}
-          <aside className="card palette">
-            <h4>元件面板</h4>
-            <p className="palette-hint">拖到中間畫布，或點擊新增到目前步驟</p>
+        {/* ② 元件面板：滿版橫向工具列 */}
+        <aside className="card palette">
+          <div className="palette-bar-head">
+            <h4>② 元件面板</h4>
+            <p className="block-desc">可用的欄位類型。拖到下方畫布，或點擊直接新增到目前步驟。</p>
+          </div>
+          <div className="palette-items">
             {PALETTE.map((p) => (
               <div
                 key={p.component}
+                className="palette-item-wrap"
                 onClick={() => onDragEnd({ active: { id: `new-${p.component}` }, over: null } as DragEndEvent)}
               >
                 <PaletteItem {...p} />
               </div>
             ))}
-          </aside>
+          </div>
+        </aside>
 
+        <div className="designer-grid">
           {/* 畫布（依步驟分頁） */}
           <div className="card canvas">
+            <h4>③ 表單畫布</h4>
+            <p className="block-desc">編排欄位與版面：依步驟分頁，拖放調整位置；點欄位的 ⚙ 設定鈕編輯屬性。</p>
             <div className="canvas-steps">
               {draft.steps.map((s, i) => (
                 <button
@@ -505,10 +522,35 @@ export default function FormDesignerPage() {
             <p className="canvas-tip">提示：欄位預設佔滿整行；把一個欄位拖到另一個欄位上＝並成兩欄；拖到列與列之間＝獨立成一行。</p>
           </div>
 
-          {/* 屬性面板 */}
-          <aside className="card inspector">
-            <h4>屬性</h4>
-            {selected ? (
+          {/* 右欄：即時預覽（512 寬） */}
+          <div className="card designer-preview">
+            <h4>④ 即時預覽</h4>
+            <p className="block-desc">使用者實際看到的畫面，隨編輯即時更新；步驟頁籤與畫布連動。</p>
+            <SchemaFormPreview def={preview} step={step} onStepChange={setActiveStep} />
+          </div>
+        </div>
+      </DndContext>
+
+      {/* 屬性抽屜：由欄位卡片的 ⚙ 設定鈕開啟，平常不佔版面。
+          以 portal 掛到 body，避開 .content 的 transform containing block，
+          讓 off-canvas layer 的 fixed 真正相對視窗、正確填滿 .main */}
+      {createPortal(
+        <div className="inspector-layer">
+          {selected && (
+            <div className="inspector-backdrop" onClick={() => setSelectedKey(null)} aria-hidden />
+          )}
+          <aside className={`inspector-drawer${selected ? ' open' : ''}`} aria-hidden={!selected}>
+            <div className="inspector-head">
+              <h4>屬性{selected ? `：${selected.label || selected.key}` : ''}</h4>
+              <button
+                className="inspector-close"
+                onClick={() => setSelectedKey(null)}
+                aria-label="關閉屬性面板"
+              >
+                ✕
+              </button>
+            </div>
+            {selected && (
               <Inspector
                 field={selected}
                 guidance={draft.fieldGuidance[selected.key] ?? ''}
@@ -522,21 +564,14 @@ export default function FormDesignerPage() {
                   })
                 }
               />
-            ) : (
-              <p className="empty">點選畫布中的欄位以編輯屬性</p>
             )}
           </aside>
-        </div>
-      </DndContext>
+        </div>,
+        document.body,
+      )}
 
       {/* 進階層：簽核 / OA / 對話 / 工時 */}
       <AdvancedPanel draft={draft} setDraft={setDraft} />
-
-      {/* 即時預覽 */}
-      <div className="card designer-preview">
-        <h4>即時預覽</h4>
-        <SchemaFormPreview def={preview} step={step} onStepChange={setActiveStep} />
-      </div>
     </AppLayout>
   );
 }
