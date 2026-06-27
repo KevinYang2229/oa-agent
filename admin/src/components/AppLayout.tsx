@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { IconLogout, IconTenants } from './icons';
@@ -22,9 +22,18 @@ export default function AppLayout({
   const navigate = useNavigate();
   const loc = useLocation();
   const onTenants = loc.pathname === '/' || loc.pathname.startsWith('/tenants');
+  const [navOpen, setNavOpen] = useState(false);
+
+  const go = (path: string) => {
+    navigate(path);
+    setNavOpen(false); // 手機抽屜：導頁後自動收起
+  };
 
   return (
-    <div className="app">
+    <div className={`app${navOpen ? ' nav-open' : ''}`}>
+      {/* 手機側邊欄抽屜遮罩 */}
+      <div className="nav-backdrop" onClick={() => setNavOpen(false)} aria-hidden />
+
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">OA</div>
@@ -38,7 +47,7 @@ export default function AppLayout({
         <nav className="nav">
           <div
             className={`nav-item${onTenants ? ' active' : ''}`}
-            onClick={() => navigate('/')}
+            onClick={() => go('/')}
             role="button"
             tabIndex={0}
           >
@@ -56,9 +65,18 @@ export default function AppLayout({
 
       <div className="main">
         <header className="topbar">
-          <div className="topbar-title">
-            {crumb && <span className="topbar-crumb">{crumb}</span>}
-            <span className="topbar-h">{title}</span>
+          <div className="topbar-left">
+            <button
+              className="nav-toggle"
+              onClick={() => setNavOpen(true)}
+              aria-label="開啟選單"
+            >
+              ☰
+            </button>
+            <div className="topbar-title">
+              {crumb && <span className="topbar-crumb">{crumb}</span>}
+              <span className="topbar-h">{title}</span>
+            </div>
           </div>
           <div className="topbar-actions">
             {actions}

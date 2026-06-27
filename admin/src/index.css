@@ -262,6 +262,35 @@ a {
   align-items: center;
   gap: 12px;
 }
+/* 漢堡鈕與標題群組（漢堡鈕僅手機顯示） */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.nav-toggle:hover {
+  background: var(--surface-2);
+}
+/* 側邊欄抽屜遮罩：桌機不存在（僅手機 media query 內啟用） */
+.nav-backdrop {
+  display: none;
+}
 
 .user-chip {
   display: flex;
@@ -302,6 +331,73 @@ a {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ============================================================
+   RWD：≤860px 側邊欄收成 off-canvas 抽屜（漢堡鈕開、遮罩關）
+   ============================================================ */
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 264px;
+    max-width: 82vw;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .app.nav-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 12px 0 40px rgba(16, 24, 40, 0.3);
+  }
+  .app.nav-open .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(16, 24, 40, 0.45);
+  }
+  .nav-toggle {
+    display: inline-flex;
+  }
+  /* topbar 允許換行：動作鈕多時掉到第二行，標題不被逐字擠斷 */
+  .topbar {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    row-gap: 8px;
+  }
+  .topbar-left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .topbar-h {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .content {
+    padding: 20px 16px;
+  }
+}
+
+/* 更窄：精簡 topbar，避免動作鈕擠爆 */
+@media (max-width: 560px) {
+  .user-chip {
+    display: none;
+  }
+  .topbar-h {
+    font-size: 16px;
+  }
+  .topbar-actions {
+    gap: 8px;
   }
 }
 
