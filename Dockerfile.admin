@@ -1,0 +1,31 @@
+# OA Agent — admin 後台（Vite 靜態網站，用 nginx 提供）
+# build context = repo 根目錄
+
+# ---- build stage ----
+FROM node:20-slim AS build
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY ui/package.json ./ui/
+COPY server/package.json ./server/
+COPY client/package.json ./client/
+COPY admin/package.json ./admin/
+# --include=dev：Zeabur build 環境預設 NODE_ENV=production，會讓 npm 跳過 devDependencies
+# （vite / tsc / @vitejs/plugin-react / tailwindcss 等在 devDeps），強制裝進來才 build 得了
+RUN npm ci --include=dev
+
+COPY . .
+
+# Vite 在 build 階段就把 VITE_API_BASE bake 進 JS bundle（不是 runtime 讀）。
+# admin 的 api.ts 走 `${VITE_API_BASE}/api/v1`；前後端分開部署時設為後端絕對網址。
+# Zeabur 會把 admin 服務的環境變數當成 build arg 傳進來。
+ARG VITE_API_BASE
+ENV VITE_API_BASE=$VITE_API_BASE
+RUN npm run build -w admin
+
+# ---- serve stage ----
+FROM nginx:alpine AS runtime
+COPY admin/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/admin/dist /usr/share/nginx/html
+EXPOSE 8080

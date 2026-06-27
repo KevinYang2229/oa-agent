@@ -17,6 +17,10 @@ export interface FormExport {
 
 const TOKEN_KEY = 'oa-admin-token';
 
+// dev：留空 → 相對 /api（vite proxy 轉 3000）。
+// production：build 時設 VITE_API_BASE=https://<server-domain> 直接打後端（前後端分開部署）。
+const API_ORIGIN = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '');
+
 export const tokenStore = {
   get: (): string | null => sessionStorage.getItem(TOKEN_KEY),
   set: (t: string) => sessionStorage.setItem(TOKEN_KEY, t),
@@ -58,7 +62,7 @@ export class UnauthorizedError extends Error {}
 
 async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = tokenStore.get();
-  const res = await fetch(`/api/v1${path}`, {
+  const res = await fetch(`${API_ORIGIN}/api/v1${path}`, {
     method,
     headers: {
       'content-type': 'application/json',

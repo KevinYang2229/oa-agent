@@ -4,7 +4,8 @@
 透過根目錄的兩個 Dockerfile 建置：
 
 - `Dockerfile.server` → **server 服務**（Express API）
-- `Dockerfile.client` → **client 服務**（Vite 靜態網站，nginx 提供）
+- `Dockerfile.client` → **client 服務**（對話 widget，Vite 靜態網站，nginx 提供）
+- `Dockerfile.admin` → **admin 服務**（管理後台，Vite 靜態網站，nginx 提供）
 
 > 目前 MVP 的 server runtime 只用到 Anthropic SDK / Express 那批套件，**還沒接 Postgres / Redis**，
 > 所以這版不需要建立資料庫服務。等程式碼真的接 DB / 佇列時，再到同一個 Project 一鍵加 PostgreSQL / Redis。
@@ -43,7 +44,18 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
    - 若服務名稱不是 `client`，再加 `ZBPACK_DOCKERFILE_NAME = client`（後綴）。
 9. **Networking → 產生 Domain**（例：`oa-agent.zeabur.app`）。記下來，回填到 server 的 `CORS_ORIGIN`。
 
-> 兩個服務都用 repo 根目錄當 build context；用服務名稱或 `ZBPACK_DOCKERFILE_NAME`（後綴）決定各自用哪個 Dockerfile。
+### 服務 C：admin（管理後台）
+10. 在同一個 Project 再 **Add Service → Git → 選同一個 oa-agent repo**。
+11. **把服務名稱設成 `admin`** → Zeabur 自動使用 `Dockerfile.admin`。並到 **Variables** 加：
+    - `VITE_API_BASE = https://oa-agent-server.zeabur.app`  ← 同樣填服務 A 的 Domain（build 階段 bake）
+    - 若服務名稱不是 `admin`，再加 `ZBPACK_DOCKERFILE_NAME = admin`（後綴）。
+12. **Networking → 產生 Domain**（例：`oa-agent-admin.zeabur.app`）。記下來，連同 client 一起回填到 server 的 `CORS_ORIGIN`。
+13. 回服務 A（server）確認兩個變數：
+    - `CORS_ORIGIN` 同時放 client 與 admin 兩個網域，**逗號分隔**：
+      `https://oa-agent.zeabur.app,https://oa-agent-admin.zeabur.app`
+    - `ADMIN_PASSWORD` 一定要設（後台登入用，留空＝登入回 403）。
+
+> 三個服務都用 repo 根目錄當 build context；用服務名稱或 `ZBPACK_DOCKERFILE_NAME`（後綴）決定各自用哪個 Dockerfile。
 
 ---
 
@@ -56,7 +68,8 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 | `ANTHROPIC_API_KEY` | ✅ 必填 | 沒填 server 啟動會直接 fail-fast 退出 |
 | `JWT_ACCESS_SECRET` | ✅ | ≥32 字元隨機字串 |
 | `JWT_REFRESH_SECRET` | ✅ | ≥32 字元隨機字串（與上者不同） |
-| `CORS_ORIGIN` | 建議 | 填 client 的 Domain，如 `https://oa-agent.zeabur.app`。**結尾不要加 `/`**（瀏覽器送的 Origin 不帶斜線，多打會比對不到而擋掉；程式已做容錯，但仍建議別加）|
+| `CORS_ORIGIN` | 建議 | client 與 admin 的 Domain，**逗號分隔**：`https://oa-agent.zeabur.app,https://oa-agent-admin.zeabur.app`。**結尾不要加 `/`**（瀏覽器送的 Origin 不帶斜線，多打會比對不到而擋掉；程式已做容錯，但仍建議別加）|
+| `ADMIN_PASSWORD` | 後台必填 | admin 後台登入密碼；**留空＝後台登入回 403**（停用）。與 `ADMIN_API_KEY` 分開 |
 | `AUTH_DEV_PASSWORD` | 視需要 | MVP 登入共用密碼，預設 `oa1234`，正式環境請改 |
 | `LLM_MODEL` | 選填 | 預設 `claude-sonnet-4-5` |
 | `PORT` | 不用填 | Zeabur 自動注入，server 會自動聽 |
@@ -68,6 +81,14 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 |------|------|------|
 | `VITE_API_BASE` | ✅ | server 的對外網址，build 時 bake 進 bundle |
 | `ZBPACK_DOCKERFILE_NAME` | 視情況 | 僅當服務「名稱」不是 `client` 時才需要；值是後綴 `client`（不是 `Dockerfile.client`） |
+
+### admin 服務
+| 變數 | 必填 | 說明 |
+|------|------|------|
+| `VITE_API_BASE` | ✅ | server 的對外網址，build 時 bake 進 bundle（admin 的 `api.ts` 走 `${VITE_API_BASE}/api/v1`）|
+| `ZBPACK_DOCKERFILE_NAME` | 視情況 | 僅當服務「名稱」不是 `admin` 時才需要；值是後綴 `admin`（不是 `Dockerfile.admin`） |
+
+> admin 登入還需要 server 端設好 `ADMIN_PASSWORD`，且 server 的 `CORS_ORIGIN` 要包含 admin 的 Domain。
 
 ---
 
@@ -88,4 +109,8 @@ docker run --rm -p 3000:3000 -e ANTHROPIC_API_KEY=sk-xxx \
 # client（把 VITE_API_BASE 指向上面的 server）
 docker build -f Dockerfile.client --build-arg VITE_API_BASE=http://localhost:3000 -t oa-client .
 docker run --rm -p 8080:8080 oa-client   # 開 http://localhost:8080
+
+# admin（同樣把 VITE_API_BASE 指向 server；用不同的對外埠避免和 client 撞）
+docker build -f Dockerfile.admin --build-arg VITE_API_BASE=http://localhost:3000 -t oa-admin .
+docker run --rm -p 8081:8080 oa-admin    # 開 http://localhost:8081
 ```
