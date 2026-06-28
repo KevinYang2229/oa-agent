@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   pointerWithin,
   useDraggable,
   useDroppable,
@@ -16,6 +17,7 @@ import { SchemaFormPreview } from '@oa-agent/ui';
 import { api, UnauthorizedError } from '../api';
 import { useAuth } from '../auth';
 import AppLayout from '../components/AppLayout';
+import { IconClose, IconCog } from '../components/icons';
 import {
   emptyDraft,
   fieldsOfStep,
@@ -111,7 +113,7 @@ function DraggableCard({
         }}
         title="設定屬性"
       >
-        ⚙
+        <IconCog width={19} height={19} />
       </button>
       <button
         className="field-del"
@@ -121,7 +123,7 @@ function DraggableCard({
         }}
         title="刪除欄位"
       >
-        ✕
+        <IconClose width={19} height={19} />
       </button>
       {/* 左右放置半區：拖到哪半邊就並到哪一欄（顯示該側垂直線） */}
       <DropHalf forKey={field.key} side="left" />
@@ -167,7 +169,13 @@ export default function FormDesignerPage() {
   const [loaded, setLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  // 桌機：滑鼠移動 4px 即啟動拖曳。
+  // 手機：TouchSensor 用「長按 180ms」啟動，期間位移 < 8px 才算長按；
+  // 若一開始就滑動（> 8px）視為捲動 → 不啟動拖曳，頁面照常捲動。
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
+  );
 
   const handleErr = useCallback(
     (e: unknown) => {

@@ -260,6 +260,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  /* grid item 預設 min-width:auto 不會縮小 → 兩欄時被內容撐爆而溢出；歸零讓它能縮進軌道 */
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -312,6 +314,13 @@
   flex: 1;
   min-width: 0;
 }
+.field-card-main strong,
+.field-card-main small {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .field-card-main strong {
   font-size: 14px;
   font-weight: 600;
@@ -335,22 +344,34 @@
 }
 .field-cog,
 .field-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
   border: none;
   background: none;
-  color: var(--text-faint);
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 18px;
   line-height: 1;
-  flex: 0 0 auto;
+  border-radius: 8px;
+  transition: background 0.12s, color 0.12s;
 }
-.field-cog {
-  font-size: 14px;
+/* 齒輪在 strokeWidth 下外緣會超出 24×24 viewBox；SVG 預設 overflow:hidden 會裁掉右側。
+   按鈕 32px 比圖示 19px 有餘裕，放行 overflow 讓圖示完整顯示 */
+.field-cog svg,
+.field-del svg {
+  overflow: visible;
 }
 .field-cog:hover {
   color: var(--accent);
+  background: var(--accent-soft);
 }
 .field-del:hover {
   color: var(--danger);
+  background: var(--danger-soft);
 }
 
 /* ============================================================
@@ -543,13 +564,26 @@
   }
 }
 
+/* 側邊欄收合（≤860px，與外殼 RWD 同斷點）：overlay layer 不再偏移側邊欄寬度，
+   否則屬性抽屜會被擠到只剩 main 寬（手機上甚至只剩 ~140px） */
+@media (max-width: 860px) {
+  .inspector-layer {
+    left: 0;
+  }
+}
+
 /* 手機：屬性抽屜改由底部滑出（bottom sheet）較好單手操作 */
 @media (max-width: 560px) {
   .meta-grid {
     grid-template-columns: 1fr;
   }
+  /* 畫布保留並排兩欄（讓「單行兩欄」在手機也看得出來）；卡片改緊湊以塞得下 */
   .canvas-grid-row {
-    grid-template-columns: 1fr;
+    column-gap: 8px;
+  }
+  .field-card {
+    gap: 7px;
+    padding: 9px 10px;
   }
   .inspector-drawer {
     top: auto;

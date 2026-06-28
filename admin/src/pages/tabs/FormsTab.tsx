@@ -51,7 +51,7 @@ export default function FormsTab({
           className="btn btn-primary btn-sm"
           onClick={() => navigate(`/tenants/${tenantId}/forms/__new__/design`)}
         >
-          ＋ 新增表單
+          ＋表單
         </button>
       </div>
 
