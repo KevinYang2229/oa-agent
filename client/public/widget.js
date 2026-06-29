@@ -80,14 +80,15 @@
         'width:56px;height:56px;border-radius:50%;border:none;outline:none;',
         'display:flex;align-items:center;justify-content:center;overflow:visible;',
         'color:#fff;cursor:pointer;',
-        'background:linear-gradient(135deg,#5896f5 0%,#2563eb 100%);',
-        'box-shadow:0 4px 15px rgba(37,99,235,.35);',
+        // 主色以 CSS 變數驅動（預設藍）；有租戶 primaryColor 時 JS 覆寫變數，hover/標籤一併跟著變
+        'background:linear-gradient(135deg,var(--oa-primary-light,#5896f5) 0%,var(--oa-primary,#2563eb) 100%);',
+        'box-shadow:0 4px 15px var(--oa-primary-shadow,rgba(37,99,235,.35));',
         'z-index:' + (Z + 1) + ';',
         'transition:transform .3s cubic-bezier(.175,.885,.32,1.275),box-shadow .3s ease;',
       '}',
       '#oa-agent-launcher:hover,#oa-agent-launcher:focus-visible{',
         'transform:translateY(-2px) scale(1.1);',
-        'box-shadow:0 10px 25px rgba(37,99,235,.45);',
+        'box-shadow:0 10px 25px var(--oa-primary-shadow-strong,rgba(37,99,235,.45));',
       '}',
       '#oa-agent-launcher .oa-agent-icon{',
         'width:34px;height:34px;display:block;will-change:transform;',
@@ -104,7 +105,7 @@
         'position:absolute;right:calc(100% + 12px);top:50%;',
         'transform:translateY(-50%) translateX(10px);',
         'white-space:nowrap;padding:4px 12px;border-radius:12px;',
-        'background:hsla(0,0%,100%,.98);color:#2563eb;font-size:12px;font-weight:800;',
+        'background:hsla(0,0%,100%,.98);color:var(--oa-primary,#2563eb);font-size:12px;font-weight:800;',
         'border:1px solid rgba(37,99,235,.1);box-shadow:0 6px 16px rgba(0,0,0,.12);',
         'opacity:0;visibility:hidden;pointer-events:none;',
         'transition:opacity .3s cubic-bezier(.165,.84,.44,1),transform .3s cubic-bezier(.165,.84,.44,1),visibility .3s;',
@@ -143,18 +144,41 @@
   label.textContent = title;
   btn.appendChild(label);
 
-  // 未明確設 data-title 時，向後端讀租戶後台設定的 AI 名稱當按鈕文字（與面板內名稱一致）。
+  // 把 #rgb / #rrggbb 解析成 {r,g,b}；非法回 null
+  function hexToRgb(h) {
+    if (typeof h !== 'string') return null;
+    var m = h.trim().replace(/^#/, '');
+    if (m.length === 3) m = m[0] + m[0] + m[1] + m[1] + m[2] + m[2];
+    if (!/^[0-9a-fA-F]{6}$/.test(m)) return null;
+    return { r: parseInt(m.slice(0, 2), 16), g: parseInt(m.slice(2, 4), 16), b: parseInt(m.slice(4, 6), 16) };
+  }
+  // 把租戶主色套到啟動按鈕：設 CSS 變數（漸層淺色端、陰影、標籤色一併連動）
+  function applyPrimary(hex) {
+    var c = hexToRgb(hex);
+    if (!c) return;
+    var light = 'rgb(' + Math.round(c.r + (255 - c.r) * 0.28) + ',' +
+      Math.round(c.g + (255 - c.g) * 0.28) + ',' + Math.round(c.b + (255 - c.b) * 0.28) + ')';
+    var rgba = function (a) { return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + a + ')'; };
+    btn.style.setProperty('--oa-primary', hex);
+    btn.style.setProperty('--oa-primary-light', light);
+    btn.style.setProperty('--oa-primary-shadow', rgba(0.35));
+    btn.style.setProperty('--oa-primary-shadow-strong', rgba(0.45));
+  }
+
+  // 向後端讀租戶後台外觀：AI 名稱（未設 data-title 時當按鈕文字）＋ 主色（套到啟動按鈕，與面板一致）。
   // 失敗（CORS / 離線 / 未設）則靜默維持預設，不影響啟動。
-  if (!explicitTitle && cfg.key) {
+  if (cfg.key) {
     fetch(origin + '/api/v1/widget/config?key=' + encodeURIComponent(cfg.key))
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
-        var name = j && j.data && j.data.appearance && j.data.appearance.assistantName;
-        if (name && name.trim()) {
-          title = name.trim();
+        var ap = j && j.data && j.data.appearance;
+        if (!ap) return;
+        if (!explicitTitle && ap.assistantName && ap.assistantName.trim()) {
+          title = ap.assistantName.trim();
           label.textContent = title;
           btn.setAttribute('aria-label', title);
         }
+        if (ap.primaryColor) applyPrimary(ap.primaryColor);
       })
       .catch(function () {});
   }

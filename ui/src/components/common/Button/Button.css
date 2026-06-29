@@ -23,7 +23,12 @@
 .btn-confirm,
 .form-footer-btns .btn-action.btn-confirm {
   @apply border-transparent text-white tracking-[0.5px] shadow-[0_6px_18px_rgba(var(--primary-color-rgb),0.35)];
-  background: linear-gradient(135deg, #018ef0 0%, #2abfff 100%);
+  /* 漸層由主色推導（深→淺），租戶自訂 --primary-color 時整顆按鈕一併連動 */
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    color-mix(in srgb, var(--primary-color) 55%, white) 100%
+  );
 }
 
 .btn-confirm:hover,

@@ -62,6 +62,22 @@ const STATUS_BADGE: Record<SessionStatus, StatusBadgeVariant> = {
 let seq = 0;
 const nextId = () => ++seq;
 
+// 套用租戶主色到設計系統 CSS 變數：同時寫 --primary-color（hex）與 --primary-color-rgb（r, g, b），
+// 後者供 rgba(var(--primary-color-rgb), a) 形式的陰影/底色使用，確保整體配色一致。傳空值則清除覆寫。
+function applyPrimaryColor(hex?: string): void {
+  const root = document.documentElement.style;
+  if (!hex || !hex.trim()) {
+    root.removeProperty('--primary-color');
+    root.removeProperty('--primary-color-rgb');
+    return;
+  }
+  root.setProperty('--primary-color', hex);
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim());
+  if (m) {
+    root.setProperty('--primary-color-rgb', `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}`);
+  }
+}
+
 // 嵌入模式：以 ?embed=1 載入（widget iframe 用），隱藏整頁頁首讓畫面像純聊天 widget。
 const EMBED = embedConfig.embed;
 
@@ -163,7 +179,7 @@ export default function App() {
     let cancelled = false;
     void fetchAppearance().then((a) => {
       if (cancelled) return;
-      if (a.primaryColor) document.documentElement.style.setProperty('--primary-color', a.primaryColor);
+      if (a.primaryColor) applyPrimaryColor(a.primaryColor);
       // 後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
       if (a.assistantName?.trim() && !embedConfig.assistantName) setAssistantName(a.assistantName.trim());
       // 只有在 data-theme 與本地記憶都沒有時，才採用後端 theme（不覆蓋使用者/宿主的明確選擇）
@@ -184,7 +200,7 @@ export default function App() {
       const data = e.data as { source?: string; appearance?: TenantAppearance } | null;
       if (data?.source !== 'oa-admin-preview' || !data.appearance) return;
       const a = data.appearance;
-      document.documentElement.style.setProperty('--primary-color', a.primaryColor || '');
+      applyPrimaryColor(a.primaryColor);
       if (a.theme) setTheme(a.theme);
       if (a.defaultLocale) void changeLanguage(a.defaultLocale);
       setAssistantName(a.assistantName?.trim() ?? '');
