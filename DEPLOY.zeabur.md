@@ -6,6 +6,7 @@
 - `Dockerfile.server` → **server 服務**（Express API）
 - `Dockerfile.client` → **client 服務**（對話 widget，Vite 靜態網站，nginx 提供）
 - `Dockerfile.admin` → **admin 服務**（管理後台，Vite 靜態網站，nginx 提供）
+- `Dockerfile.presale-tenant` →（選用）**presale demo 服務**（模擬租戶網站 + SSO 免登入，展示用）
 
 > 目前 MVP 的 server runtime 只用到 Anthropic SDK / Express 那批套件，**還沒接 Postgres / Redis**，
 > 所以這版不需要建立資料庫服務。等程式碼真的接 DB / 佇列時，再到同一個 Project 一鍵加 PostgreSQL / Redis。
@@ -58,6 +59,17 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 
 > 三個服務都用 repo 根目錄當 build context；用服務名稱或 `ZBPACK_DOCKERFILE_NAME`（後綴）決定各自用哪個 Dockerfile。
 
+### 服務 D（選用）：presale demo（widge-tenant，模擬租戶網站 + SSO 免登入）
+
+> 僅作展示用；不想對外展示可略過。它是一支小型 Node server（`presale/widge-tenant/server.mjs`），
+> 透過 `tsx` 啟動（避開 `@oa-agent/sdk/server` 的 raw TS import 問題）。
+
+14. 在同一個 Project 再 **Add Service → Git → 選同一個 oa-agent repo**。
+15. 因為這支 Dockerfile 名稱不是 server/client/admin，**一定要**到 **Variables** 加 `ZBPACK_DOCKERFILE_NAME = presale-tenant`（後綴，不是完整檔名）。
+16. 同一個 **Variables** 加（見下方表）：`OA_ORIGIN` 填 **client 服務**的 Domain（widget panel 從 client 載入）、`TENANT_PK` / `TENANT_SSO_SECRET` 填**目標租戶**的公開金鑰與 SSO 密鑰、`DEMO_USER_*` 自訂展示用使用者。
+17. **Networking → 產生 Domain**（例：`oa-agent-demo.zeabur.app`）。
+18. 回服務 A（server）把這個 demo 的 Domain **也加進 `CORS_ORIGIN`**，並確認該租戶的 `allowedOrigins` 含此 Domain（widget.js 會跨網域抓 `/widget/config`）。
+
 ---
 
 ## 三、環境變數
@@ -92,6 +104,20 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 
 > admin 登入還需要 server 端設好 `ADMIN_PASSWORD`，且 server 的 `CORS_ORIGIN` 要包含 admin 的 Domain。
 > 預覽 iframe 載入 client 後會 `postMessage` 即時帶入外觀；client 的 widget config 讀取也需 server 的 `CORS_ORIGIN`／租戶 allowedOrigins 放行 admin 與 client 網域。
+
+### presale demo 服務（widge-tenant，選用）
+
+| 變數 | 必填 | 說明 |
+|------|------|------|
+| `OA_ORIGIN` | ✅ | **client（widget）服務**的對外網址（widget panel 從這裡載入）。runtime 讀取，不需 bake |
+| `TENANT_PK` | ✅ | 目標租戶的公開金鑰 `pk_…`（可放前端，會注入頁面） |
+| `TENANT_SSO_SECRET` | ✅ | 該租戶的 SSO 密鑰；**機密，只在此 server 端用來簽 token**，切勿放前端 |
+| `DEMO_USER_ID` | 選填 | 模擬登入者帳號（預設 `hyweb`） |
+| `DEMO_USER_NAME` | 選填 | 模擬登入者姓名（預設 `測試員`） |
+| `ZBPACK_DOCKERFILE_NAME` | ✅ | 固定填 `presale-tenant`（後綴）；因服務名不會剛好等於它 |
+
+> 這個 demo 的 `TENANT_SSO_SECRET` 必須等於該租戶建立時設定的 `ssoSecret`，否則 SSO 換 token 會失敗。
+> 並記得把此 demo 的 Domain 加進 server 的 `CORS_ORIGIN` 與該租戶 `allowedOrigins`。
 
 ---
 
