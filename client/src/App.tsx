@@ -130,9 +130,12 @@ export default function App() {
   const [balances, setBalances] = useState<LeaveBalance[]>([]);
   // 租戶自訂 AI 名稱；優先序：data-*（embedConfig.name / 後台預覽即時帶入）> 後端外觀。空字串則 fallback 回 i18n 預設
   const [assistantName, setAssistantName] = useState(embedConfig.assistantName ?? '');
-  // 目前顯示用 AI 名稱與開場問候（隨設定即時變動）
+  // 租戶外觀：自訂 logo（標題列顯示）與歡迎語（覆蓋預設開場白）
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [welcome, setWelcome] = useState<string | null>(null);
+  // 目前顯示用 AI 名稱與開場問候（隨設定即時變動）：租戶歡迎語優先，否則用帶入 AI 名稱的預設問候
   const aiName = assistantName || t('app.aiName');
-  const greetingText = t('app.greeting', { name: aiName });
+  const greetingText = welcome ?? t('app.greeting', { name: aiName });
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: nextId(), role: 'agent', text: greetingText, greeting: true, at: Date.now() },
   ]);
@@ -172,20 +175,28 @@ export default function App() {
     localStorage.setItem('oa-font-scale', String(fontScale));
   }, [fontScale]);
 
-  // 後端外觀：依租戶（apiKey）讀 /widget/config 套用。
-  // 優先序：data-*（embedConfig.theme）> 使用者本地記憶（oa-theme）> 後端 theme > 預設。
-  // primaryColor 一律寫 --primary-color CSS 變數（App 的 theme 狀態不管它）。
+  // 後端外觀：依租戶（apiKey）讀 /widget/config 套用全部欄位。
+  // 共通原則：使用者／宿主的明確選擇（URL data-* 或本地記憶）優先，租戶設定只作後備預設。
   useEffect(() => {
     let cancelled = false;
     void fetchAppearance().then((a) => {
       if (cancelled) return;
+      // 主色：寫 --primary-color / --primary-color-rgb（applyPrimaryColor 處理 hex→rgb）
       if (a.primaryColor) applyPrimaryColor(a.primaryColor);
-      // 後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
+      // AI 名稱：後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
       if (a.assistantName?.trim() && !embedConfig.assistantName) setAssistantName(a.assistantName.trim());
-      // 只有在 data-theme 與本地記憶都沒有時，才採用後端 theme（不覆蓋使用者/宿主的明確選擇）
+      // 主題：data-theme 與本地記憶都沒有時，才採用租戶 theme（不覆蓋使用者/宿主的明確選擇）
       if (a.theme && !embedConfig.theme && !localStorage.getItem('oa-theme')) {
         setTheme(a.theme);
       }
+      // 預設語言：URL ?locale 與本地記憶（oa-lang）都沒有時，才採用租戶 defaultLocale
+      if (a.defaultLocale && !embedConfig.locale && !localStorage.getItem('oa-lang')) {
+        void changeLanguage(a.defaultLocale);
+      }
+      // 自訂 logo：顯示於標題列
+      if (a.logoUrl) setLogoUrl(a.logoUrl);
+      // 歡迎語：覆蓋開場白（透過 greetingText 機制即時套用到所有 greeting 訊息）
+      if (a.welcomeMessage?.trim()) setWelcome(a.welcomeMessage.trim());
     });
     return () => {
       cancelled = true;
@@ -204,6 +215,8 @@ export default function App() {
       if (a.theme) setTheme(a.theme);
       if (a.defaultLocale) void changeLanguage(a.defaultLocale);
       setAssistantName(a.assistantName?.trim() ?? '');
+      setLogoUrl(a.logoUrl?.trim() || null);
+      setWelcome(a.welcomeMessage?.trim() || null);
     }
     window.addEventListener('message', onMessage);
     window.parent.postMessage({ source: 'oa-widget-ready' }, '*');
@@ -512,6 +525,7 @@ export default function App() {
       <header className="app-header">
         {/* 品牌：AI 小幫手 + 連線狀態圓點（綠＝已連線，AI 可正常呼叫） */}
         <div className="app-brand">
+          {logoUrl && <img src={logoUrl} alt="" className="app-logo" />}
           <h1 className="app-title">{aiName}</h1>
           <span
             className={`conn conn-${conn}`}
@@ -579,7 +593,10 @@ export default function App() {
       {/* 嵌入模式專用的精簡標題列：標題 + 重新開始 + 關閉（取代整頁 chrome） */}
       {EMBED && (
         <header className="embed-header">
-          <span className="embed-title">{aiName}</span>
+          <div className="embed-brand">
+            {logoUrl && <img src={logoUrl} alt="" className="embed-logo" />}
+            <span className="embed-title">{aiName}</span>
+          </div>
           <div className="embed-actions">
             <button
               type="button"

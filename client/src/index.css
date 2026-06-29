@@ -65,6 +65,10 @@
   .app-title {
     @apply text-lg font-bold leading-tight text-[var(--text-primary)] max-sm:text-base;
   }
+  /* 租戶自訂 logo：限高、維持比例，置於標題左側 */
+  .app-logo {
+    @apply h-7 w-auto max-w-[120px] shrink-0 object-contain max-sm:h-6;
+  }
   /* 包裝層用 display:contents 消失，讓 meta 與齒輪直接成為 header 的 flex item，
      才能用 order 控制：齒輪永遠跟標題同一行靠右，meta 不夠寬時自己掉到下一行 */
   .app-collapse {
@@ -97,6 +101,12 @@
   .embed-header {
     @apply relative z-10 flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border-color)] bg-[var(--card-bg)] px-4 py-2.5;
     @apply shadow-[0_4px_20px_-14px_rgba(11,55,102,0.28)];
+  }
+  .embed-brand {
+    @apply flex min-w-0 items-center gap-2;
+  }
+  .embed-logo {
+    @apply h-6 w-auto max-w-[96px] shrink-0 object-contain;
   }
   .embed-title {
     @apply min-w-0 truncate text-base font-bold leading-tight text-[var(--text-primary)];

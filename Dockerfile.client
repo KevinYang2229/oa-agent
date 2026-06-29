@@ -16,10 +16,13 @@ RUN npm ci --include=dev
 
 COPY . .
 
-# Vite 在 build 階段就把 VITE_API_BASE bake 進 JS bundle（不是 runtime 讀）。
+# Vite 在 build 階段就把 VITE_* bake 進 JS bundle（不是 runtime 讀）。
 # Zeabur 會把 client 服務的環境變數當成 build arg 傳進來。
 ARG VITE_API_BASE
 ENV VITE_API_BASE=$VITE_API_BASE
+# 部署層預設租戶公開金鑰（pk_…）：單一 client 綁單一租戶時設定，非嵌入使用也吃到該租戶設定。
+ARG VITE_TENANT_KEY
+ENV VITE_TENANT_KEY=$VITE_TENANT_KEY
 RUN npm run build -w client
 
 # ---- serve stage ----

@@ -17,11 +17,18 @@ function pick(name: string): string | null {
   return v && v.trim() ? v.trim() : null;
 }
 
+// 部署層預設租戶金鑰：單一 client 綁單一租戶時，於建置設 VITE_TENANT_KEY=pk_…
+// 即可讓「非嵌入的首方使用」也吃到該租戶設定（表單／外觀）。URL ?key= 仍優先。
+const envKey = (import.meta.env.VITE_TENANT_KEY ?? '').trim() || null;
+
 export const embedConfig = {
   /** 是否為嵌入模式（widget iframe 載入） */
   embed: params.get('embed') === '1',
-  /** 租戶公開金鑰（pk_…）；帶上後所有 API 請求附 x-api-key 供後端解析租戶 */
-  apiKey: pick('key'),
+  /**
+   * 租戶公開金鑰（pk_…）；帶上後所有 API 請求附 x-api-key 供後端解析租戶。
+   * 來源優先序：URL ?key=（widget 嵌入）> VITE_TENANT_KEY（部署預設）> 無（落到預設租戶）。
+   */
+  apiKey: pick('key') ?? envKey,
   /** 預選表單類型 */
   formId: pick('form'),
   /** 介面語言（zh-Hant / en…） */
