@@ -207,7 +207,9 @@ export function SchemaFormPreview({
         )}
         {visibleSections.map((section, si) => (
           <section className="schema-preview-section" key={si}>
-            {section.title && <h3 className="schema-preview-section-title">{section.title}</h3>}
+            {!hasSteps && section.title && (
+              <h3 className="schema-preview-section-title">{section.title}</h3>
+            )}
             <div className="schema-preview-grid">
               {section.rows.map((row, ri) => (
                 <div

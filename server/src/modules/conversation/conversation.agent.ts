@@ -12,6 +12,7 @@ import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
 import { buildTools } from '@/modules/form/form.tools';
 import type { Definition, FieldIssue } from '@/modules/form/form.types';
 import { leaveService } from '@/modules/leave/leave.service';
+import { tenantStore } from '@/modules/tenant/tenant.store';
 import { listDeputyCandidates } from '@/modules/user/user.directory';
 import { AppError } from '@/utils/app-error';
 import { attachmentStore } from './attachment.store';
@@ -81,8 +82,12 @@ function buildSystemPrompt(tenantId: string, def: Definition): string {
     .map((d) => `- ${d.data.title ?? d.agent.intent}：${d.agent.description}`)
     .join('\n');
 
+  // 租戶自訂的 AI 名稱（admin 後台外觀設定）；未設則不自稱名字，維持既有行為
+  const assistantName = tenantStore.getTenant(tenantId)?.appearance?.assistantName?.trim();
+
   const lines = [
     `你是公司 OA 系統的「${def.agent.description}」助理，全程使用繁體中文。`,
+    ...(assistantName ? [`你的名字是「${assistantName}」，使用者稱呼你時即指你。`] : []),
     `今天日期是 ${today}；請把相對日期（明天、下週一等）換算成 YYYY-MM-DD。`,
     '',
     '本系統目前可申請的表單（使用者詢問「有哪些表單可以申請」時，請完整列出以下全部，',

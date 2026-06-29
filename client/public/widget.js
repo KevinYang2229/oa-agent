@@ -43,7 +43,9 @@
     var v = script.getAttribute(name);
     return v && v.trim() ? v.trim() : null;
   }
-  var title = attr('data-title') || 'OA 小幫手';
+  // 啟動按鈕文字優先序：data-title（宿主明確覆寫）> 租戶後台 AI 名稱（稍後 async 補上）> 預設
+  var explicitTitle = attr('data-title');
+  var title = explicitTitle || 'OA 小幫手';
   var position = attr('data-position') === 'left' ? 'left' : 'right';
   // data-launcher="none"：不顯示預設浮動按鈕，由宿主自己的按鈕呼叫 OAAgent.open() 開啟
   var showLauncher = attr('data-launcher') !== 'none';
@@ -140,6 +142,22 @@
   label.className = 'oa-agent-label';
   label.textContent = title;
   btn.appendChild(label);
+
+  // 未明確設 data-title 時，向後端讀租戶後台設定的 AI 名稱當按鈕文字（與面板內名稱一致）。
+  // 失敗（CORS / 離線 / 未設）則靜默維持預設，不影響啟動。
+  if (!explicitTitle && cfg.key) {
+    fetch(origin + '/api/v1/widget/config?key=' + encodeURIComponent(cfg.key))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var name = j && j.data && j.data.appearance && j.data.appearance.assistantName;
+        if (name && name.trim()) {
+          title = name.trim();
+          label.textContent = title;
+          btn.setAttribute('aria-label', title);
+        }
+      })
+      .catch(function () {});
+  }
 
   // ---- 聊天彈窗容器 ----
   var panel = document.createElement('div');

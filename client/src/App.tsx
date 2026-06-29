@@ -16,6 +16,7 @@ import {
   type SubmissionInfo,
   type TurnData,
 } from './api';
+import type { TenantAppearance } from '@oa-agent/shared';
 import { changeLanguage } from './i18n';
 import { embedConfig, fetchAppearance } from './embedConfig';
 import FormView from './FormView';
@@ -31,6 +32,8 @@ interface ChatMessage {
   at: number;
   /** Agent 訊息附帶的建議回覆；僅最新一則會在 UI 顯示為快捷按鈕 */
   suggestions?: string[];
+  /** 開場問候訊息：文字隨 AI 名稱即時重算（不存死字串），讓改名後／預覽即時反映 */
+  greeting?: boolean;
 }
 
 // 氣泡下方時間：YYYY-MM-DD HH:mm:ss
@@ -109,8 +112,13 @@ export default function App() {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submission, setSubmission] = useState<SubmissionInfo | null>(null);
   const [balances, setBalances] = useState<LeaveBalance[]>([]);
+  // 租戶自訂 AI 名稱；優先序：data-*（embedConfig.name / 後台預覽即時帶入）> 後端外觀。空字串則 fallback 回 i18n 預設
+  const [assistantName, setAssistantName] = useState(embedConfig.assistantName ?? '');
+  // 目前顯示用 AI 名稱與開場問候（隨設定即時變動）
+  const aiName = assistantName || t('app.aiName');
+  const greetingText = t('app.greeting', { name: aiName });
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() },
+    { id: nextId(), role: 'agent', text: greetingText, greeting: true, at: Date.now() },
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -156,6 +164,8 @@ export default function App() {
     void fetchAppearance().then((a) => {
       if (cancelled) return;
       if (a.primaryColor) document.documentElement.style.setProperty('--primary-color', a.primaryColor);
+      // 後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
+      if (a.assistantName?.trim() && !embedConfig.assistantName) setAssistantName(a.assistantName.trim());
       // 只有在 data-theme 與本地記憶都沒有時，才採用後端 theme（不覆蓋使用者/宿主的明確選擇）
       if (a.theme && !embedConfig.theme && !localStorage.getItem('oa-theme')) {
         setTheme(a.theme);
@@ -164,6 +174,24 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // 後台外觀預覽：父視窗（admin）以 postMessage 即時推送外觀，免重載 iframe（避免每次編輯閃爍/延遲）。
+  // 載入後先向父視窗握手要目前設定，之後父視窗每次變更都會推來；非 iframe 載入時不啟用。
+  useEffect(() => {
+    if (window.parent === window) return;
+    function onMessage(e: MessageEvent) {
+      const data = e.data as { source?: string; appearance?: TenantAppearance } | null;
+      if (data?.source !== 'oa-admin-preview' || !data.appearance) return;
+      const a = data.appearance;
+      document.documentElement.style.setProperty('--primary-color', a.primaryColor || '');
+      if (a.theme) setTheme(a.theme);
+      if (a.defaultLocale) void changeLanguage(a.defaultLocale);
+      setAssistantName(a.assistantName?.trim() ?? '');
+    }
+    window.addEventListener('message', onMessage);
+    window.parent.postMessage({ source: 'oa-widget-ready' }, '*');
+    return () => window.removeEventListener('message', onMessage);
   }, []);
 
   // 啟動：還原登入狀態（有 token 就用 /me 取使用者）；並註冊 401（refresh 失敗）→ 登出
@@ -265,7 +293,7 @@ export default function App() {
 
   function handleLogin(user: Applicant) {
     setAuthUser(user);
-    setMessages([{ id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() }]);
+    setMessages([{ id: nextId(), role: 'agent', text: greetingText, greeting: true, at: Date.now() }]);
   }
 
   function handleLogout() {
@@ -437,7 +465,7 @@ export default function App() {
     setSubmission(null);
     setShowForm(false);
     setMessages([
-      { id: nextId(), role: 'agent', text: t('app.greeting'), at: Date.now() },
+      { id: nextId(), role: 'agent', text: greetingText, greeting: true, at: Date.now() },
       { id: nextId(), role: 'sys', text: t('app.restarted'), at: Date.now() },
     ]);
     taRef.current?.focus();
@@ -460,7 +488,7 @@ export default function App() {
   // 還原登入狀態中：先不渲染，避免閃一下登入頁
   if (!authReady) return null;
   // 未登入：擋住整個 App，只顯示登入頁
-  if (!authUser) return <LoginView onLogin={handleLogin} />;
+  if (!authUser) return <LoginView onLogin={handleLogin} assistantName={aiName} />;
 
   return (
     <div className={`app-shell${EMBED ? ' app-shell-embed' : ''}`}>
@@ -468,7 +496,7 @@ export default function App() {
       <header className="app-header">
         {/* 品牌：AI 小幫手 + 連線狀態圓點（綠＝已連線，AI 可正常呼叫） */}
         <div className="app-brand">
-          <h1 className="app-title">{t('app.aiName')}</h1>
+          <h1 className="app-title">{aiName}</h1>
           <span
             className={`conn conn-${conn}`}
             role="status"
@@ -535,7 +563,7 @@ export default function App() {
       {/* 嵌入模式專用的精簡標題列：標題 + 重新開始 + 關閉（取代整頁 chrome） */}
       {EMBED && (
         <header className="embed-header">
-          <span className="embed-title">{t('app.aiName')}</span>
+          <span className="embed-title">{aiName}</span>
           <div className="embed-actions">
             <button
               type="button"
@@ -598,11 +626,11 @@ export default function App() {
                 <div key={m.id} className={`msg msg-${m.role}`}>
                   {/* 對象名稱：AI 視窗顯示 AI 名稱，使用者訊息顯示登入者名稱 */}
                   <span className="msg-name">
-                    {m.role === 'agent' ? t('app.aiName') : authUser.name}
+                    {m.role === 'agent' ? aiName : authUser.name}
                   </span>
                   <div className={`bubble bubble-${m.role}`}>
                     {m.role === 'agent' ? (
-                      <TypewriterText text={m.text} onTick={scrollToEnd} />
+                      <TypewriterText text={m.greeting ? greetingText : m.text} onTick={scrollToEnd} />
                     ) : (
                       m.text
                     )}

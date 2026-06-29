@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TenantAppearance } from '@oa-agent/shared';
 import { api, type Tenant } from '../../api';
 
@@ -6,6 +6,15 @@ const POSITIONS = [
   { v: 'br', label: '右下' },
   { v: 'bl', label: '左下' },
 ] as const;
+
+// 介面支援語系（對應 client i18n：zh-Hant / en）
+const LOCALES = [
+  { v: 'zh-Hant', label: '繁體中文' },
+  { v: 'en', label: 'English' },
+] as const;
+
+// 預覽 widget client 來源（dev）；postMessage targetOrigin 與 iframe 來源一致
+const PREVIEW_ORIGIN = 'http://localhost:5173';
 
 export default function AppearanceTab({
   tenant,
@@ -35,13 +44,29 @@ export default function AppearanceTab({
     }
   }
 
-  // 即時預覽：嵌入 widget client（5173），帶表單暫存的 theme/locale（query 優先於後端）
-  const previewSrc = useMemo(() => {
-    const params = new URLSearchParams({ embed: '1' });
-    if (form.theme) params.set('theme', form.theme);
-    if (form.defaultLocale) params.set('locale', form.defaultLocale);
-    return `http://localhost:5173/?${params.toString()}`;
-  }, [form.theme, form.defaultLocale]);
+  // 即時預覽：嵌入 widget client（5173）。iframe URL 固定不變（避免每次編輯重載閃爍），
+  // 改用 postMessage 把目前外觀即時推進去，預覽免重載即時反映。
+  const previewSrc = `${PREVIEW_ORIGIN}/?embed=1`;
+  const previewRef = useRef<HTMLIFrameElement>(null);
+
+  const pushPreview = useCallback(() => {
+    previewRef.current?.contentWindow?.postMessage(
+      { source: 'oa-admin-preview', appearance: form },
+      PREVIEW_ORIGIN,
+    );
+  }, [form]);
+
+  // 表單任一欄位變更 → 即時推送到預覽
+  useEffect(() => pushPreview(), [pushPreview]);
+
+  // 預覽 client 載入完成會發 ready 握手；收到後補推一次目前狀態（避免時序競態）
+  useEffect(() => {
+    function onReady(e: MessageEvent) {
+      if ((e.data as { source?: string } | null)?.source === 'oa-widget-ready') pushPreview();
+    }
+    window.addEventListener('message', onReady);
+    return () => window.removeEventListener('message', onReady);
+  }, [pushPreview]);
 
   const primary = form.primaryColor ?? '#4f46e5';
 
@@ -97,11 +122,28 @@ export default function AppearanceTab({
 
             <div className="field">
               <label className="field-label">預設語言</label>
+              <select
+                className="select"
+                value={form.defaultLocale ?? ''}
+                onChange={(e) => set('defaultLocale', e.target.value || undefined)}
+              >
+                <option value="">未設定（依使用者裝置）</option>
+                {LOCALES.map((l) => (
+                  <option key={l.v} value={l.v}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="field">
+              <label className="field-label">AI 名稱</label>
               <input
                 className="input"
-                value={form.defaultLocale ?? ''}
-                onChange={(e) => set('defaultLocale', e.target.value)}
-                placeholder="zh-Hant"
+                value={form.assistantName ?? ''}
+                onChange={(e) => set('assistantName', e.target.value)}
+                maxLength={30}
+                placeholder="AI 小幫手"
               />
             </div>
           </div>
@@ -141,9 +183,15 @@ export default function AppearanceTab({
           <div className="card-title">即時預覽</div>
         </div>
         <div className="card-body">
-          <iframe title="widget-preview" src={previewSrc} className="preview-frame" />
+          <iframe
+            ref={previewRef}
+            title="widget-preview"
+            src={previewSrc}
+            className="preview-frame"
+            onLoad={pushPreview}
+          />
           <p className="field-hint" style={{ marginTop: 10 }}>
-            需同時執行 widget client（5173）。主色以儲存後套用為準。
+            需同時執行 widget client（5173）。外觀會即時反映；按「儲存外觀」後才會真正生效。
           </p>
         </div>
       </div>

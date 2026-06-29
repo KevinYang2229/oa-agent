@@ -6,8 +6,11 @@ import { auth, type Applicant } from "./api";
 /** 登入頁：帳密 → 取得 access/refresh token 與使用者資料 */
 export default function LoginView({
   onLogin,
+  assistantName,
 }: {
   onLogin: (user: Applicant) => void;
+  /** 顯示用 AI 名稱（租戶自訂 / fallback 預設）；用於副標題 */
+  assistantName: string;
 }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState("hyweb");
@@ -34,7 +37,7 @@ export default function LoginView({
     <div className="login-shell">
       <form className="login-card" onSubmit={submit}>
         <h1 className="login-title">{t("app.title")}</h1>
-        <p className="login-sub">{t("auth.subtitle")}</p>
+        <p className="login-sub">{t("auth.subtitle", { name: assistantName })}</p>
 
         <label className="login-field">
           <span className="login-label">{t("auth.username")}</span>

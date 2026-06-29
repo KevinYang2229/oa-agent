@@ -28,6 +28,8 @@ export const embedConfig = {
   locale: pick('locale'),
   /** 外觀模式 */
   theme: (pick('theme') as Theme | null) ?? null,
+  /** AI 名稱覆寫（後台預覽即時帶入；優先於後端外觀） */
+  assistantName: pick('name'),
   /** SSO handoff：宿主簽發的終端使用者 token，換發本系統 token（免內部帳密登入） */
   userToken: pick('userToken'),
 };

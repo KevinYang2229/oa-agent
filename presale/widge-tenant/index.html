@@ -24,18 +24,54 @@
       <section class="hero">
         <span class="pill">一行嵌入 · 零依賴</span>
         <h1>貼一段 script，網站立刻有 AI 表單小幫手</h1>
-        <p>不用改前端框架、不用自己寫 UI。載入 widget 後，右下角會出現浮動按鈕，點開即可用對話完成請假、出差、外出登記。</p>
+        <p>
+          不用改前端框架、不用自己寫 UI。載入 widget
+          後，右下角會出現浮動按鈕，點開即可用對話完成請假、出差、外出登記。
+        </p>
         <div class="hint">試試畫面 <strong>右下角</strong> 的小幫手 ↘</div>
       </section>
 
       <!-- ── widget 特色 ── -->
       <section id="features" class="features">
-        <div class="feature"><h3>⚡ 一行嵌入</h3><p><code>&lt;script src=".../widget.js"&gt;</code> 貼上即用，純 JS、零依賴、不必打包。</p></div>
-        <div class="feature"><h3>💬 浮動按鈕</h3><p>右下角小幫手，點擊彈出聊天室；不干擾原頁面排版。</p></div>
-        <div class="feature"><h3>🔐 SSO 免登入</h3><p>帶 <code>data-user-token</code> 沿用宿主登入身分，使用者免再登入。</p></div>
-        <div class="feature"><h3>🎨 可設定外觀</h3><p><code>data-title</code> / <code>data-theme</code> / <code>data-locale</code> / <code>data-position</code> 調整文案、亮暗、語言、左右。</p></div>
-        <div class="feature"><h3>🛡️ 樣式隔離</h3><p>聊天介面跑在 iframe 內，scoped 樣式不污染宿主頁，不會被你的 CSS 影響。</p></div>
-        <div class="feature"><h3>🧩 事件可監聽</h3><p>送出等事件以 <code>oa-agent:submitted</code> 派發，宿主頁可接手後續流程。</p></div>
+        <div class="feature">
+          <h3>⚡ 一行嵌入</h3>
+          <p>
+            <code>&lt;script src=".../widget.js"&gt;</code> 貼上即用，純
+            JS、零依賴、不必打包。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>💬 浮動按鈕</h3>
+          <p>右下角小幫手，點擊彈出聊天室；不干擾原頁面排版。</p>
+        </div>
+        <div class="feature">
+          <h3>🔐 SSO 免登入</h3>
+          <p>
+            帶 <code>data-user-token</code> 沿用宿主登入身分，使用者免再登入。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🎨 可設定外觀</h3>
+          <p>
+            <code>data-title</code> / <code>data-theme</code> /
+            <code>data-locale</code> /
+            <code>data-position</code> 調整文案、亮暗、語言、左右。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🛡️ 樣式隔離</h3>
+          <p>
+            聊天介面跑在 iframe 內，scoped 樣式不污染宿主頁，不會被你的 CSS
+            影響。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🧩 事件可監聽</h3>
+          <p>
+            送出等事件以
+            <code>oa-agent:submitted</code> 派發，宿主頁可接手後續流程。
+          </p>
+        </div>
       </section>
 
       <!-- ── 使用方式 ── -->
@@ -43,10 +79,20 @@
         <h2>怎麼接？三步</h2>
         <ol>
           <li>跟我們申請租戶，拿到公開金鑰 <code>pk_…</code>。</li>
-          <li>（選用）你的後端用租戶 ssoSecret 簽 <code>userToken</code> 達成免登入。</li>
-          <li>在頁面貼上載入碼：<br /><code>&lt;script src="https://你的網域/widget.js" data-key="pk_…"&gt;&lt;/script&gt;</code></li>
+          <li>
+            （選用）你的後端用租戶 ssoSecret 簽
+            <code>userToken</code> 達成免登入。
+          </li>
+          <li>
+            在頁面貼上載入碼：<br /><code
+              >&lt;script src="https://你的網域/widget.js"
+              data-key="pk_…"&gt;&lt;/script&gt;</code
+            >
+          </li>
         </ol>
-        <p class="note">本頁即為示範：已自動帶入 SSO，點右下角小幫手就能直接對話。</p>
+        <p class="note">
+          本頁即為示範：已自動帶入 SSO，點右下角小幫手就能直接對話。
+        </p>
       </section>
     </main>
 
@@ -54,14 +100,18 @@
     <script>
       (function () {
         var cfg = window.__OA__;
-        fetch('/sso-token')
-          .then(function (r) { return r.json(); })
+        fetch("/sso-token")
+          .then(function (r) {
+            return r.json();
+          })
           .then(function (d) {
-            var s = document.createElement('script');
-            s.src = cfg.origin + '/widget.js';
-            s.setAttribute('data-key', cfg.key);
-            s.setAttribute('data-user-token', d.userToken);
-            s.setAttribute('data-title', 'Acme 小幫手');
+            var s = document.createElement("script");
+            s.src = cfg.origin + "/widget.js";
+            s.setAttribute("data-key", cfg.key);
+            s.setAttribute("data-user-token", d.userToken);
+            // 不設 data-title → 啟動按鈕沿用租戶後台設定的 AI 名稱（與面板內名稱一致）。
+            // 若要在本宿主頁覆寫成自訂文字，再取消下一行註解：
+            // s.setAttribute("data-title", "Acme 小幫手");
             document.body.appendChild(s); // 不設 data-launcher → 顯示預設右下浮動按鈕
           });
       })();

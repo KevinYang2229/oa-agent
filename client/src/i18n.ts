@@ -40,7 +40,7 @@ const zhHant = {
   },
   app: {
     title: "OA Agent",
-    greeting: "你好，我是 OA 小幫手。直接用自然語言描述你的需求即可 👋",
+    greeting: "你好，我是 {{name}}。直接用自然語言描述你的需求即可 👋",
     aiName: "AI 小幫手",
     conn: {
       checking: "連線中…",
@@ -97,7 +97,7 @@ const zhHant = {
     itemsCount: "{{count}} 個項目",
   },
   auth: {
-    subtitle: "請登入以使用 OA 小幫手",
+    subtitle: "請登入以使用 {{name}}",
     userId: "帳號",
     password: "密碼",
     login: "登入",
@@ -185,7 +185,7 @@ const en = {
   app: {
     title: "OA Agent",
     greeting:
-      "Hi, I'm the OA assistant. Just describe your request in your own words 👋",
+      "Hi, I'm {{name}}. Just describe your request in your own words 👋",
     aiName: "AI Assistant",
     conn: {
       checking: "Connecting…",
@@ -245,7 +245,7 @@ const en = {
     itemsCount: "{{count}} item(s)",
   },
   auth: {
-    subtitle: "Sign in to use the OA assistant",
+    subtitle: "Sign in to use {{name}}",
     userId: "Account",
     password: "Password",
     login: "Sign in",

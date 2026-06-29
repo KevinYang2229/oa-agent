@@ -248,6 +248,8 @@ export interface Attachment {
 
 // ---- 租戶 widget 外觀（admin 後台設定、widget 端套用）----
 export interface TenantAppearance {
+  /** AI 助理顯示名稱；未設用 widget 內建預設（i18n app.aiName）。同時用於前端顯示與 AI 自稱 */
+  assistantName?: string;
   /** 主色（hex，如 #0057ff）；未設用 widget 內建預設 */
   primaryColor?: string;
   /** 外觀模式 */
