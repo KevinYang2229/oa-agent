@@ -17,6 +17,9 @@ const LOCALES = [
 // production 由 VITE_WIDGET_ORIGIN 指定部署網址（避免公開後台 iframe 連到 localhost 被瀏覽器封鎖）；dev 走本機 5173。
 const PREVIEW_ORIGIN = (import.meta.env.VITE_WIDGET_ORIGIN ?? 'http://localhost:5173').replace(/\/+$/, '');
 
+// 「開啟示範網站」按鈕的外部網址；可由 VITE_DEMO_SITE_URL 覆寫，預設指向 presale demo 部署。
+const DEMO_SITE_URL = import.meta.env.VITE_DEMO_SITE_URL ?? 'https://oa-agent-presale-tenant.zeabur.app/';
+
 export default function AppearanceTab({
   tenant,
   onSaved,
@@ -182,6 +185,14 @@ export default function AppearanceTab({
       <div className="card preview-card">
         <div className="card-head">
           <div className="card-title">即時預覽</div>
+          <a
+            className="btn btn-ghost btn-sm"
+            href={DEMO_SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            開啟示範網站 ↗
+          </a>
         </div>
         <div className="card-body">
           <iframe
