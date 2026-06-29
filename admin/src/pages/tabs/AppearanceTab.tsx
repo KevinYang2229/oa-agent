@@ -13,8 +13,9 @@ const LOCALES = [
   { v: 'en', label: 'English' },
 ] as const;
 
-// 預覽 widget client 來源（dev）；postMessage targetOrigin 與 iframe 來源一致
-const PREVIEW_ORIGIN = 'http://localhost:5173';
+// 預覽 widget client 來源；postMessage targetOrigin 與 iframe 來源一致。
+// production 由 VITE_WIDGET_ORIGIN 指定部署網址（避免公開後台 iframe 連到 localhost 被瀏覽器封鎖）；dev 走本機 5173。
+const PREVIEW_ORIGIN = (import.meta.env.VITE_WIDGET_ORIGIN ?? 'http://localhost:5173').replace(/\/+$/, '');
 
 export default function AppearanceTab({
   tenant,
@@ -191,7 +192,7 @@ export default function AppearanceTab({
             onLoad={pushPreview}
           />
           <p className="field-hint" style={{ marginTop: 10 }}>
-            需同時執行 widget client（5173）。外觀會即時反映；按「儲存外觀」後才會真正生效。
+            預覽載入自 {PREVIEW_ORIGIN}。外觀會即時反映；按「儲存外觀」後才會真正生效。
           </p>
         </div>
       </div>

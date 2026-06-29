@@ -48,6 +48,7 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 10. 在同一個 Project 再 **Add Service → Git → 選同一個 oa-agent repo**。
 11. **把服務名稱設成 `admin`** → Zeabur 自動使用 `Dockerfile.admin`。並到 **Variables** 加：
     - `VITE_API_BASE = https://oa-agent-server.zeabur.app`  ← 同樣填服務 A 的 Domain（build 階段 bake）
+    - `VITE_WIDGET_ORIGIN = https://oa-agent.zeabur.app`  ← 填服務 B（client）的 Domain，供「外觀」分頁的預覽 iframe 使用。**不設會 fallback 到 `localhost:5173`，公開後台會因連到私有網段被瀏覽器封鎖而看不到預覽。**
     - 若服務名稱不是 `admin`，再加 `ZBPACK_DOCKERFILE_NAME = admin`（後綴）。
 12. **Networking → 產生 Domain**（例：`oa-agent-admin.zeabur.app`）。記下來，連同 client 一起回填到 server 的 `CORS_ORIGIN`。
 13. 回服務 A（server）確認兩個變數：
@@ -86,9 +87,11 @@ Zeabur 連上 GitHub repo 後，會 watch 指定分支；**每次 `git push` 到
 | 變數 | 必填 | 說明 |
 |------|------|------|
 | `VITE_API_BASE` | ✅ | server 的對外網址，build 時 bake 進 bundle（admin 的 `api.ts` 走 `${VITE_API_BASE}/api/v1`）|
+| `VITE_WIDGET_ORIGIN` | 建議 | client（widget）的對外網址，build 時 bake 進 bundle，供「外觀」分頁預覽 iframe 使用。不設會 fallback `localhost:5173`，公開後台預覽會被瀏覽器封鎖（連到私有網段）|
 | `ZBPACK_DOCKERFILE_NAME` | 視情況 | 僅當服務「名稱」不是 `admin` 時才需要；值是後綴 `admin`（不是 `Dockerfile.admin`） |
 
 > admin 登入還需要 server 端設好 `ADMIN_PASSWORD`，且 server 的 `CORS_ORIGIN` 要包含 admin 的 Domain。
+> 預覽 iframe 載入 client 後會 `postMessage` 即時帶入外觀；client 的 widget config 讀取也需 server 的 `CORS_ORIGIN`／租戶 allowedOrigins 放行 admin 與 client 網域。
 
 ---
 
