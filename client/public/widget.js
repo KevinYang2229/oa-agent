@@ -53,7 +53,10 @@
   // 啟動按鈕文字優先序：data-title（宿主明確覆寫）> 租戶後台 AI 名稱（稍後 async 補上）> 預設
   var explicitTitle = attr('data-title');
   var title = explicitTitle || 'OA 小幫手';
-  var position = attr('data-position') === 'left' ? 'left' : 'right';
+  // 宿主明確指定的主題／位置（data-*）；有指定就優先，後端外觀不再覆寫。
+  var explicitTheme = attr('data-theme');
+  var explicitPosition = attr('data-position');
+  var position = explicitPosition === 'left' ? 'left' : 'right';
   // data-launcher="none"：不顯示預設浮動按鈕，由宿主自己的按鈕呼叫 OAAgent.open() 開啟
   var showLauncher = attr('data-launcher') !== 'none';
 
@@ -63,7 +66,7 @@
     key: attr('data-key'),
     form: attr('data-form'),
     locale: attr('data-locale'),
-    theme: attr('data-theme'),
+    theme: explicitTheme,
     userToken: attr('data-user-token'),
   };
   for (var ck in cfg) {
@@ -186,6 +189,11 @@
           btn.setAttribute('aria-label', title);
         }
         if (ap.primaryColor) applyPrimary(ap.primaryColor);
+        // 位置：宿主未用 data-position 覆寫時，採用後端 appearance.position（bl→左下、br→右下）
+        // theme 不在此處理：面板內 SPA 會自行套用租戶 theme，且尊重使用者在 widget 內的手動切換偏好。
+        if (!explicitPosition && ap.position) {
+          applyPosition(ap.position === 'bl' ? 'left' : 'right');
+        }
       })
       .catch(function () {});
   }
@@ -242,13 +250,17 @@
 
   btn.addEventListener('click', function () { setOpen(!open); });
 
-  // 左側擺放：覆寫預設的右下定位（CSS 預設 right:20px）
-  if (position === 'left') {
-    btn.style.right = 'auto';
-    btn.style.left = '20px';
-    panel.style.right = 'auto';
-    panel.style.left = '20px';
+  // 啟動按鈕／面板定位：left 靠左下、right（預設）靠右下。
+  // 抽成函式以便後端 appearance.position（bl/br）非同步回來時動態套用。
+  function applyPosition(pos) {
+    position = pos === 'left' ? 'left' : 'right';
+    var left = position === 'left';
+    btn.style.left = left ? '20px' : 'auto';
+    btn.style.right = left ? 'auto' : '20px';
+    panel.style.left = left ? '20px' : 'auto';
+    panel.style.right = left ? 'auto' : '20px';
   }
+  applyPosition(position);
 
   // panel 內聊天頁透過 postMessage 與宿主溝通：oa-agent:close 收起、oa-agent:submitted 已送出…
   window.addEventListener('message', function (e) {
