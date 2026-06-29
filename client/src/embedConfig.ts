@@ -41,6 +41,10 @@ export const embedConfig = {
   userToken: pick('userToken'),
 };
 
+// API 來源：與 api.ts 同源。dev 留空走相對路徑（Vite proxy）；
+// production 設 VITE_API_BASE 直接打 server（前後端分開部署時，相對路徑會打到靜態 client 網域而失敗）。
+const API_ORIGIN = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '');
+
 /**
  * 讀後端外觀（依 apiKey 對應租戶）。失敗或未帶 key 回 {}。
  * 與 data-* 合併由呼叫端處理：data-* 優先。
@@ -48,7 +52,7 @@ export const embedConfig = {
 export async function fetchAppearance(): Promise<TenantAppearance> {
   if (!embedConfig.apiKey) return {};
   try {
-    const url = `/api/v1/widget/config?key=${encodeURIComponent(embedConfig.apiKey)}`;
+    const url = `${API_ORIGIN}/api/v1/widget/config?key=${encodeURIComponent(embedConfig.apiKey)}`;
     const res = await fetch(url);
     if (!res.ok) return {};
     const json = (await res.json()) as { data?: { appearance?: TenantAppearance } };

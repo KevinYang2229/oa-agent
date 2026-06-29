@@ -30,6 +30,13 @@
     return;
   }
   var origin = new URL(script.src).origin;
+  // API 來源：預設＝載入 widget.js 的網域（單一網域同時供 SPA 與 API 時適用）。
+  // 前後端分開部署（client 與 server 不同網域）時，務必以 data-api 指向 server 對外網址，
+  // 例：data-api="https://oa-agent-server.zeabur.app"，否則 config 會打到靜態 client 網域而失敗。
+  var apiBase = (function () {
+    var v = script.getAttribute('data-api');
+    return v && v.trim() ? v.trim().replace(/\/+$/, '') : origin;
+  })();
 
   // ---- 可選設定（全部 data-*，未帶則維持預設，向後相容）----
   //   data-title       浮動按鈕文案
@@ -168,7 +175,7 @@
   // 向後端讀租戶後台外觀：AI 名稱（未設 data-title 時當按鈕文字）＋ 主色（套到啟動按鈕，與面板一致）。
   // 失敗（CORS / 離線 / 未設）則靜默維持預設，不影響啟動。
   if (cfg.key) {
-    fetch(origin + '/api/v1/widget/config?key=' + encodeURIComponent(cfg.key))
+    fetch(apiBase + '/api/v1/widget/config?key=' + encodeURIComponent(cfg.key))
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         var ap = j && j.data && j.data.appearance;

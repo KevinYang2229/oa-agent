@@ -30,6 +30,9 @@ if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
 
 const PORT = Number(process.env.PORT ?? 4000);
 const OA_ORIGIN = process.env.OA_ORIGIN ?? 'http://localhost:3000';
+// API（server）對外來源。前後端分開部署時，這要指向 server 網域（≠ 載入 widget.js 的 client 網域）。
+// 同網域 / dev proxy 情境留空即可（預設沿用 OA_ORIGIN）。
+const OA_API_ORIGIN = process.env.OA_API_ORIGIN ?? OA_ORIGIN;
 // ↓↓↓ 換成你自己的租戶 pk 與 ssoSecret（建租戶時取得/設定）↓↓↓
 const TENANT_PK =
   process.env.TENANT_PK ?? 'pk_3dc8a9721d103efb0972aac2c0ef79d237698f765178fc6a';
@@ -53,7 +56,7 @@ const html = fs
   .readFileSync(path.join(DIR, 'index.html'), 'utf-8')
   .replace(
     '<!--OA_CONFIG-->',
-    `<script>window.__OA__ = ${JSON.stringify({ origin: OA_ORIGIN, key: TENANT_PK })};</script>`,
+    `<script>window.__OA__ = ${JSON.stringify({ origin: OA_ORIGIN, api: OA_API_ORIGIN, key: TENANT_PK })};</script>`,
   );
 
 const server = http.createServer((req, res) => {

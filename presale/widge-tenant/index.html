@@ -108,6 +108,8 @@
             var s = document.createElement("script");
             s.src = cfg.origin + "/widget.js";
             s.setAttribute("data-key", cfg.key);
+            // 前後端分開部署時，API 在 server 網域（≠ widget.js 的 client 網域）→ 明確指定。
+            if (cfg.api) s.setAttribute("data-api", cfg.api);
             s.setAttribute("data-user-token", d.userToken);
             // 不設 data-title → 啟動按鈕沿用租戶後台設定的 AI 名稱（與面板內名稱一致）。
             // 若要在本宿主頁覆寫成自訂文字，再取消下一行註解：
