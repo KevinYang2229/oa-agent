@@ -150,9 +150,10 @@ export default function App() {
   const [selectedFormId, setSelectedFormId] = useState<string | null>(embedConfig.formId);
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
   const [paneOpen, setPaneOpen] = useState(true);
-  // 嵌入時可由 data-theme 指定外觀（優先於本地記憶）
+  // 主題優先序：data-theme（宿主明確）> 嵌入時略過本地記憶（避免與第一方 App 共用 localStorage 互相干擾，
+  // 改由租戶 theme/預設決定）> 第一方 App 才讀本地記憶 > 預設淺色。後端 theme 於下方 effect 補上。
   const [theme, setTheme] = useState<Theme>(
-    () => embedConfig.theme ?? ((localStorage.getItem('oa-theme') as Theme) || 'light'),
+    () => embedConfig.theme ?? (EMBED ? 'light' : ((localStorage.getItem('oa-theme') as Theme) || 'light')),
   );
   // 系統字級（百分比）：縮放整個介面的 root font-size
   const [fontScale, setFontScale] = useState<number>(() => {
@@ -163,11 +164,18 @@ export default function App() {
   const listRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
-  // 主題：寫到 <html data-theme>，設計系統 token 隨之切換
+  // 主題：寫到 <html data-theme>，設計系統 token 隨之切換。
+  // 不在此記憶 localStorage——否則掛載即寫入會讓「後端/租戶 theme 只在無本地記憶時套用」永遠失效。
+  // 只有使用者由設定選單主動切換時才記憶（見 handleThemeChange）。
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('oa-theme', theme);
   }, [theme]);
+
+  // 使用者主動切換主題：更新狀態並記憶（第一方 App 才有設定選單；嵌入模式無此 UI）
+  function handleThemeChange(next: Theme) {
+    setTheme(next);
+    localStorage.setItem('oa-theme', next);
+  }
 
   // 系統字級：調整 root font-size（rem 為基準，整個介面隨之縮放）並記憶
   useEffect(() => {
@@ -185,13 +193,14 @@ export default function App() {
       if (a.primaryColor) applyPrimaryColor(a.primaryColor);
       // AI 名稱：後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
       if (a.assistantName?.trim() && !embedConfig.assistantName) setAssistantName(a.assistantName.trim());
-      // 主題：data-theme 與本地記憶都沒有時，才採用租戶 theme（不覆蓋使用者/宿主的明確選擇）
-      if (a.theme && !embedConfig.theme && !localStorage.getItem('oa-theme')) {
+      // 主題：宿主未用 data-theme 覆寫時採用租戶 theme。嵌入模式忽略本地記憶（由租戶決定）；
+      // 第一方 App 才尊重使用者的本地記憶選擇。
+      if (a.theme && !embedConfig.theme && (EMBED || !localStorage.getItem('oa-theme'))) {
         setTheme(a.theme);
       }
-      // 預設語言：URL ?locale 與本地記憶（oa-lang）都沒有時，才採用租戶 defaultLocale
-      if (a.defaultLocale && !embedConfig.locale && !localStorage.getItem('oa-lang')) {
-        void changeLanguage(a.defaultLocale);
+      // 預設語言：同理。以 persist=false 套用，不寫本地記憶（保持「租戶預設 vs 使用者選擇」可區分）。
+      if (a.defaultLocale && !embedConfig.locale && (EMBED || !localStorage.getItem('oa-lang'))) {
+        changeLanguage(a.defaultLocale, false);
       }
       // 自訂 logo：顯示於標題列
       if (a.logoUrl) setLogoUrl(a.logoUrl);
@@ -213,7 +222,7 @@ export default function App() {
       const a = data.appearance;
       applyPrimaryColor(a.primaryColor);
       if (a.theme) setTheme(a.theme);
-      if (a.defaultLocale) void changeLanguage(a.defaultLocale);
+      if (a.defaultLocale) changeLanguage(a.defaultLocale, false);
       setAssistantName(a.assistantName?.trim() ?? '');
       setLogoUrl(a.logoUrl?.trim() || null);
       setWelcome(a.welcomeMessage?.trim() || null);
@@ -230,7 +239,7 @@ export default function App() {
       resetSessionState();
     });
     // 嵌入時若帶 data-locale，套用介面語言
-    if (embedConfig.locale) void changeLanguage(embedConfig.locale);
+    if (embedConfig.locale) changeLanguage(embedConfig.locale, false);
     void (async () => {
       try {
         // 嵌入 SSO handoff：帶 userToken 且尚未登入 → 以宿主 token 換發本系統 token（免帳密登入）
@@ -579,7 +588,7 @@ export default function App() {
           {/* 齒輪設定：外觀模式 / 系統字級 / 切換語言 / 登出 */}
           <SettingsMenu
             theme={theme}
-            onThemeChange={setTheme}
+            onThemeChange={handleThemeChange}
             language={i18n.language}
             onLanguageChange={changeLanguage}
             fontScale={fontScale}

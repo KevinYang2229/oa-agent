@@ -294,8 +294,15 @@ const en = {
   },
 };
 
+// 嵌入（widget iframe）模式不讀本地記憶：iframe 與第一方 App 同源、共用 localStorage，
+// 會把 App 端切過的語系帶進 widget。嵌入時改由 data-locale / 租戶 defaultLocale / 預設決定。
+const isEmbed =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("embed") === "1";
 const stored =
-  typeof localStorage !== "undefined" ? localStorage.getItem(LANG_KEY) : null;
+  !isEmbed && typeof localStorage !== "undefined"
+    ? localStorage.getItem(LANG_KEY)
+    : null;
 
 void i18n.use(initReactI18next).init({
   resources: {
@@ -307,9 +314,11 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-export function changeLanguage(lng: string): void {
+// persist=false：套用「預設語系」（data-locale / 租戶 defaultLocale）時不寫本地記憶，
+// 以免被誤認為使用者的明確選擇、擋掉日後的預設覆寫。使用者由選單切換時才 persist。
+export function changeLanguage(lng: string, persist = true): void {
   void i18n.changeLanguage(lng);
-  if (typeof localStorage !== "undefined") localStorage.setItem(LANG_KEY, lng);
+  if (persist && typeof localStorage !== "undefined") localStorage.setItem(LANG_KEY, lng);
 }
 
 export default i18n;
