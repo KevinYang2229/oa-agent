@@ -87,7 +87,8 @@ const zhHant = {
       "對話連線已重置（伺服器可能重新啟動或逾時），已清空目前進度。請直接輸入需求重新開始。",
     cancelledMsg: "已取消這張表單。可按「重新開始」建立新的需求。",
     submittedMsg: "已送出 ✅ OA 單號：{{id}}",
-    submittedHint: "這張表單已完成。若要申請其他表單（如外出登記、請假等），請按「重新開始」或直接輸入新的需求。",
+    submittedHint:
+      "這張表單已完成。若要申請其他表單（如外出登記、請假等），請按「重新開始」或直接輸入新的需求。",
     cancelFailed: "取消失敗：",
     loadFormFailed: "無法載入表單畫面：",
     requestFailed: "請求失敗",
@@ -104,7 +105,7 @@ const zhHant = {
     loggingIn: "登入中…",
     loginFailed: "登入失敗",
     logout: "登出",
-    devHint: "測試帳號：hyweb ，密碼：56610834",
+    // devHint: "測試帳號：hyweb ，密碼：********",
   },
   settings: {
     title: "設定",
@@ -226,7 +227,8 @@ const en = {
     oaNo: "OA No.",
     statusField: "Status",
     viewForm: "View form",
-    noData: "Once you start chatting, your filled fields appear here in real time ✍️",
+    noData:
+      "Once you start chatting, your filled fields appear here in real time ✍️",
     notSubmitted: "After submitting, the OA number and status will show here",
     restarted: "Restarted. Please enter a new request.",
     sessionExpired:
@@ -252,7 +254,7 @@ const en = {
     loggingIn: "Signing in…",
     loginFailed: "Sign-in failed",
     logout: "Sign out",
-    devHint: "Test accounts: hyweb, password: 56610834",
+    // devHint: "Test accounts: hyweb, password: ********",
   },
   settings: {
     title: "Settings",
@@ -318,7 +320,8 @@ void i18n.use(initReactI18next).init({
 // 以免被誤認為使用者的明確選擇、擋掉日後的預設覆寫。使用者由選單切換時才 persist。
 export function changeLanguage(lng: string, persist = true): void {
   void i18n.changeLanguage(lng);
-  if (persist && typeof localStorage !== "undefined") localStorage.setItem(LANG_KEY, lng);
+  if (persist && typeof localStorage !== "undefined")
+    localStorage.setItem(LANG_KEY, lng);
 }
 
 export default i18n;

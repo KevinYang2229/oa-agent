@@ -37,7 +37,9 @@ export default function LoginView({
     <div className="login-shell">
       <form className="login-card" onSubmit={submit}>
         <h1 className="login-title">{t("app.title")}</h1>
-        <p className="login-sub">{t("auth.subtitle", { name: assistantName })}</p>
+        <p className="login-sub">
+          {t("auth.subtitle", { name: assistantName })}
+        </p>
 
         <label className="login-field">
           <span className="login-label">{t("auth.username")}</span>
@@ -71,7 +73,7 @@ export default function LoginView({
           {busy ? t("auth.loggingIn") : t("auth.login")}
         </Button>
 
-        <p className="login-hint">{t("auth.devHint")}</p>
+        {/* <p className="login-hint">{t("auth.devHint")}</p> */}
       </form>
     </div>
   );
