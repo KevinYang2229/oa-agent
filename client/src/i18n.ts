@@ -99,7 +99,7 @@ const zhHant = {
   },
   auth: {
     subtitle: "請登入以使用 {{name}}",
-    userId: "帳號",
+    username: "帳號",
     password: "密碼",
     login: "登入",
     loggingIn: "登入中…",
@@ -248,7 +248,7 @@ const en = {
   },
   auth: {
     subtitle: "Sign in to use {{name}}",
-    userId: "Account",
+    username: "Account",
     password: "Password",
     login: "Sign in",
     loggingIn: "Signing in…",
