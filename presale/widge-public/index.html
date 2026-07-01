@@ -23,28 +23,78 @@
       <section class="hero">
         <span class="pill">純前端 · 零後端 · 一行嵌入</span>
         <h1>不用碰後端，貼一段 script 網站就有 AI 小幫手</h1>
-        <p>這版完全不做 SSO 免登入：頁面只貼一行 <code>&lt;script&gt;</code>，不需要任何後端、不需要 SDK、不需要簽 token。使用者點開小幫手後，在 widget 內自行登入即可。</p>
+        <p>
+          這版完全不做 SSO 免登入：頁面只貼一行
+          <code>&lt;script&gt;</code>，不需要任何後端、不需要 SDK、不需要簽
+          token。使用者點開小幫手後，在 widget 內自行登入即可。
+        </p>
         <div class="hint">試試畫面 <strong>右下角</strong> 的小幫手 ↘</div>
       </section>
 
       <!-- ── widget 特色 ── -->
       <section id="features" class="features">
-        <div class="feature"><h3>⚡ 一行嵌入</h3><p><code>&lt;script src=".../widget.js"&gt;</code> 貼上即用，純 JS、零依賴、不必打包。</p></div>
-        <div class="feature"><h3>🚫 不用後端</h3><p>不簽 token、不放 ssoSecret、不用動你的系統。只要能放一段 HTML 就行。</p></div>
-        <div class="feature"><h3>🔑 使用者自行登入</h3><p>不沿用宿主身分；首次點開 widget 時由使用者在聊天室內登入。</p></div>
-        <div class="feature"><h3>🎨 可設定外觀</h3><p><code>data-title</code> / <code>data-theme</code> / <code>data-locale</code> / <code>data-position</code> 調整文案、亮暗、語言、左右。</p></div>
-        <div class="feature"><h3>🛡️ 樣式隔離</h3><p>聊天介面跑在 iframe 內，scoped 樣式不污染宿主頁，不會被你的 CSS 影響。</p></div>
-        <div class="feature"><h3>🧩 事件可監聽</h3><p>送出等事件以 <code>oa-agent:submitted</code> 派發，宿主頁可接手後續流程。</p></div>
+        <div class="feature">
+          <h3>⚡ 一行嵌入</h3>
+          <p>
+            <code>&lt;script src=".../widget.js"&gt;</code> 貼上即用，純
+            JS、零依賴、不必打包。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🚫 不用後端</h3>
+          <p>
+            不簽 token、不放 ssoSecret、不用動你的系統。只要能放一段 HTML 就行。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🔑 使用者自行登入</h3>
+          <p>不沿用宿主身分；首次點開 widget 時由使用者在聊天室內登入。</p>
+        </div>
+        <div class="feature">
+          <h3>🎨 可設定外觀</h3>
+          <p>
+            <code>data-title</code> / <code>data-theme</code> /
+            <code>data-locale</code> /
+            <code>data-position</code> 調整文案、亮暗、語言、左右。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🛡️ 樣式隔離</h3>
+          <p>
+            聊天介面跑在 iframe 內，scoped 樣式不污染宿主頁，不會被你的 CSS
+            影響。
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🧩 事件可監聽</h3>
+          <p>
+            送出等事件以
+            <code>oa-agent:submitted</code> 派發，宿主頁可接手後續流程。
+          </p>
+        </div>
       </section>
 
       <!-- ── 使用方式 ── -->
       <section id="usage" class="usage">
         <h2>怎麼接？兩步</h2>
         <ol>
-          <li>跟我們申請租戶，拿到公開金鑰 <code>pk_…</code>（pk 是公開的，可放前端）。</li>
-          <li>在頁面任意位置貼上這一行就好：<br /><code>&lt;script src="https://你的網域/widget.js" data-key="pk_…" data-title="Acme 小幫手"&gt;&lt;/script&gt;</code></li>
+          <li>
+            跟我們申請租戶，拿到公開金鑰 <code>pk_…</code>（pk
+            是公開的，可放前端）。
+          </li>
+          <li>
+            在頁面任意位置貼上這一行就好：<br /><code
+              >&lt;script src="https://你的網域/widget.js" data-key="pk_…"
+              data-title="Acme 小幫手"&gt;&lt;/script&gt;</code
+            >
+          </li>
         </ol>
-        <p class="note">沒有第三步：不需要後端端點、不需要 <code>data-user-token</code>。想要「沿用宿主登入身分、免再登入」的版本，見 <code>../widge-tenant</code>（需要一個後端簽 token 的端點）。</p>
+        <p class="note">
+          沒有第三步：不需要後端端點、不需要
+          <code>data-user-token</code
+          >。想要「沿用宿主登入身分、免再登入」的版本，見
+          <code>../widge-tenant</code>（需要一個後端簽 token 的端點）。
+        </p>
       </section>
     </main>
 
@@ -63,10 +113,10 @@
     <script>
       (function () {
         var cfg = window.__OA__;
-        var s = document.createElement('script');
-        s.src = cfg.origin + '/widget.js';
-        s.setAttribute('data-key', cfg.key);
-        s.setAttribute('data-title', 'Acme 小幫手');
+        var s = document.createElement("script");
+        s.src = cfg.origin + "/widget.js";
+        s.setAttribute("data-key", cfg.key);
+        s.setAttribute("data-title", "Acme 小幫手");
         // 注意：刻意「不」設 data-user-token → 不做免登入，由使用者在 widget 內自行登入。
         // 不設 data-launcher → 顯示預設右下浮動按鈕。
         document.body.appendChild(s);

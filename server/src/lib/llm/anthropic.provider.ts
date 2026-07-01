@@ -68,7 +68,7 @@ export const anthropicProvider: LLMProvider = {
     ) as unknown as Anthropic.MessageCreateParams['system'];
 
     const resp = await client.messages.create({
-      model: env.LLM_MODEL,
+      model: params.model ?? env.LLM_MODEL,
       max_tokens: params.maxTokens ?? env.LLM_MAX_TOKENS,
       system,
       tools: tools.length > 0 ? tools : undefined,

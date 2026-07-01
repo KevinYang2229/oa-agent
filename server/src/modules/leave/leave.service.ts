@@ -22,37 +22,43 @@ export interface LeaveSubmission {
   approvals: ApprovalStep[];
 }
 
+export async function submitLeaveApplication(
+  tenantId: string,
+  userId: string,
+  values: FormValues,
+): Promise<LeaveSubmission> {
+  const def = getDefinition(tenantId, FORM_ID);
+  const issues = validateAll(def, values);
+  if (issues.length > 0) {
+    throw AppError.unprocessable('Leave request validation failed', issues);
+  }
+
+  // 依申請人所屬地區的工時政策換算請假時數（排除午休等）
+  const region = getApplicant(userId).region;
+  const hours = def.policy
+    ? computeLeaveHours(values, def.policy, region).hours
+    : undefined;
+
+  if (!def.oa) throw AppError.internal(`${FORM_ID} 缺少 oa.schema.json`);
+  const connector = getOAConnector();
+  const result = await connector.submitForm({
+    formId: FORM_ID,
+    oa: def.oa,
+    // 來源 = 表單值 + 衍生欄位（hours/region）；由 oa.schema fieldMap 決定送出哪些
+    source: { ...values, userId, region, hours },
+  });
+
+  const submittedAt = new Date().toISOString();
+  return {
+    oaRequestId: result.oaRequestId,
+    status: result.status,
+    submittedAt,
+    approvals: computeApprovals(stepDefs(def), submittedAt),
+  };
+}
+
 export const leaveService = {
-  async submit(tenantId: string, userId: string, values: FormValues): Promise<LeaveSubmission> {
-    const def = getDefinition(tenantId, FORM_ID);
-    const issues = validateAll(def, values);
-    if (issues.length > 0) {
-      throw AppError.unprocessable('Leave request validation failed', issues);
-    }
-
-    // 依申請人所屬地區的工時政策換算請假時數（排除午休等）
-    const region = getApplicant(userId).region;
-    const hours = def.policy
-      ? computeLeaveHours(values, def.policy, region).hours
-      : undefined;
-
-    if (!def.oa) throw AppError.internal(`${FORM_ID} 缺少 oa.schema.json`);
-    const connector = getOAConnector();
-    const result = await connector.submitForm({
-      formId: FORM_ID,
-      oa: def.oa,
-      // 來源 = 表單值 + 衍生欄位（hours/region）；由 oa.schema fieldMap 決定送出哪些
-      source: { ...values, userId, region, hours },
-    });
-
-    const submittedAt = new Date().toISOString();
-    return {
-      oaRequestId: result.oaRequestId,
-      status: result.status,
-      submittedAt,
-      approvals: computeApprovals(stepDefs(def), submittedAt),
-    };
-  },
+  submit: submitLeaveApplication,
 
   /** 取得各假別剩餘時數（供畫面顯示「今年度剩餘 N 小時」） */
   async getBalances(userId: string): Promise<LeaveBalance[]> {

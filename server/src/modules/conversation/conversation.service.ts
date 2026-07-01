@@ -1,7 +1,7 @@
 import type { Attachment } from '@oa-agent/shared';
 import { refreshApprovals } from '@/modules/form/approvals';
 import { computeStatus, setField, validateAll } from '@/modules/form/form.engine';
-import { getDefinition, listDefinitions } from '@/modules/form/form.registry';
+import { getDefinition } from '@/modules/form/form.registry';
 import type { FieldIssue } from '@/modules/form/form.types';
 import { getApplicant } from '@/modules/user/user.directory';
 import { usageStore } from '@/modules/usage/usage.store';
@@ -12,36 +12,12 @@ import { runTurn } from './conversation.agent';
 import { resolveSubmit } from './form-submit.registry';
 import { conversationStore } from './conversation.store';
 import type { Session, TurnResult } from './conversation.types';
-
-// 未指定 formId 且無法路由時的預設表單
-const DEFAULT_FORM_ID = 'leave-request';
+import { pickFormId } from './intent-router';
 
 /** 申請人欄位值格式：姓名(工號)，與真實 OA 畫面一致 */
 function formatApplicant(userId: string): string {
   const profile = getApplicant(userId);
   return `${profile.name}(${profile.id})`;
-}
-
-/**
- * 意圖路由：使用者未明確指定表單時，以訊息比對各表單 agent.keywords 命中數，取最高分者；
- * 無命中或無訊息則回預設表單（維持原請假行為）。
- */
-function routeIntent(tenantId: string, message?: string): string {
-  const text = message?.trim();
-  if (!text) return DEFAULT_FORM_ID;
-  let best = DEFAULT_FORM_ID;
-  let bestScore = 0;
-  for (const def of listDefinitions(tenantId)) {
-    const score = (def.agent.keywords ?? []).reduce(
-      (n, kw) => (kw && text.includes(kw) ? n + 1 : n),
-      0,
-    );
-    if (score > bestScore) {
-      bestScore = score;
-      best = def.formId;
-    }
-  }
-  return best;
 }
 
 export interface UpdateFieldsResult extends TurnResult {
@@ -57,8 +33,10 @@ export const conversationService = {
     formId?: string,
   ): Promise<{ session: Session; turn?: TurnResult }> {
     // 表單選擇：明確指定優先，否則依首句意圖路由（皆驗證表單存在）
-    const def = getDefinition(tenantId, formId ?? routeIntent(tenantId, message));
+    const def = getDefinition(tenantId, formId ?? pickFormId(tenantId, message));
     const session = conversationStore.create(tenantId, userId, def.formId);
+    // 開場即以 form 為點黏擁有者；後續每輪由 intent-router 決定是否讓知識問答旁路插入
+    session.activeServiceId = 'form';
     usageStore.increment(tenantId, 'conversations');
     // 申請人／外出人＝目前登入者，建立 session 時即帶入（代人申請時使用者可再覆寫）
     if ('applicant' in def.data.properties) {

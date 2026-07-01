@@ -3,12 +3,19 @@
  *
  * MVP 兩個工具：
  *  - fill_fields：擷取並填入欄位（input schema 由 data.schema.properties 生成）
- *  - submit：使用者確認後送出（伺服器端守門，僅 confirming 時可執行）
+ *  - submit / submit_leave_application：使用者確認後送出（伺服器端守門，僅 confirming 時可執行）
  */
 import type { LLMTool } from '@/lib/llm/types';
 import type { Definition } from './form.types';
 
 export function buildTools(def: Definition): LLMTool[] {
+  const submitToolName =
+    def.formId === 'leave-request' ? 'submit_leave_application' : 'submit';
+  const submitToolDescription =
+    def.formId === 'leave-request'
+      ? '送出請假申請。只有在所有必填欄位齊全、且使用者已明確回覆「確認」「送出」「確認送出」等正向送出語意後才可呼叫。呼叫後由 server-side handler 對應到 submitLeaveApplication，並送出後端請假 API。'
+      : '在所有必填欄位齊全、且使用者已明確回覆「確認」「送出」「確認送出」等正向送出語意後呼叫，送出表單進入簽核。';
+
   const tools: LLMTool[] = [
     {
       name: 'fill_fields',
@@ -30,9 +37,8 @@ export function buildTools(def: Definition): LLMTool[] {
       },
     },
     {
-      name: 'submit',
-      description:
-        '在所有必填欄位齊全、且使用者已明確回覆「確認」後呼叫，送出表單進入簽核。',
+      name: submitToolName,
+      description: submitToolDescription,
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
   ];

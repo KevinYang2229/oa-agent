@@ -35,6 +35,8 @@ export interface LLMCreateParams {
   maxTokens?: number;
   /** 啟用 system + tools 的 prompt caching */
   cache?: boolean;
+  /** 覆寫模型（如意圖分類器改用便宜的 Haiku）；省略時用 env.LLM_MODEL */
+  model?: string;
 }
 
 export interface LLMUsage {

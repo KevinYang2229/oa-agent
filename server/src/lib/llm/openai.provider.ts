@@ -99,7 +99,7 @@ export const openaiProvider: LLMProvider = {
     }));
 
     const resp = await getClient().chat.completions.create({
-      model: env.LLM_MODEL,
+      model: params.model ?? env.LLM_MODEL,
       max_tokens: params.maxTokens ?? env.LLM_MAX_TOKENS,
       messages: toOpenAIMessages(params.system, params.messages),
       tools: tools.length > 0 ? tools : undefined,

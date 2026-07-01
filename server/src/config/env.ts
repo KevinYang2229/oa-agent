@@ -62,6 +62,8 @@ const envSchema = z.object({
   // ---- LLM provider（可抽換層；支援 anthropic / openai）----
   LLM_PROVIDER: z.enum(['anthropic', 'openai']).default('anthropic'),
   LLM_MODEL: z.string().default('claude-sonnet-4-5'),
+  // 意圖分類器（intent-router）專用的便宜/快模型；用 openai 時請改為對應的便宜模型
+  LLM_ROUTER_MODEL: z.string().default('claude-haiku-4-5-20251001'),
   LLM_MAX_TOKENS: z.coerce.number().int().positive().default(1024),
   ANTHROPIC_API_KEY: z.string().default(''),
   OPENAI_API_KEY: z.string().default(''),

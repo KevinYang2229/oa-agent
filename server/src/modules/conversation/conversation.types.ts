@@ -12,6 +12,8 @@ export interface Session {
   formId: string;
   values: FormValues;
   status: SessionStatus;
+  /** 目前「點黏」的服務 id（form）；未設時 router 視為 'form'（向後相容舊 session） */
+  activeServiceId?: string;
   /** 給 LLM 的逐字稿（含 tool_use / tool_result 區塊） */
   messages: LLMMessage[];
   submission?: SubmissionInfo;

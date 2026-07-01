@@ -16,7 +16,7 @@ import { computeApprovals, stepDefs } from '@/modules/form/approvals';
 import { validateAll } from '@/modules/form/form.engine';
 import { getDefinition } from '@/modules/form/form.registry';
 import type { FormValues } from '@/modules/form/form.types';
-import { leaveService } from '@/modules/leave/leave.service';
+import { submitLeaveApplication } from '@/modules/leave/leave.service';
 import { outingService } from '@/modules/outing/outing.service';
 import { AppError } from '@/utils/app-error';
 
@@ -36,7 +36,7 @@ export type FormSubmitFn = (
 
 /** formId → 專屬送出 service。需要客製衍生邏輯（如請假算時數）的表單才在此註冊。 */
 const submitRegistry: Record<string, FormSubmitFn> = {
-  'leave-request': leaveService.submit,
+  'leave-request': submitLeaveApplication,
   'business-trip-domestic': businessTripService.submit,
   'outing-registration': outingService.submit,
 };
