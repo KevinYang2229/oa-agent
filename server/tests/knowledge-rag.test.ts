@@ -46,7 +46,7 @@ const fixtureIndex: KnowledgeIndexFile = {
   ],
 };
 
-afterEach(() => _setIndexForTest(null));
+afterEach(() => _setIndexForTest('rag-test', null));
 
 describe('cosineSimilarity', () => {
   it('相同向量為 1、正交為 0、長度不符為 0', () => {
@@ -58,8 +58,8 @@ describe('cosineSimilarity', () => {
 
 describe('staticIndexRetriever', () => {
   it('依向量相似度排序取 top-k，並過濾低於 MIN_SCORE 的片段', async () => {
-    _setIndexForTest(fixtureIndex);
-    expect(hasStaticIndex()).toBe(true);
+    _setIndexForTest('rag-test', fixtureIndex);
+    expect(hasStaticIndex('rag-test')).toBe(true);
 
     const hits = await staticIndexRetriever.search('rag-test', 'HyCMS 是什麼');
     expect(hits[0].id).toBe('A'); // 與 query 完全同向
@@ -68,7 +68,7 @@ describe('staticIndexRetriever', () => {
   });
 
   it('無索引時回空陣列', async () => {
-    _setIndexForTest(null);
+    _setIndexForTest('rag-test', null);
     // hasStaticIndex 觸發一次檔案讀取；預設路徑無檔 → 空
     const hits = await staticIndexRetriever.search('rag-test', '任何問題');
     expect(hits).toEqual([]);
@@ -77,7 +77,7 @@ describe('staticIndexRetriever', () => {
 
 describe('knowledgeAgentService（RAG 綜合作答）', () => {
   it('用 top-k 片段呼叫 LLM 綜合作答，且不動 session.values / status', async () => {
-    _setIndexForTest(fixtureIndex);
+    _setIndexForTest('rag-test', fixtureIndex);
     const mockCreate = jest.fn().mockResolvedValue({
       text: 'HyCMS 是網站管理平台。（來源：HyCMS 網站管理平台）',
       toolCalls: [],
@@ -104,7 +104,7 @@ describe('knowledgeAgentService（RAG 綜合作答）', () => {
   });
 
   it('查無片段時回退訊息、不呼叫 LLM', async () => {
-    _setIndexForTest({ ...fixtureIndex, chunks: [] });
+    _setIndexForTest('rag-test', { ...fixtureIndex, chunks: [] });
     const mockCreate = jest.fn();
     const session = makeSession();
     const res = await knowledgeAgentService.handleTurn(session, '完全無關 xyz', {

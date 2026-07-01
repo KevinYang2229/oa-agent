@@ -47,8 +47,8 @@ const KB_ANSWER_SYSTEM = [
   '- 若有幫助，於句末以（來源：標題）標註引用。',
 ].join('\n');
 
-function pickRetriever(): KnowledgeRetriever {
-  return hasStaticIndex() ? staticIndexRetriever : stubRetriever;
+function pickRetriever(tenantId: string): KnowledgeRetriever {
+  return hasStaticIndex(tenantId) ? staticIndexRetriever : stubRetriever;
 }
 
 /** 片段找到但 LLM 失敗時的降級：直接列出片段（best-effort，不中斷對話） */
@@ -77,7 +77,7 @@ export const knowledgeAgentService: AgentService = {
     llm: LLMProvider,
   ): Promise<AgentTurnResult> {
     // 兩階段檢索：向量取候選池 → LLM（Haiku）重排出最相關前 K 筆
-    const pool = await pickRetriever().search(session.tenantId, userText);
+    const pool = await pickRetriever(session.tenantId).search(session.tenantId, userText);
     const chunks = await rerankChunks(userText, pool, FINAL_K);
 
     let reply: string;
@@ -112,7 +112,7 @@ export const knowledgeAgentService: AgentService = {
     // 旁路回答：只在逐字稿留紀錄，刻意不觸碰 session.values / session.status
     session.messages.push({ role: 'assistant', content: [{ type: 'text', text: reply }] });
     logger.info(
-      { sessionId: session.id, hits: chunks.length, retriever: pickRetriever().name },
+      { sessionId: session.id, hits: chunks.length, retriever: pickRetriever(session.tenantId).name },
       'knowledge answer',
     );
     return { reply };

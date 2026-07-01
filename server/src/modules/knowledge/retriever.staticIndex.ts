@@ -3,12 +3,12 @@
  *
  * 靜態網站專用——索引為一次性產出，查詢時只 embed「問題」一次，取 top-k 片段，
  * 整站內容永不進作答 LLM（省 token）。索引不存在時回空陣列，由服務退回 stub。
+ * 每個租戶維護各自的索引快取，查詢向量使用索引建立時的模型。
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { env } from '@/config/env';
 import { getEmbeddingProvider } from '@/lib/embedding';
 import { logger } from '@/lib/logger';
+import { indexPathFor } from './index-path';
 import type { KnowledgeIndexFile } from './knowledge-index.types';
 import type { KnowledgeChunk, KnowledgeRetriever } from './retriever.types';
 
@@ -43,53 +43,50 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
-let cache: KnowledgeIndexFile | null = null;
-let attempted = false;
+// 每個租戶維護一份快取（Map 存 null 代表已嘗試載入但不存在）
+const cache = new Map<string, KnowledgeIndexFile | null>();
 
-function loadIndex(): KnowledgeIndexFile | null {
-  if (attempted) return cache;
-  attempted = true;
-  const path = resolve(process.cwd(), env.KNOWLEDGE_INDEX_PATH);
+function loadIndex(tenantId: string): KnowledgeIndexFile | null {
+  if (cache.has(tenantId)) return cache.get(tenantId) ?? null;
+  const path = indexPathFor(tenantId);
+  let idx: KnowledgeIndexFile | null = null;
   try {
     if (existsSync(path)) {
-      cache = JSON.parse(readFileSync(path, 'utf8')) as KnowledgeIndexFile;
-      logger.info({ path, chunks: cache.chunks.length }, 'knowledge index loaded');
+      idx = JSON.parse(readFileSync(path, 'utf8')) as KnowledgeIndexFile;
+      logger.info({ tenantId, chunks: idx.chunks.length }, 'knowledge index loaded');
     }
   } catch (err) {
-    logger.warn({ err, path }, 'knowledge index load failed');
-    cache = null;
+    logger.warn({ err, tenantId }, 'knowledge index load failed');
+    idx = null;
   }
-  return cache;
+  cache.set(tenantId, idx);
+  return idx;
 }
 
-/** 測試用：注入索引並略過檔案讀取 */
-export function _setIndexForTest(idx: KnowledgeIndexFile | null): void {
-  cache = idx;
-  attempted = true;
+/** 測試用：注入指定租戶的索引並略過檔案讀取 */
+export function _setIndexForTest(tenantId: string, idx: KnowledgeIndexFile | null): void {
+  cache.set(tenantId, idx);
+}
+
+/** 清除指定租戶的索引快取（例如 ingest 後強制重載） */
+export function invalidateIndexCache(tenantId: string): void {
+  cache.delete(tenantId);
 }
 
 /** 是否已載入可用的靜態索引（供服務決定是否退回 stub） */
-export function hasStaticIndex(): boolean {
-  return (loadIndex()?.chunks.length ?? 0) > 0;
+export function hasStaticIndex(tenantId: string): boolean {
+  return (loadIndex(tenantId)?.chunks.length ?? 0) > 0;
 }
 
 export const staticIndexRetriever: KnowledgeRetriever = {
   name: 'static-index',
-  async search(_tenantId: string, query: string): Promise<KnowledgeChunk[]> {
-    const idx = loadIndex();
+  async search(tenantId: string, query: string): Promise<KnowledgeChunk[]> {
+    const idx = loadIndex(tenantId);
     const q = query.trim();
     if (!idx || idx.chunks.length === 0 || !q) return [];
-
-    const embedder = getEmbeddingProvider();
-    if (idx.model !== embedder.model) {
-      logger.warn(
-        { indexModel: idx.model, queryModel: embedder.model },
-        'knowledge index embedding model mismatch — 請以相同 EMBEDDING_MODEL 重跑 ingest',
-      );
-    }
-    const [queryVec] = await embedder.embed([q]);
+    // 查詢向量必須用「索引建立時的模型」，避免維度/語意不一致
+    const [queryVec] = await getEmbeddingProvider().embed([q], idx.model);
     if (!queryVec) return [];
-
     // 混合檢索：語意相似度（dense）+ 專有名詞精確命中（lexical）融合
     const terms = asciiTerms(q);
     return idx.chunks
