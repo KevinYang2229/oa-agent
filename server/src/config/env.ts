@@ -76,6 +76,8 @@ const envSchema = z.object({
   KNOWLEDGE_INDEX_PATH: z.string().default('data/knowledge-index.json'),
   // 兩階段檢索：先向量取候選池，再用 LLM（LLM_ROUTER_MODEL/Haiku）重排出最相關前幾筆
   KNOWLEDGE_RERANK: z.coerce.boolean().default(true),
+  // 每租戶索引檔存放目錄（相對 server 目錄）；檔名為 knowledge-index.<tenantId>.json
+  KNOWLEDGE_INDEX_DIR: z.string().default('data'),
 
   // ---- OA 連接器（MVP 預設 stub；http 為真 OA 連接器）----
   OA_CONNECTOR: z.enum(['stub', 'http']).default('stub'),
