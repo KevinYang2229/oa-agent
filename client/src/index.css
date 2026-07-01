@@ -175,7 +175,7 @@
   }
   /* 使用者氣泡：品牌藍漸層＋柔和同色投影，營造立體感 */
   .bubble-user {
-    @apply self-end rounded-br-sm bg-gradient-to-br from-[var(--primary-color)] to-[var(--secondary-color)] text-white;
+    @apply self-end rounded-br-sm bg-gradient-to-br from-[var(--primary-color)] to-[color-mix(in_srgb,var(--primary-color)_55%,white)] text-white;
     @apply shadow-[0_6px_16px_-6px_rgba(var(--primary-color-rgb),0.45)];
   }
   /* AI 氣泡：純白卡片＋細緻中性陰影，從聊天底色浮起 */
