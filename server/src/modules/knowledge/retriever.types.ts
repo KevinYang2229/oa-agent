@@ -8,7 +8,9 @@ export interface KnowledgeChunk {
   id: string;
   title: string;
   content: string;
-  /** 檢索分數（越大越相關）；stub 為關鍵字命中數，之後為向量相似度 */
+  /** 來源網址（靜態網站索引用，供作答附引用）；stub 無來源時省略 */
+  url?: string;
+  /** 檢索分數（越大越相關）；stub 為關鍵字命中數，靜態索引為向量餘弦相似度 */
   score?: number;
 }
 

@@ -1,0 +1,17 @@
+{
+  "_comment": "檢索精準度評測集。複製為 knowledge-eval.json 並依實際站台內容填寫。expectUrlIncludes：正確答案應來自的頁面 URL 片段（可多個）。",
+  "cases": [
+    {
+      "question": "HyCMS 是什麼？",
+      "expectUrlIncludes": ["/product", "hycms"]
+    },
+    {
+      "question": "圖書自動化系統有哪些功能？",
+      "expectUrlIncludes": ["hylib", "library"]
+    },
+    {
+      "question": "公司在公共圖書館市場的佔有率？",
+      "expectUrlIncludes": ["/about", "company"]
+    }
+  ]
+}

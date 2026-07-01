@@ -18,9 +18,10 @@ import { serviceRegistry } from './service.registry';
 // 未指定 formId 且無法路由時的預設表單（沿用原 routeIntent 行為）
 const DEFAULT_FORM_ID = 'leave-request';
 
-// 疑似「知識查詢」的語氣詞：命中才考慮把填表中途插入知識問答（觸發一次 Haiku 二次確認）
+// 疑似「知識查詢」的語氣詞：命中才考慮把填表中途插入知識問答（觸發一次 Haiku 二次確認）。
+// 過度觸發只是多一次 Haiku 呼叫、由分類器把關，故涵蓋常見「事實/聯絡/產品」提問詞。
 const KNOWLEDGE_HINT_RE =
-  /(規定|政策|辦法|制度|規章|可以嗎|可不可以|如何|怎麼|多久|幾天|幾小時|是否|說明|什麼是|定義|標準|條件|資格|請問)/;
+  /(規定|政策|辦法|制度|規章|可以嗎|可不可以|如何|怎麼|多久|幾天|幾小時|是否|說明|什麼是|是什麼|定義|標準|條件|資格|請問|電話|地址|在哪|聯絡|信箱|email|有哪些|幾號|多少)/i;
 
 const CLASSIFY_THRESHOLD = 0.6;
 
@@ -72,7 +73,8 @@ async function classify(session: Session, text: string): Promise<string | null> 
     '你是 OA 對話的意圖分類器，全程只輸出 JSON。',
     '根據使用者訊息，從下列意圖清單挑最貼近的一個：',
     catalog,
-    '規則：要「填寫／申請／送出」表單 → 對應表單意圖；詢問規章、制度、額度算法、FAQ 等「想知道答案」→ kb.query。',
+    '規則：要「填寫／申請／送出」某張表單 → 對應表單意圖；',
+    '任何「想知道答案」的提問 → kb.query，包含公司規章制度、額度算法、FAQ，以及公司本身資訊（電話、地址、分公司、聯絡方式、產品、服務、方案、簡介）。',
     '只輸出 {"intent":"<id 或 none>","confidence":0~1}，不要任何其他文字。',
   ].join('\n');
   try {

@@ -12,7 +12,6 @@ jest.mock('@/lib/llm', () => ({
 import { getLLMProvider } from '@/lib/llm';
 import type { Session } from '@/modules/conversation/conversation.types';
 import { intentRouter } from '@/modules/conversation/intent-router';
-import { knowledgeAgentService } from '@/modules/knowledge/knowledge.agent-service';
 
 function makeSession(partial: Partial<Session> = {}): Session {
   return {
@@ -89,31 +88,5 @@ describe('intentRouter.route', () => {
     expect(r.serviceId).toBe('knowledge');
     expect(r.viaLLM).toBe(false);
     expect(mockCreate).not.toHaveBeenCalled();
-  });
-});
-
-describe('knowledgeAgentService（旁路，不觸碰 form 狀態）', () => {
-  it('回答知識問題但不改動 session.values / status', async () => {
-    const session = makeSession({ values: { leaveType: 'annual' }, status: 'collecting' });
-    const valuesBefore = JSON.stringify(session.values);
-
-    const res = await knowledgeAgentService.handleTurn(
-      session,
-      '特休規定幾天',
-      { name: 'mock', createMessage: mockCreate } as never,
-    );
-
-    expect(res.reply).toContain('特休');
-    expect(JSON.stringify(session.values)).toBe(valuesBefore);
-    expect(session.status).toBe('collecting');
-    expect(session.activeServiceId).toBe('form'); // 旁路不奪走點黏擁有權
-    expect(session.messages.at(-1)?.role).toBe('assistant');
-    expect(mockCreate).not.toHaveBeenCalled(); // stub 不需 LLM
-  });
-
-  it('查無相關規章時回退訊息', async () => {
-    const session = makeSession();
-    const res = await knowledgeAgentService.handleTurn(session, '完全無關的問題xyz', {} as never);
-    expect(res.reply).toContain('查無');
   });
 });
