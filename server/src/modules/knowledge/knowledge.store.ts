@@ -1,0 +1,120 @@
+/**
+ * 每租戶知識來源設定（KnowledgeSource）與索引 meta（KnowledgeIndexMeta）的記憶體＋磁碟持久化 store。
+ * 結構與 tenant.store 相同：啟動時從 JSON 還原，每次異動立即寫回。
+ */
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { env } from '@/config/env';
+import { logger } from '@/lib/logger';
+
+/** 每租戶的網站爬取與 embedding 設定 */
+export interface KnowledgeSource {
+  /** 爬取起點 URL */
+  startUrl: string;
+  /** 最大爬取頁數 */
+  maxPages: number;
+  /** 只爬取此路徑前綴（選填） */
+  pathPrefix?: string;
+  /** 包含的 URL pattern（選填） */
+  includePatterns?: string[];
+  /** 排除的 URL pattern（選填） */
+  excludePatterns?: string[];
+  /** 每個 chunk 的字元數 */
+  chunkChars: number;
+  /** embedding 模型名稱 */
+  embeddingModel: string;
+  /** 是否啟用 rerank 兩階段檢索 */
+  rerank: boolean;
+  /** 最後更新時間（ISO 8601） */
+  updatedAt?: string;
+}
+
+/** 每租戶的向量索引狀態 */
+export interface KnowledgeIndexMeta {
+  /** 索引狀態：none（未建立）/ ready（可用）/ failed（建立失敗） */
+  status: 'none' | 'ready' | 'failed';
+  /** 索引中的 chunk 數 */
+  chunkCount: number;
+  /** 索引建立時間（ISO 8601） */
+  generatedAt?: string;
+  /** 所使用的 embedding 模型 */
+  model?: string;
+  /** 來源 URL */
+  source?: string;
+  /** 失敗原因（status=failed 時） */
+  error?: string;
+}
+
+/** 回傳預設來源設定（以 env 為基準） */
+function defaultSource(): KnowledgeSource {
+  return {
+    startUrl: '',
+    maxPages: 100,
+    chunkChars: 800,
+    embeddingModel: env.EMBEDDING_MODEL,
+    rerank: env.KNOWLEDGE_RERANK,
+  };
+}
+
+/** 持久化 JSON 路徑：存在 KNOWLEDGE_INDEX_DIR 下 */
+const FILE = resolve(process.cwd(), env.KNOWLEDGE_INDEX_DIR, 'knowledge-config.json');
+
+/** 以租戶 ID 為 key 的來源設定 Map */
+const sources = new Map<string, KnowledgeSource>();
+/** 以租戶 ID 為 key 的索引 meta Map */
+const metas = new Map<string, KnowledgeIndexMeta>();
+
+/** 將目前 Map 狀態寫入磁碟 JSON */
+function persist(): void {
+  try {
+    if (!existsSync(dirname(FILE))) mkdirSync(dirname(FILE), { recursive: true });
+    writeFileSync(
+      FILE,
+      JSON.stringify({ sources: [...sources], metas: [...metas] }),
+      'utf8',
+    );
+  } catch (err) {
+    logger.warn({ err }, 'knowledge config persist failed');
+  }
+}
+
+/** 啟動時從磁碟 JSON 還原（IIFE；檔案不存在或解析失敗則靜默略過） */
+(function restore() {
+  try {
+    if (!existsSync(FILE)) return;
+    const raw = JSON.parse(readFileSync(FILE, 'utf8')) as {
+      sources: [string, KnowledgeSource][];
+      metas: [string, KnowledgeIndexMeta][];
+    };
+    raw.sources?.forEach(([k, v]) => sources.set(k, v));
+    raw.metas?.forEach(([k, v]) => metas.set(k, v));
+  } catch (err) {
+    logger.warn({ err }, 'knowledge config restore failed');
+  }
+})();
+
+export const knowledgeStore = {
+  /** 取得租戶的知識來源設定；未設定時回預設值 */
+  getSource(tenantId: string): KnowledgeSource {
+    return sources.get(tenantId) ?? defaultSource();
+  },
+
+  /** 儲存租戶的知識來源設定，自動加上 updatedAt；回傳已儲存的物件 */
+  saveSource(tenantId: string, src: Omit<KnowledgeSource, 'updatedAt'>): KnowledgeSource {
+    const saved: KnowledgeSource = { ...src, updatedAt: new Date().toISOString() };
+    sources.set(tenantId, saved);
+    persist();
+    return saved;
+  },
+
+  /** 取得租戶的索引 meta；未建立時回預設 none 狀態 */
+  getMeta(tenantId: string): KnowledgeIndexMeta {
+    return metas.get(tenantId) ?? { status: 'none', chunkCount: 0 };
+  },
+
+  /** 更新租戶的索引 meta */
+  setMeta(tenantId: string, meta: KnowledgeIndexMeta): void {
+    metas.set(tenantId, meta);
+    persist();
+  },
+};
