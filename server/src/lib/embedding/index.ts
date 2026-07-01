@@ -9,8 +9,8 @@ import { env } from '@/config/env';
 
 export interface EmbeddingProvider {
   readonly model: string;
-  /** 批次向量化；回傳順序與輸入對應 */
-  embed(texts: string[]): Promise<number[][]>;
+  /** 批次向量化；回傳順序與輸入對應；model 可覆寫預設模型 */
+  embed(texts: string[], model?: string): Promise<number[][]>;
 }
 
 // 延遲建立：OpenAI SDK 無 key 時建構即拋錯，避免 provider=anthropic 也被卡住啟動
@@ -22,10 +22,10 @@ function getClient(): OpenAI {
 
 export const openaiEmbeddingProvider: EmbeddingProvider = {
   model: env.EMBEDDING_MODEL,
-  async embed(texts: string[]): Promise<number[][]> {
+  async embed(texts: string[], model?: string): Promise<number[][]> {
     if (texts.length === 0) return [];
     const resp = await getClient().embeddings.create({
-      model: env.EMBEDDING_MODEL,
+      model: model ?? env.EMBEDDING_MODEL,
       input: texts,
     });
     return resp.data.map((d) => d.embedding);
