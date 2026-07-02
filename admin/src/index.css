@@ -958,11 +958,26 @@ a {
   z-index: 1;
   width: 100%;
   max-width: 408px;
+  color-scheme: light;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #64748b;
+  --border: #d9e2ec;
+  --border-strong: #cbd5e1;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-ring: rgba(79, 70, 229, 0.16);
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
   /* 玻璃擬態：淺色高透明 + 背景模糊，浮在深色 mesh 上 */
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: saturate(160%) blur(20px);
   -webkit-backdrop-filter: saturate(160%) blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.7);
+  color: var(--text);
   border-radius: 20px;
   box-shadow:
     0 30px 80px -24px rgba(2, 6, 23, 0.7),
@@ -981,6 +996,7 @@ a {
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 .login-sub {
   color: var(--text-muted);
@@ -990,11 +1006,36 @@ a {
 .login-card form {
   margin-top: 8px;
 }
+.login-card .field-label {
+  color: var(--text) !important;
+}
+.login-card .input {
+  background: var(--surface-2) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+.login-card .input::placeholder {
+  color: var(--text-faint) !important;
+  opacity: 0.8;
+}
+.login-card .input:focus {
+  background: var(--surface) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-ring) !important;
+}
 .login-card .btn {
   width: 100%;
   height: 44px;
   margin-top: 20px;
   font-size: 14.5px;
+}
+.login-card .btn-primary {
+  background: linear-gradient(180deg, #5b53e8, var(--accent)) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.login-card .btn-primary:hover {
+  background: linear-gradient(180deg, #5048d8, var(--accent-hover)) !important;
 }
 .login-err {
   color: var(--danger);

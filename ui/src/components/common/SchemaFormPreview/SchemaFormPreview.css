@@ -4,6 +4,22 @@
  * form-row / form-field / form-label / form-required / form-value。
  */
 .schema-preview-sheet {
+  --bg-color: #f8fafc;
+  --bg-color-rgb: 248, 250, 252;
+  --bg-secondary: #f1f5f9;
+  --card-bg: #ffffff;
+  --input-bg: #f8fafc;
+  --border-color: #e6e8ee;
+  --text-color: #0f172a;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #64748b;
+  --text-highlight-color: var(--prev-primary, #4f46e5);
+  --primary-color: var(--prev-primary, #4f46e5);
+  --primary-color-rgb: 79, 70, 229;
+  --highlight-color: var(--prev-primary, #4f46e5);
+  --nav-active-bg: color-mix(in srgb, var(--prev-primary, #4f46e5) 10%, white);
+  color-scheme: light;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -14,6 +30,42 @@
   border: 1px solid #e6e8ee;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 40, 0.18);
   overflow: hidden;
+}
+
+.schema-preview-sheet .form-input,
+.schema-preview-sheet .form-select,
+.schema-preview-sheet .date-picker-trigger-btn,
+.schema-preview-sheet .time-picker-trigger-btn {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.schema-preview-sheet .form-input::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.65 !important;
+}
+
+.schema-preview-sheet .form-input:focus,
+.schema-preview-sheet .form-select:focus {
+  background-color: var(--card-bg) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.15) !important;
+}
+
+.schema-preview-sheet .date-picker-trigger-btn .picker-display-text,
+.schema-preview-sheet .date-picker-trigger-btn .date-picker-icon,
+.schema-preview-sheet .time-picker-trigger-btn .picker-display-text,
+.schema-preview-sheet .time-picker-trigger-btn .time-picker-icon {
+  color: var(--text-primary) !important;
+}
+
+.schema-preview-sheet .date-picker-dropdown,
+.schema-preview-sheet .time-picker-dropdown {
+  background: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12) !important;
 }
 
 .schema-preview-head {
