@@ -737,7 +737,7 @@ export default function App() {
                       <button
                         key={f.formId}
                         type="button"
-                        className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
+                        className={`quick-chip${selectedFormId === f.formId ? ' active' : ''}`}
                         onClick={() => setSelectedFormId(f.formId)}
                         title={f.description}
                         aria-pressed={selectedFormId === f.formId}
@@ -750,7 +750,7 @@ export default function App() {
                     <button
                       key={p}
                       type="button"
-                      className="form-chip"
+                      className="quick-chip"
                       onClick={() => sendQuick(p)}
                       title={p}
                     >

@@ -310,9 +310,15 @@
     @apply w-full text-xs text-[var(--text-secondary)];
   }
   .quick-chip {
-    @apply cursor-pointer rounded-full border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)] hover:text-[var(--primary-color)];
+    @apply cursor-pointer rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--primary-color)] hover:bg-[var(--nav-hover)] hover:text-[var(--primary-color)];
     /* hover 上浮＋同色柔光，增添回饋感 */
     @apply hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-4px_rgba(var(--primary-color-rgb),0.35)];
+    /* 推薦詞最多兩行，超出以省略號截斷 */
+    @apply line-clamp-2 text-left;
+  }
+  /* 選中狀態（表單 chip 被選）：品牌實心，與原 form-chip.active 一致 */
+  .quick-chip.active {
+    @apply border-[var(--primary-color)] bg-[var(--primary-color)] text-white hover:border-[var(--primary-color)] hover:bg-[var(--primary-color)] hover:text-white;
   }
 
   /* ---- 建議回覆列（AI 回覆下方的一鍵快捷） ---- */
