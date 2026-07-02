@@ -109,10 +109,26 @@ export default function TenantsPage() {
 
       <div className="card">
         <div className="card-head">
-          <div>
-            <div className="card-title">所有租戶</div>
-            <div className="card-desc">{tenants.length} 個整合方</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {deletable.length > 0 && (
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleAll}
+                aria-label="全選"
+                title="全選"
+              />
+            )}
+            <div>
+              <div className="card-title">所有租戶</div>
+              <div className="card-desc">{tenants.length} 個整合方</div>
+            </div>
           </div>
+          {selected.size > 0 && (
+            <button className="btn btn-danger btn-sm" onClick={removeSelected}>
+              刪除選取（{selected.size}）
+            </button>
+          )}
         </div>
 
         {creating && (
@@ -136,28 +152,6 @@ export default function TenantsPage() {
           </div>
         )}
 
-        {deletable.length > 0 && (
-          <div
-            className="card-body"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="row-sub">
-              <input type="checkbox" checked={allSelected} onChange={toggleAll} />
-              全選
-            </label>
-            {selected.size > 0 && (
-              <button className="btn btn-danger btn-sm" onClick={removeSelected}>
-                刪除選取（{selected.size}）
-              </button>
-            )}
-          </div>
-        )}
-
         <ul className="list">
           {tenants.map((t) => (
             <li
@@ -167,7 +161,10 @@ export default function TenantsPage() {
               style={{ cursor: 'pointer' }}
             >
               <div className="row-actions" onClick={(e) => e.stopPropagation()}>
-                {t.id !== 'default' && (
+                {t.id === 'default' ? (
+                  // 預設租戶不可刪，但保留 checkbox 佔位讓名稱與其他列對齊
+                  <input type="checkbox" disabled aria-hidden tabIndex={-1} style={{ visibility: 'hidden' }} />
+                ) : (
                   <input
                     type="checkbox"
                     checked={selected.has(t.id)}
@@ -176,7 +173,7 @@ export default function TenantsPage() {
                   />
                 )}
               </div>
-              <div className="row-main">
+              <div className="row-main" style={{ flex: 1 }}>
                 <div className="row-title">{t.name}</div>
                 <div className="row-sub">{t.id}</div>
               </div>
