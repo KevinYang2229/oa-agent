@@ -72,12 +72,19 @@ export default function ServicesTab({
         {cat.services.map((s) => (
           <li key={s.id} className="row" style={{ display: 'block' }}>
             <div className="row-main" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input type="checkbox" checked={s.enabled} onChange={() => toggleService(s.id)} />
-                <div>
-                  <div style={{ fontWeight: 500 }}>{s.label}</div>
-                  <div className="row-sub">{s.id}</div>
-                </div>
+              <label style={{ cursor: 'pointer' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={s.enabled}
+                    onChange={() => toggleService(s.id)}
+                    style={{ width: 16, height: 16 }}
+                  />
+                  <span style={{ fontWeight: 500 }}>{s.label}</span>
+                </span>
+                <span className="row-sub" style={{ display: 'block', marginLeft: 24 }}>
+                  {s.id}
+                </span>
               </label>
               {s.id === 'form' && cat.forms.length > 0 && (
                 <button
