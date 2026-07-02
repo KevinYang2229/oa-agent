@@ -120,7 +120,7 @@ export default function ServicesTab({
         ))}
       </ul>
 
-      <div className="card-body">
+      <div className="card-body" style={{ borderTop: '1px solid var(--border)' }}>
         {noService && (
           <div className="row-sub" style={{ marginBottom: 12 }}>
             ⚠️ 已停用全部服務，此租戶對話將無可用功能。
