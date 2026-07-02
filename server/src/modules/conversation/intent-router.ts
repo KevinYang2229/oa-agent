@@ -99,10 +99,18 @@ async function classify(session: Session, text: string): Promise<string | null> 
 
 export const intentRouter = {
   async route(session: Session, text: string): Promise<RouteResult> {
+    const enabled = serviceRegistry.enabledFor(session.tenantId);
+    const enabledIds = new Set(enabled.map((s) => s.id));
+    // 保底：無任何啟用服務時退回第一個註冊服務（極端情況，避免 undefined）
+    const fallbackId = enabled[0]?.id ?? serviceRegistry.all()[0].id;
+
     const activeId = session.activeServiceId ?? 'form';
     const active = serviceRegistry.tryGet(activeId);
+    // 點黏只在「該服務仍為啟用」時成立——停用的服務不得因點黏繞過過濾
     const inStickyFlow =
-      !!active?.sticky && (session.status === 'collecting' || session.status === 'confirming');
+      !!active?.sticky &&
+      enabledIds.has(activeId) &&
+      (session.status === 'collecting' || session.status === 'confirming');
 
     if (inStickyFlow) {
       // 送出確認一律留在點黏服務，避免把「可以送嗎」誤判成知識問答
@@ -113,10 +121,10 @@ export const intentRouter = {
       return { serviceId: classified ?? activeId, viaLLM: true };
     }
 
-    // 非點黏流程：關鍵字先行，模糊才 Haiku
+    // 非點黏流程：關鍵字先行，模糊才 Haiku；fallback 一律落在啟用中的服務
     const kw = keywordRoute(session, text);
-    if (kw.confident) return { serviceId: kw.serviceId, viaLLM: false };
+    if (kw.confident && enabledIds.has(kw.serviceId)) return { serviceId: kw.serviceId, viaLLM: false };
     const classified = await classify(session, text);
-    return { serviceId: classified ?? kw.serviceId, viaLLM: true };
+    return { serviceId: classified ?? fallbackId, viaLLM: true };
   },
 };

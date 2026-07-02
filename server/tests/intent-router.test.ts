@@ -12,6 +12,7 @@ jest.mock('@/lib/llm', () => ({
 import { getLLMProvider } from '@/lib/llm';
 import type { Session } from '@/modules/conversation/conversation.types';
 import { intentRouter } from '@/modules/conversation/intent-router';
+import { tenantStore } from '@/modules/tenant/tenant.store';
 
 function makeSession(partial: Partial<Session> = {}): Session {
   return {
@@ -88,5 +89,37 @@ describe('intentRouter.route', () => {
     expect(r.serviceId).toBe('knowledge');
     expect(r.viaLLM).toBe(false);
     expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('停用 form 服務後，填表請求不會因點黏被路由回 form', async () => {
+    const t = tenantStore.createTenant('router-noform');
+    tenantStore.updateTenant(t.id, { disabledServices: ['form'] });
+    // 分類器對「我要請假」在只剩 knowledge 的目錄下回 none → fallback 到啟用服務
+    mockCreate.mockResolvedValue({
+      text: '{"intent":"none","confidence":0}',
+      toolCalls: [],
+      stopReason: 'end_turn',
+    });
+    const r = await intentRouter.route(
+      makeSession({ tenantId: t.id, status: 'collecting', activeServiceId: 'form' }),
+      '我要請假',
+    );
+    expect(r.serviceId).not.toBe('form');
+  });
+
+  it('停用 knowledge 服務後，知識問題不會被路由到 knowledge', async () => {
+    const t = tenantStore.createTenant('router-noknow');
+    tenantStore.updateTenant(t.id, { disabledServices: ['knowledge'] });
+    // 即使分類器硬回 kb.query，該意圖不在啟用目錄中 → 對應不到啟用服務 → 不會是 knowledge
+    mockCreate.mockResolvedValue({
+      text: '{"intent":"kb.query","confidence":0.9}',
+      toolCalls: [],
+      stopReason: 'end_turn',
+    });
+    const r = await intentRouter.route(
+      makeSession({ tenantId: t.id, status: 'collecting', activeServiceId: 'form' }),
+      '公司電話幾號',
+    );
+    expect(r.serviceId).not.toBe('knowledge');
   });
 });
