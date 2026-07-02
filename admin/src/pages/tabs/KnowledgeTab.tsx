@@ -98,104 +98,159 @@ export default function KnowledgeTab({
     }
   };
 
-  if (!src || !meta) return <p>載入中…</p>;
+  if (!src || !meta) return <div className="card"><div className="card-body">載入中…</div></div>;
   const running = !!job && ['queued', 'crawling', 'embedding'].includes(job.status);
 
   return (
-    <div className="knowledge-tab">
-      <h3>知識來源</h3>
-      <label>
-        起始網址
-        <input
-          value={src.startUrl}
-          onChange={(e) => update({ startUrl: e.target.value })}
-          placeholder="https://www.example.com/"
-        />
-      </label>
-      <label>
-        最大頁數
-        <input
-          type="number"
-          value={src.maxPages}
-          onChange={(e) => update({ maxPages: Number(e.target.value) })}
-        />
-      </label>
-      <label>
-        路徑前綴（選填，例 /mp）
-        <input
-          value={src.pathPrefix ?? ''}
-          onChange={(e) => update({ pathPrefix: e.target.value || undefined })}
-        />
-      </label>
-      <label>
-        chunk 大小（字元）
-        <input
-          type="number"
-          value={src.chunkChars}
-          onChange={(e) => update({ chunkChars: Number(e.target.value) })}
-        />
-      </label>
-      <label>
-        embedding 模型
-        <select value={src.embeddingModel} onChange={(e) => update({ embeddingModel: e.target.value })}>
-          {EMBEDDING_MODELS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
+    <div className="appearance-grid">
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">知識來源</div>
+            <div className="card-desc">輸入網站與參數，解析後建立此租戶專屬的 RAG 索引。</div>
+          </div>
+        </div>
+        <div className="card-body">
+          <div className="form-grid">
+            <div className="field">
+              <label className="field-label">起始網址</label>
+              <input
+                className="input"
+                value={src.startUrl}
+                onChange={(e) => update({ startUrl: e.target.value })}
+                placeholder="https://www.example.com/"
+              />
+            </div>
+            <div className="field">
+              <label className="field-label">最大頁數</label>
+              <input
+                className="input"
+                type="number"
+                value={src.maxPages}
+                onChange={(e) => update({ maxPages: Number(e.target.value) })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label">路徑前綴（選填）</label>
+              <input
+                className="input"
+                value={src.pathPrefix ?? ''}
+                onChange={(e) => update({ pathPrefix: e.target.value || undefined })}
+                placeholder="/mp"
+              />
+            </div>
+            <div className="field">
+              <label className="field-label">chunk 大小（字元）</label>
+              <input
+                className="input"
+                type="number"
+                value={src.chunkChars}
+                onChange={(e) => update({ chunkChars: Number(e.target.value) })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label">embedding 模型</label>
+              <select
+                className="select"
+                value={src.embeddingModel}
+                onChange={(e) => update({ embeddingModel: e.target.value })}
+              >
+                {EMBEDDING_MODELS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label className="field-label">LLM 重排</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={src.rerank}
+                  onChange={(e) => update({ rerank: e.target.checked })}
+                />
+                <span className="field-hint">啟用兩階段檢索（精準度↑，每次查詢多一次便宜呼叫）</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button className="btn btn-primary" onClick={save} disabled={saving || running}>
+              儲存設定
+            </button>
+            <button className="btn btn-primary" onClick={ingest} disabled={running || !src.startUrl}>
+              開始解析
+            </button>
+            <button className="btn btn-danger" onClick={clear} disabled={running || meta.status === 'none'}>
+              清除索引
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">索引狀態</div>
+            <div className="card-desc">解析進度與目前索引摘要。</div>
+          </div>
+          <span className={`badge ${meta.status === 'ready' ? 'badge-on' : 'badge-off'}`}>
+            {running ? '解析中' : meta.status === 'ready' ? '已就緒' : meta.status === 'failed' ? '失敗' : '尚未建立'}
+          </span>
+        </div>
+        <div className="card-body">
+          {running ? (
+            <div className="row-sub">
+              階段：{job!.status}｜已爬 {job!.pagesCrawled} 頁｜已 embed {job!.embedded} / {job!.chunks}
+            </div>
+          ) : meta.status === 'ready' ? (
+            <div className="row-sub">
+              {meta.chunkCount} 片段｜來源 {meta.source ?? '—'}｜{meta.generatedAt ?? ''}
+            </div>
+          ) : meta.status === 'failed' ? (
+            <div className="row-sub">失敗：{meta.error ?? '未知錯誤'}</div>
+          ) : (
+            <div className="row-sub">尚未建立索引，設定來源後按「開始解析」。</div>
+          )}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">測試查詢</div>
+            <div className="card-desc">輸入問題，檢視索引檢索到的片段（驗證用）。</div>
+          </div>
+        </div>
+        <div className="card-body" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="toolbar">
+            <input
+              className="input"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="例：台北分公司電話"
+            />
+            <button className="btn btn-primary" onClick={test} disabled={!question}>
+              查詢
+            </button>
+          </div>
+        </div>
+        <ul className="list">
+          {hits.map((h, i) => (
+            <li key={i} className="row">
+              <div className="row-main">
+                <div className="row-title">
+                  <span className="badge badge-on">{h.score.toFixed(3)}</span>
+                  <span style={{ fontWeight: 500 }}>{h.title}</span>
+                </div>
+                <div className="row-sub">{h.snippet}</div>
+              </div>
+            </li>
           ))}
-        </select>
-      </label>
-      <label>
-        <input type="checkbox" checked={src.rerank} onChange={(e) => update({ rerank: e.target.checked })} />{' '}
-        啟用 LLM 重排
-      </label>
-
-      <div className="actions">
-        <button onClick={save} disabled={saving || running}>
-          儲存設定
-        </button>
-        <button onClick={ingest} disabled={running || !src.startUrl}>
-          開始解析
-        </button>
-        <button onClick={clear} disabled={running || meta.status === 'none'}>
-          清除索引
-        </button>
+          {hits.length === 0 && <li className="empty">尚無查詢結果。</li>}
+        </ul>
       </div>
-
-      <h3>索引狀態</h3>
-      {running ? (
-        <p>
-          解析中… 階段：{job!.status}，已爬 {job!.pagesCrawled} 頁 / 已 embed {job!.embedded} / {job!.chunks}
-        </p>
-      ) : (
-        <p>
-          狀態：{meta.status}
-          {meta.status === 'ready' &&
-            `（${meta.chunkCount} 片段，來源 ${meta.source ?? ''}，${meta.generatedAt ?? ''}）`}
-          {meta.status === 'failed' && `（失敗：${meta.error ?? ''}）`}
-        </p>
-      )}
-
-      <h3>測試查詢</h3>
-      <div className="actions">
-        <input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="輸入問題，例：台北分公司電話"
-        />
-        <button onClick={test} disabled={!question}>
-          查詢
-        </button>
-      </div>
-      <ul>
-        {hits.map((h, i) => (
-          <li key={i}>
-            <strong>{h.title}</strong>（{h.score.toFixed(3)}）
-            <br />
-            {h.snippet}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
