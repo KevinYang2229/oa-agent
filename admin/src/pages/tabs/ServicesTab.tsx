@@ -126,11 +126,9 @@ export default function ServicesTab({
             ⚠️ 已停用全部服務，此租戶對話將無可用功能。
           </div>
         )}
-        <div className="form-actions">
-          <button className="btn btn-primary" onClick={save} disabled={saving}>
-            儲存
-          </button>
-        </div>
+        <button className="btn btn-primary" onClick={save} disabled={saving}>
+          儲存
+        </button>
       </div>
     </div>
   );
