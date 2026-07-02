@@ -79,6 +79,43 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   return json.data as T;
 }
 
+export interface KnowledgeSource {
+  startUrl: string;
+  maxPages: number;
+  pathPrefix?: string;
+  includePatterns?: string[];
+  excludePatterns?: string[];
+  chunkChars: number;
+  embeddingModel: string;
+  rerank: boolean;
+  updatedAt?: string;
+}
+export interface KnowledgeMeta {
+  status: 'none' | 'ready' | 'failed';
+  chunkCount: number;
+  generatedAt?: string;
+  model?: string;
+  source?: string;
+  error?: string;
+}
+export interface IngestJob {
+  id: string;
+  tenantId: string;
+  status: 'queued' | 'crawling' | 'embedding' | 'done' | 'failed';
+  pagesCrawled: number;
+  chunks: number;
+  embedded: number;
+  startedAt: string;
+  finishedAt?: string;
+  error?: string;
+}
+export interface QueryHit {
+  title: string;
+  url?: string;
+  score: number;
+  snippet: string;
+}
+
 export const api = {
   login: (password: string) => req<{ token: string }>('POST', '/admin/auth/login', { password }),
 
@@ -113,4 +150,21 @@ export const api = {
     req<{ formId: string }>('DELETE', `/admin/tenants/${id}/forms/${formId}`),
   exportForm: (id: string, formId: string) =>
     req<FormExport>('GET', `/admin/tenants/${id}/forms/${formId}/export`),
+
+  // ---- 知識庫 RAG ----
+  getKnowledge: (id: string) =>
+    req<{ source: KnowledgeSource; meta: KnowledgeMeta; runningJob: IngestJob | null }>(
+      'GET',
+      `/admin/tenants/${id}/knowledge`,
+    ),
+  saveKnowledgeSource: (id: string, src: Omit<KnowledgeSource, 'updatedAt'>) =>
+    req<KnowledgeSource>('PUT', `/admin/tenants/${id}/knowledge/source`, src),
+  startKnowledgeIngest: (id: string, body?: Partial<KnowledgeSource>) =>
+    req<{ jobId: string; status: string }>('POST', `/admin/tenants/${id}/knowledge/ingest`, body ?? {}),
+  getKnowledgeJob: (id: string, jobId: string) =>
+    req<IngestJob>('GET', `/admin/tenants/${id}/knowledge/jobs/${jobId}`),
+  knowledgeQueryTest: (id: string, question: string) =>
+    req<{ hits: QueryHit[] }>('POST', `/admin/tenants/${id}/knowledge/query-test`, { question }),
+  deleteKnowledge: (id: string) =>
+    req<{ ok: boolean }>('DELETE', `/admin/tenants/${id}/knowledge`),
 };
