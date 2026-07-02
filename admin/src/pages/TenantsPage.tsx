@@ -113,19 +113,6 @@ export default function TenantsPage() {
             <div className="card-title">所有租戶</div>
             <div className="card-desc">{tenants.length} 個整合方</div>
           </div>
-          {deletable.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="row-sub">
-                <input type="checkbox" checked={allSelected} onChange={toggleAll} />
-                全選
-              </label>
-              {selected.size > 0 && (
-                <button className="btn btn-danger btn-sm" onClick={removeSelected}>
-                  刪除選取（{selected.size}）
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
         {creating && (
@@ -146,6 +133,28 @@ export default function TenantsPage() {
                 取消
               </button>
             </div>
+          </div>
+        )}
+
+        {deletable.length > 0 && (
+          <div
+            className="card-body"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="row-sub">
+              <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+              全選
+            </label>
+            {selected.size > 0 && (
+              <button className="btn btn-danger btn-sm" onClick={removeSelected}>
+                刪除選取（{selected.size}）
+              </button>
+            )}
           </div>
         )}
 
