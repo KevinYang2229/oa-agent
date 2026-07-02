@@ -71,25 +71,25 @@ export default function ServicesTab({
       <ul className="list">
         {cat.services.map((s) => (
           <li key={s.id} className="row" style={{ display: 'block' }}>
-            <div className="row-main">
-              <div className="row-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input type="checkbox" checked={s.enabled} onChange={() => toggleService(s.id)} />
-                  <span style={{ fontWeight: 500 }}>{s.label}</span>
-                </label>
-                {s.id === 'form' && cat.forms.length > 0 && (
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => setFormsOpen((v) => !v)}
-                    aria-expanded={formsOpen}
-                    style={{ height: 24, padding: '0 8px' }}
-                  >
-                    {formsOpen ? '▾ 收合表單' : `▸ 展開表單（${cat.forms.length}）`}
-                  </button>
-                )}
-              </div>
-              <div className="row-sub">{s.id}</div>
+            <div className="row-main" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={s.enabled} onChange={() => toggleService(s.id)} />
+                <div>
+                  <div style={{ fontWeight: 500 }}>{s.label}</div>
+                  <div className="row-sub">{s.id}</div>
+                </div>
+              </label>
+              {s.id === 'form' && cat.forms.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setFormsOpen((v) => !v)}
+                  aria-expanded={formsOpen}
+                  style={{ height: 24, padding: '0 8px' }}
+                >
+                  {formsOpen ? '▾ 收合表單' : `▸ 展開表單（${cat.forms.length}）`}
+                </button>
+              )}
             </div>
 
             {/* 填表申請底下展開個別表單子項目（可收合） */}
