@@ -149,7 +149,8 @@ export default function App() {
   // 嵌入時可由 data-form 預選表單類型（widget → URL ?form=）
   const [selectedFormId, setSelectedFormId] = useState<string | null>(embedConfig.formId);
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
-  const [paneOpen, setPaneOpen] = useState(true);
+  const [paneOpen, setPaneOpen] = useState(false); // 表單明細預設收合
+  const [pickerOpen, setPickerOpen] = useState(true); // 「要辦理什麼？」可收合，預設展開
   // 主題優先序：data-theme（宿主明確）> 嵌入時略過本地記憶（避免與第一方 App 共用 localStorage 互相干擾，
   // 改由租戶 theme/預設決定）> 第一方 App 才讀本地記憶 > 預設淺色。後端 theme 於下方 effect 補上。
   const [theme, setTheme] = useState<Theme>(
@@ -694,19 +695,34 @@ export default function App() {
           {/* 表單類型選單：對話開始前常駐顯示，選中高亮；切換項目一鍵即可 */}
           {!convId && !busy && forms.length > 1 && (
             <div className="form-picker">
-              <span className="form-picker-hint">{t('app.formPickerHint')}</span>
-              {forms.map((f) => (
-                <button
-                  key={f.formId}
-                  type="button"
-                  className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
-                  onClick={() => setSelectedFormId(f.formId)}
-                  title={f.description}
-                  aria-pressed={selectedFormId === f.formId}
+              <button
+                type="button"
+                className="form-picker-hint flex w-full items-center justify-between gap-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                onClick={() => setPickerOpen((o) => !o)}
+                aria-expanded={pickerOpen}
+              >
+                <span>{t('app.formPickerHint')}</span>
+                <span
+                  aria-hidden
+                  className="inline-block transition-transform duration-200"
+                  style={{ transform: pickerOpen ? 'rotate(90deg)' : 'none', fontSize: 9 }}
                 >
-                  {f.title}
-                </button>
-              ))}
+                  ▶
+                </span>
+              </button>
+              {pickerOpen &&
+                forms.map((f) => (
+                  <button
+                    key={f.formId}
+                    type="button"
+                    className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
+                    onClick={() => setSelectedFormId(f.formId)}
+                    title={f.description}
+                    aria-pressed={selectedFormId === f.formId}
+                  >
+                    {f.title}
+                  </button>
+                ))}
             </div>
           )}
 
