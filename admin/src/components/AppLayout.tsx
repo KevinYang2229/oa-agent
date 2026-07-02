@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { applyTheme, getTheme, type Theme } from '../theme';
 import { IconLogout, IconTenants } from './icons';
 
 /**
@@ -23,6 +24,13 @@ export default function AppLayout({
   const loc = useLocation();
   const onTenants = loc.pathname === '/' || loc.pathname.startsWith('/tenants');
   const [navOpen, setNavOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getTheme());
+
+  const toggleTheme = () => {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    setTheme(next);
+  };
 
   const go = (path: string) => {
     navigate(path);
@@ -57,6 +65,11 @@ export default function AppLayout({
             租戶
           </div>
         </nav>
+
+        <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label="切換深淺色">
+          <span aria-hidden>{theme === 'dark' ? '☀' : '☾'}</span>
+          {theme === 'dark' ? '淺色模式' : '深色模式'}
+        </button>
 
         <div className="sidebar-foot">
           OA Agent 多租戶控制台
