@@ -9,10 +9,9 @@
 import { env } from '@/config/env';
 import { getLLMProvider } from '@/lib/llm';
 import { logger } from '@/lib/logger';
-import { listDefinitions } from '@/modules/form/form.registry';
 import type { RouteResult } from './agent-service.types';
 import type { Session } from './conversation.types';
-import { isSubmitConfirmation } from './form.agent-service';
+import { isSubmitConfirmation, listEnabledForms } from './form.agent-service';
 import { serviceRegistry } from './service.registry';
 
 // 未指定 formId 且無法路由時的預設表單（沿用原 routeIntent 行為）
@@ -30,13 +29,14 @@ const CLASSIFY_THRESHOLD = 0.6;
  * 以各表單 agent.keywords 命中數挑最高分表單；無命中或無訊息則回預設請假單。
  */
 export function pickFormId(tenantId: string, message?: string): string {
+  const forms = listEnabledForms(tenantId);
+  if (forms.length === 0) return DEFAULT_FORM_ID; // 全停用：退回預設（form 服務退化但不崩）
   const text = message?.trim();
-  if (!text) return DEFAULT_FORM_ID;
-  let best = DEFAULT_FORM_ID;
+  let best = forms.some((f) => f.formId === DEFAULT_FORM_ID) ? DEFAULT_FORM_ID : forms[0].formId;
   let bestScore = 0;
-  for (const def of listDefinitions(tenantId)) {
+  for (const def of forms) {
     const score = (def.agent.keywords ?? []).reduce(
-      (n, kw) => (kw && text.includes(kw) ? n + 1 : n),
+      (n, kw) => (kw && text?.includes(kw) ? n + 1 : n),
       0,
     );
     if (score > bestScore) {

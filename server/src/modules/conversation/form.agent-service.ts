@@ -30,6 +30,12 @@ export function isSubmitConfirmation(text: string): boolean {
   return SUBMIT_CONFIRMATION_RE.test(normalized);
 }
 
+/** 該租戶啟用中的表單（濾掉 tenant.disabledForms） */
+export function listEnabledForms(tenantId: string): Definition[] {
+  const disabled = new Set(tenantStore.getTenant(tenantId)?.disabledForms ?? []);
+  return listDefinitions(tenantId).filter((d) => !disabled.has(d.formId));
+}
+
 function describeFields(def: Definition): string {
   const order = def.agent.askOrder ?? Object.keys(def.data.properties);
   return order
@@ -90,7 +96,7 @@ function buildSystemPrompt(tenantId: string, def: Definition): string {
   // 全系統可申請的表單清單：讓助理在被問到「有哪些表單可以申請」時能完整回答，
   // 而非只知道自己這場對話的表單。
   const currentTitle = def.data.title ?? def.agent.description;
-  const allForms = listDefinitions(tenantId)
+  const allForms = listEnabledForms(tenantId)
     .map((d) => `- ${d.data.title ?? d.agent.intent}：${d.agent.description}`)
     .join('\n');
 
@@ -225,7 +231,7 @@ export const formAgentService: AgentService = {
   sticky: true,
 
   intents(session: Session): IntentDescriptor[] {
-    return listDefinitions(session.tenantId).map((d) => ({
+    return listEnabledForms(session.tenantId).map((d) => ({
       id: `${d.formId}.apply`,
       keywords: d.agent.keywords ?? [],
       description: `填寫並送出「${d.data.title ?? d.agent.description}」表單`,
