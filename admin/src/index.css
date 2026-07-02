@@ -579,6 +579,19 @@ a {
   border-radius: 9px;
   background: var(--surface);
   cursor: pointer;
+  overflow: hidden;
+}
+/* 讓所選顏色塗滿整個框內（去掉原生 color input 的內距與 swatch 邊框） */
+.color-field input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-field input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+.color-field input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 8px;
 }
 .color-hex {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
