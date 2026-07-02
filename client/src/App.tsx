@@ -714,8 +714,12 @@ export default function App() {
                     strokeWidth={2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="transition-transform duration-200"
-                    style={{ transform: pickerOpen ? 'rotate(-90deg)' : 'rotate(90deg)' }}
+                    className="shrink-0"
+                    style={{
+                      transform: pickerOpen ? 'rotate(-90deg)' : 'rotate(90deg)',
+                      transition: 'transform 0.2s ease',
+                      transformOrigin: 'center',
+                    }}
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
