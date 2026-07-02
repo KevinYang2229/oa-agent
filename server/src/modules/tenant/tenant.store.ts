@@ -153,4 +153,18 @@ export const tenantStore = {
     persist();
     return next;
   },
+
+  /**
+   * 刪除租戶並連帶移除其所有 API 金鑰。預設租戶（向後相容）不可刪。
+   * 回傳是否成功刪除（不存在或為預設租戶時回 false）。
+   */
+  deleteTenant(id: string): boolean {
+    if (id === DEFAULT_TENANT_ID || !tenants.has(id)) return false;
+    tenants.delete(id);
+    for (const [key, k] of apiKeys) {
+      if (k.tenantId === id) apiKeys.delete(key);
+    }
+    persist();
+    return true;
+  },
 };

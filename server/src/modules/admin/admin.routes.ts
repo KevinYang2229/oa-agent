@@ -40,6 +40,12 @@ router.patch(
   asyncHandler(adminController.updateTenant),
 );
 
+router.delete(
+  '/tenants/:id',
+  validate({ params: tenantParamSchema }),
+  asyncHandler(adminController.deleteTenant),
+);
+
 router.post(
   '/tenants/:id/keys',
   validate({ params: tenantParamSchema, body: createKeySchema }),

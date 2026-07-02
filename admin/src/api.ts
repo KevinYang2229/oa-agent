@@ -134,6 +134,7 @@ export const api = {
       Pick<Tenant, 'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance' | 'disabledServices' | 'disabledForms'>
     >,
   ) => req<Tenant>('PATCH', `/admin/tenants/${id}`, patch),
+  deleteTenant: (id: string) => req<{ id: string }>('DELETE', `/admin/tenants/${id}`),
   getTenantServices: (id: string) =>
     req<TenantServiceCatalog>('GET', `/admin/tenants/${id}/services`),
 

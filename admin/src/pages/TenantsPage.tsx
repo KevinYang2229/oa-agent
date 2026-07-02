@@ -52,6 +52,17 @@ export default function TenantsPage() {
     }
   }
 
+  async function remove(t: Tenant, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!window.confirm(`確定刪除租戶「${t.name}」？其 API 金鑰會一併移除，此動作無法復原。`)) return;
+    try {
+      await api.deleteTenant(t.id);
+      await load();
+    } catch (err) {
+      handleErr(err);
+    }
+  }
+
   return (
     <AppLayout
       crumb="營運"
@@ -118,6 +129,13 @@ export default function TenantsPage() {
               <div className="row-main">
                 <div className="row-title">{t.name}</div>
                 <div className="row-sub">{t.id}</div>
+              </div>
+              <div className="row-actions" onClick={(e) => e.stopPropagation()}>
+                {t.id !== 'default' && (
+                  <button className="btn btn-danger btn-sm" onClick={(e) => remove(t, e)}>
+                    刪除
+                  </button>
+                )}
               </div>
               <IconChevron className="chev" />
             </li>

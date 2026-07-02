@@ -41,6 +41,14 @@ export const adminController = {
     res.status(200).json({ data: updated });
   },
 
+  async deleteTenant(req: Request, res: Response): Promise<void> {
+    const id = String(req.params.id);
+    ensureTenant(id);
+    // 不存在已由 ensureTenant 擋下；deleteTenant 回 false 僅剩「預設租戶」情形
+    if (!tenantStore.deleteTenant(id)) throw AppError.unprocessable('預設租戶不可刪除');
+    res.status(200).json({ data: { id } });
+  },
+
   async createKey(req: Request, res: Response): Promise<void> {
     const tenant = ensureTenant(String(req.params.id));
     const { type } = req.body as CreateKeyInput;
