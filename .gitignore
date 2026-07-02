@@ -23,3 +23,4 @@ prisma/migrations/dev.db*
 # 知識庫 RAG 產物（generated / 本地評測集）
 server/data/knowledge-index.*.json
 server/data/knowledge-eval.json
+server/data/knowledge-config.json
