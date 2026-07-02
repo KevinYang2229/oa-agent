@@ -14,6 +14,7 @@ export default function TenantsPage() {
   const [busy, setBusy] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   function handleErr(e: unknown) {
     if (e instanceof UnauthorizedError) {
@@ -52,11 +53,28 @@ export default function TenantsPage() {
     }
   }
 
-  async function remove(t: Tenant, e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!window.confirm(`確定刪除租戶「${t.name}」？其 API 金鑰會一併移除，此動作無法復原。`)) return;
+  // 可刪除的租戶（排除向後相容的預設租戶）
+  const deletable = tenants.filter((t) => t.id !== 'default');
+  const allSelected = deletable.length > 0 && deletable.every((t) => selected.has(t.id));
+
+  function toggle(id: string) {
+    setSelected((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(deletable.map((t) => t.id)));
+  }
+
+  async function removeSelected() {
+    if (selected.size === 0) return;
+    if (!window.confirm(`確定刪除選取的 ${selected.size} 個租戶？其 API 金鑰會一併移除，此動作無法復原。`)) return;
     try {
-      await api.deleteTenant(t.id);
+      await Promise.all([...selected].map((id) => api.deleteTenant(id)));
+      setSelected(new Set());
       await load();
     } catch (err) {
       handleErr(err);
@@ -95,6 +113,19 @@ export default function TenantsPage() {
             <div className="card-title">所有租戶</div>
             <div className="card-desc">{tenants.length} 個整合方</div>
           </div>
+          {deletable.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="row-sub">
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+                全選
+              </label>
+              {selected.size > 0 && (
+                <button className="btn btn-danger btn-sm" onClick={removeSelected}>
+                  刪除選取（{selected.size}）
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {creating && (
@@ -126,16 +157,19 @@ export default function TenantsPage() {
               onClick={() => navigate(`/tenants/${t.id}`)}
               style={{ cursor: 'pointer' }}
             >
+              <div className="row-actions" onClick={(e) => e.stopPropagation()}>
+                {t.id !== 'default' && (
+                  <input
+                    type="checkbox"
+                    checked={selected.has(t.id)}
+                    onChange={() => toggle(t.id)}
+                    aria-label={`選取 ${t.name}`}
+                  />
+                )}
+              </div>
               <div className="row-main">
                 <div className="row-title">{t.name}</div>
                 <div className="row-sub">{t.id}</div>
-              </div>
-              <div className="row-actions" onClick={(e) => e.stopPropagation()}>
-                {t.id !== 'default' && (
-                  <button className="btn btn-danger btn-sm" onClick={(e) => remove(t, e)}>
-                    刪除
-                  </button>
-                )}
               </div>
               <IconChevron className="chev" />
             </li>
