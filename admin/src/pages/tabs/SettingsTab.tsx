@@ -43,7 +43,7 @@ export default function SettingsTab({
   }
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div className="card">
         <div className="card-head">
           <div>
@@ -132,6 +132,6 @@ export default function SettingsTab({
           <div className="empty">尚未在本次工作階段產生金鑰。</div>
         )}
       </div>
-    </>
+    </div>
   );
 }
