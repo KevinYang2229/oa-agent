@@ -129,7 +129,12 @@ export const tenantStore = {
   /** 部分更新租戶（admin 後台用）；回 undefined 代表查無此租戶 */
   updateTenant(
     id: string,
-    patch: Partial<Pick<Tenant, 'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance'>>,
+    patch: Partial<
+      Pick<
+        Tenant,
+        'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance' | 'disabledServices' | 'disabledForms'
+      >
+    >,
   ): Tenant | undefined {
     const tenant = tenants.get(id);
     if (!tenant) return undefined;
@@ -141,6 +146,8 @@ export const tenantStore = {
       ...(patch.appearance !== undefined
         ? { appearance: { ...tenant.appearance, ...patch.appearance } }
         : {}),
+      ...(patch.disabledServices !== undefined ? { disabledServices: patch.disabledServices } : {}),
+      ...(patch.disabledForms !== undefined ? { disabledForms: patch.disabledForms } : {}),
     };
     tenants.set(id, next);
     persist();
