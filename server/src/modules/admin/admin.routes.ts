@@ -7,6 +7,8 @@ import {
   definitionBodySchema,
   tenantFormParamSchema,
 } from '@/modules/form/form.admin.schema';
+import { knowledgeAdminController } from '@/modules/knowledge/knowledge.admin.controller';
+import { ingestSchema, queryTestSchema, sourceSchema } from '@/modules/knowledge/knowledge.admin.schema';
 import { adminController } from './admin.controller';
 import { adminAuthController } from './admin.auth.controller';
 import {
@@ -100,6 +102,38 @@ router.get(
   '/tenants/:id/forms/:formId/export',
   validate({ params: tenantFormParamSchema }),
   asyncHandler(formAdminController.export),
+);
+
+// ---- 知識庫 RAG：每租戶來源設定 / 觸發解析 / 進度 / 測試查詢 / 清除 ----
+router.get(
+  '/tenants/:id/knowledge',
+  validate({ params: tenantParamSchema }),
+  asyncHandler(knowledgeAdminController.get),
+);
+router.put(
+  '/tenants/:id/knowledge/source',
+  validate({ params: tenantParamSchema, body: sourceSchema }),
+  asyncHandler(knowledgeAdminController.saveSource),
+);
+router.post(
+  '/tenants/:id/knowledge/ingest',
+  validate({ params: tenantParamSchema, body: ingestSchema }),
+  asyncHandler(knowledgeAdminController.ingest),
+);
+router.get(
+  '/tenants/:id/knowledge/jobs/:jobId',
+  validate({ params: tenantParamSchema }),
+  asyncHandler(knowledgeAdminController.job),
+);
+router.post(
+  '/tenants/:id/knowledge/query-test',
+  validate({ params: tenantParamSchema, body: queryTestSchema }),
+  asyncHandler(knowledgeAdminController.queryTest),
+);
+router.delete(
+  '/tenants/:id/knowledge',
+  validate({ params: tenantParamSchema }),
+  asyncHandler(knowledgeAdminController.remove),
 );
 
 export const adminRouter = router;
