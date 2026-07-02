@@ -607,6 +607,8 @@ a {
 /* ---- 分頁（segmented） ---- */
 .tabs {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   gap: 3px;
   padding: 4px;
   background: var(--surface-2);
@@ -997,4 +999,17 @@ a {
   border-radius: var(--radius);
   background: var(--surface-2);
   display: block;
+}
+
+/* 分頁 RWD：小螢幕改為可換行、平均填滿寬度，避免多個分頁溢出 */
+@media (max-width: 640px) {
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .tab {
+    flex: 1 0 auto;
+    text-align: center;
+  }
 }
