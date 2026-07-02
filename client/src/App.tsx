@@ -695,29 +695,32 @@ export default function App() {
           {/* 表單類型選單：對話開始前常駐顯示，選中高亮；切換項目一鍵即可 */}
           {!convId && !busy && forms.length > 1 && (
             <div className="form-picker">
-              <button
-                type="button"
-                className="form-picker-hint flex w-full items-center justify-between gap-1 cursor-pointer border-0 bg-transparent p-0 text-left"
-                onClick={() => setPickerOpen((o) => !o)}
-                aria-expanded={pickerOpen}
-              >
+              <div className="form-picker-hint flex w-full items-center justify-between">
                 <span>{t('app.formPickerHint')}</span>
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="shrink-0 transition-transform duration-200"
-                  style={{ transform: pickerOpen ? 'rotate(90deg)' : 'none' }}
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen((o) => !o)}
+                  aria-expanded={pickerOpen}
+                  aria-label={t('app.formPickerHint')}
+                  className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-(--text-secondary) transition-colors hover:bg-(--nav-hover) hover:text-(--text-primary)"
                 >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="transition-transform duration-200"
+                    style={{ transform: pickerOpen ? 'rotate(-90deg)' : 'rotate(90deg)' }}
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
               {pickerOpen &&
                 forms.map((f) => (
                   <button
