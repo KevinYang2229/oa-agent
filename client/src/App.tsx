@@ -745,12 +745,12 @@ export default function App() {
                         {f.title}
                       </button>
                     ))}
-                  {/* 知識庫推薦用詞：點擊直接以該問句發問（路由到知識庫服務） */}
-                  {knowledgePrompts.map((p) => (
+                  {/* 知識庫推薦用詞：只顯示一個，樣式與表單 chip 一致；點擊直接以該問句發問 */}
+                  {knowledgePrompts.slice(0, 1).map((p) => (
                     <button
                       key={p}
                       type="button"
-                      className="quick-chip"
+                      className="form-chip"
                       onClick={() => sendQuick(p)}
                       title={p}
                     >
