@@ -4,6 +4,8 @@
  */
 import request from 'supertest';
 import { createApp } from '@/app';
+import { startIngestJob } from '@/modules/knowledge/knowledge.job';
+import type { KnowledgeIndexFile } from '@/modules/knowledge/knowledge-index.types';
 
 const app = createApp();
 const auth = { 'x-admin-key': 'test-admin-key' };
@@ -38,5 +40,22 @@ describe('admin knowledge API', () => {
   it('未帶 admin key → 401/403', async () => {
     const res = await request(app).get('/api/v1/admin/tenants/default/knowledge');
     expect([401, 403]).toContain(res.status);
+  });
+
+  it('GET job 回傳既有 job（:jobId 不被 param 驗證剝除）', async () => {
+    const idx: KnowledgeIndexFile = { generatedAt: 't', model: 'm', source: 's', chunks: [] };
+    const fakeRun = async () => {
+      await new Promise((r) => setTimeout(r, 80));
+      return idx;
+    };
+    const job = startIngestJob(
+      { tenantId: 'job-route-tenant', startUrl: 'https://x.com', maxPages: 1, chunkChars: 800, embeddingModel: 'm' },
+      fakeRun as never,
+    );
+    const res = await request(app)
+      .get(`/api/v1/admin/tenants/job-route-tenant/knowledge/jobs/${job.id}`)
+      .set(auth)
+      .expect(200);
+    expect(res.body.data.id).toBe(job.id);
   });
 });

@@ -18,3 +18,9 @@ export const ingestSchema = sourceSchema.partial();
 
 /** 測試查詢（POST /knowledge/query-test 的 body） */
 export const queryTestSchema = z.object({ question: z.string().min(1) });
+
+/** job 進度查詢的 path 參數：需保留 :jobId（z.object 預設會剝除未列出的 key） */
+export const jobParamSchema = z.object({
+  id: z.string().min(1),
+  jobId: z.string().min(1),
+});

@@ -8,7 +8,7 @@ import {
   tenantFormParamSchema,
 } from '@/modules/form/form.admin.schema';
 import { knowledgeAdminController } from '@/modules/knowledge/knowledge.admin.controller';
-import { ingestSchema, queryTestSchema, sourceSchema } from '@/modules/knowledge/knowledge.admin.schema';
+import { ingestSchema, jobParamSchema, queryTestSchema, sourceSchema } from '@/modules/knowledge/knowledge.admin.schema';
 import { adminController } from './admin.controller';
 import { adminAuthController } from './admin.auth.controller';
 import {
@@ -122,7 +122,7 @@ router.post(
 );
 router.get(
   '/tenants/:id/knowledge/jobs/:jobId',
-  validate({ params: tenantParamSchema }),
+  validate({ params: jobParamSchema }),
   asyncHandler(knowledgeAdminController.job),
 );
 router.post(
