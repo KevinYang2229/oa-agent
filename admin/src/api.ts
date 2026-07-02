@@ -33,7 +33,13 @@ export interface Tenant {
   allowedOrigins: string[];
   ssoSecret?: string;
   appearance?: TenantAppearance;
+  disabledServices?: string[];
+  disabledForms?: string[];
   createdAt: string;
+}
+export interface TenantServiceCatalog {
+  services: { id: string; label: string; enabled: boolean }[];
+  forms: { formId: string; title: string; enabled: boolean }[];
 }
 export interface ApiKey {
   key: string;
@@ -122,8 +128,14 @@ export const api = {
   listTenants: () => req<Tenant[]>('GET', '/admin/tenants'),
   createTenant: (input: { name: string; allowedOrigins?: string[]; ssoSecret?: string }) =>
     req<{ tenant: Tenant; publishableKey: string }>('POST', '/admin/tenants', input),
-  updateTenant: (id: string, patch: Partial<Pick<Tenant, 'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance'>>) =>
-    req<Tenant>('PATCH', `/admin/tenants/${id}`, patch),
+  updateTenant: (
+    id: string,
+    patch: Partial<
+      Pick<Tenant, 'name' | 'allowedOrigins' | 'ssoSecret' | 'appearance' | 'disabledServices' | 'disabledForms'>
+    >,
+  ) => req<Tenant>('PATCH', `/admin/tenants/${id}`, patch),
+  getTenantServices: (id: string) =>
+    req<TenantServiceCatalog>('GET', `/admin/tenants/${id}/services`),
 
   createKey: (id: string, type: 'publishable' | 'secret') =>
     req<ApiKey>('POST', `/admin/tenants/${id}/keys`, { type }),
