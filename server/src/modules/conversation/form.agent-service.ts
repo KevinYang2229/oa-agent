@@ -221,6 +221,7 @@ async function dispatchFormTool(
 
 export const formAgentService: AgentService = {
   id: 'form',
+  label: '填表申請',
   sticky: true,
 
   intents(session: Session): IntentDescriptor[] {

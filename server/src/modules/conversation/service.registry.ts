@@ -5,6 +5,7 @@
  * 新增服務（未來 Workflow）只要實作 AgentService 並在此 register 即可。
  */
 import { knowledgeAgentService } from '@/modules/knowledge/knowledge.agent-service';
+import { tenantStore } from '@/modules/tenant/tenant.store';
 import type { AgentService } from './agent-service.types';
 import { formAgentService } from './form.agent-service';
 
@@ -28,5 +29,10 @@ export const serviceRegistry = {
   },
   all(): AgentService[] {
     return [...registry.values()];
+  },
+  /** 該租戶啟用中的服務（濾掉 disabledServices） */
+  enabledFor(tenantId: string): AgentService[] {
+    const disabled = new Set(tenantStore.getTenant(tenantId)?.disabledServices ?? []);
+    return [...registry.values()].filter((s) => !disabled.has(s.id));
   },
 };

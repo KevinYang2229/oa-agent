@@ -24,6 +24,8 @@ export interface AgentTurnResult {
 
 export interface AgentService {
   readonly id: string;
+  /** 顯示名稱（admin 服務開關 UI 用） */
+  readonly label: string;
   /**
    * 是否為「點黏」擁有者：進入後續留（form=true），確保填表流程不被沖掉；
    * 旁路服務為 false（knowledge），回答後不奪走目前流程。

@@ -58,6 +58,7 @@ function fallbackReply(chunks: KnowledgeChunk[]): string {
 
 export const knowledgeAgentService: AgentService = {
   id: 'knowledge',
+  label: '知識庫問答',
   sticky: false,
 
   intents(): IntentDescriptor[] {
