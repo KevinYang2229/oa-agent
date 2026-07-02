@@ -60,74 +60,77 @@ export default function ServicesTab({
   const noForm = cat.forms.length > 0 && cat.forms.every((f) => !f.enabled);
 
   return (
-    <div className="appearance-grid">
-      <div className="card">
-        <div className="card-head">
-          <div>
-            <div className="card-title">Agent 服務</div>
-            <div className="card-desc">取消勾選即停用該類服務；「填表申請」可再展開控制個別表單。預設全開。</div>
-          </div>
+    <div className="card">
+      <div className="card-head">
+        <div>
+          <div className="card-title">Agent 服務</div>
+          <div className="card-desc">取消勾選即停用該類服務；「填表申請」可再展開控制個別表單。預設全開。</div>
         </div>
-        <ul className="list">
-          {cat.services.map((s) => (
-            <li key={s.id} className="row" style={{ display: 'block' }}>
-              <div className="row-main">
-                <div className="row-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={s.enabled} onChange={() => toggleService(s.id)} />
-                    <span style={{ fontWeight: 500 }}>{s.label}</span>
-                  </label>
-                  {s.id === 'form' && cat.forms.length > 0 && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setFormsOpen((v) => !v)}
-                      aria-expanded={formsOpen}
-                      style={{ height: 24, padding: '0 8px' }}
-                    >
-                      {formsOpen ? '▾ 收合表單' : `▸ 展開表單（${cat.forms.length}）`}
-                    </button>
-                  )}
-                </div>
-                <div className="row-sub">{s.id}</div>
-              </div>
-
-              {/* 填表申請底下展開個別表單子項目（可收合） */}
-              {s.id === 'form' && formsOpen && (
-                <div style={{ marginLeft: 26, marginTop: 8, opacity: formEnabled ? 1 : 0.5 }}>
-                  {cat.forms.map((f) => (
-                    <label
-                      key={f.formId}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={f.enabled}
-                        disabled={!formEnabled}
-                        onChange={() => toggleForm(f.formId)}
-                      />
-                      <span>{f.title}</span>
-                      <span className="row-sub" style={{ marginLeft: 4 }}>
-                        {f.formId}
-                      </span>
-                    </label>
-                  ))}
-                  {cat.forms.length === 0 && <div className="row-sub">尚無表單。</div>}
-                  {noForm && (
-                    <div className="row-sub">⚠️ 已停用全部表單，填表功能將無法選到表單。</div>
-                  )}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-        {noService && <div className="card-body row-sub">⚠️ 已停用全部服務，此租戶對話將無可用功能。</div>}
       </div>
 
-      <div className="form-actions">
-        <button className="btn btn-primary" onClick={save} disabled={saving}>
-          儲存
-        </button>
+      <ul className="list">
+        {cat.services.map((s) => (
+          <li key={s.id} className="row" style={{ display: 'block' }}>
+            <div className="row-main">
+              <div className="row-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="checkbox" checked={s.enabled} onChange={() => toggleService(s.id)} />
+                  <span style={{ fontWeight: 500 }}>{s.label}</span>
+                </label>
+                {s.id === 'form' && cat.forms.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setFormsOpen((v) => !v)}
+                    aria-expanded={formsOpen}
+                    style={{ height: 24, padding: '0 8px' }}
+                  >
+                    {formsOpen ? '▾ 收合表單' : `▸ 展開表單（${cat.forms.length}）`}
+                  </button>
+                )}
+              </div>
+              <div className="row-sub">{s.id}</div>
+            </div>
+
+            {/* 填表申請底下展開個別表單子項目（可收合） */}
+            {s.id === 'form' && formsOpen && (
+              <div style={{ marginLeft: 26, marginTop: 8, opacity: formEnabled ? 1 : 0.5 }}>
+                {cat.forms.map((f) => (
+                  <label
+                    key={f.formId}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={f.enabled}
+                      disabled={!formEnabled}
+                      onChange={() => toggleForm(f.formId)}
+                    />
+                    <span>{f.title}</span>
+                    <span className="row-sub" style={{ marginLeft: 4 }}>
+                      {f.formId}
+                    </span>
+                  </label>
+                ))}
+                {cat.forms.length === 0 && <div className="row-sub">尚無表單。</div>}
+                {noForm && <div className="row-sub">⚠️ 已停用全部表單，填表功能將無法選到表單。</div>}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <div className="card-body">
+        {noService && (
+          <div className="row-sub" style={{ marginBottom: 12 }}>
+            ⚠️ 已停用全部服務，此租戶對話將無可用功能。
+          </div>
+        )}
+        <div className="form-actions">
+          <button className="btn btn-primary" onClick={save} disabled={saving}>
+            儲存
+          </button>
+        </div>
       </div>
     </div>
   );
