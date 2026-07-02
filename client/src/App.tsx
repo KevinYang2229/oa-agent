@@ -702,13 +702,21 @@ export default function App() {
                 aria-expanded={pickerOpen}
               >
                 <span>{t('app.formPickerHint')}</span>
-                <span
-                  aria-hidden
-                  className="inline-block transition-transform duration-200"
-                  style={{ transform: pickerOpen ? 'rotate(90deg)' : 'none', fontSize: 9 }}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 transition-transform duration-200"
+                  style={{ transform: pickerOpen ? 'rotate(90deg)' : 'none' }}
                 >
-                  ▶
-                </span>
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </button>
               {pickerOpen &&
                 forms.map((f) => (
