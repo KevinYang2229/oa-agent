@@ -13,6 +13,8 @@ const DEFAULT_APPEARANCE: Required<Pick<TenantAppearance, 'theme' | 'position'>>
 export const widgetController = {
   async getConfig(req: Request, res: Response): Promise<void> {
     const appearance: TenantAppearance = { ...DEFAULT_APPEARANCE, ...(req.tenant?.appearance ?? {}) };
-    res.status(200).json({ data: { appearance } });
+    // 知識庫服務是否對此租戶啟用（供 widget 決定要不要顯示知識庫推薦用詞）
+    const knowledgeEnabled = !(req.tenant?.disabledServices ?? []).includes('knowledge');
+    res.status(200).json({ data: { appearance, knowledgeEnabled } });
   },
 };

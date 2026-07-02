@@ -71,6 +71,7 @@ const zhHant = {
     expandPane: "展開面板",
     paneLabel: "表單明細",
     formPickerHint: "要辦理什麼？",
+    knowledgePrompts: ["公司有哪些產品或服務？", "聯絡電話與地址在哪？", "相關規定與常見問題"],
     quickHint: "不知道怎麼開始？試試：",
     quickPrompts: [
       "我下週一到週二請特休，家裡有事",
@@ -218,6 +219,7 @@ const en = {
     expandPane: "Expand panel",
     paneLabel: "Details",
     formPickerHint: "What would you like to do?",
+    knowledgePrompts: ["What products or services do you offer?", "Contact phone & address", "Policies & FAQ"],
     quickHint: "Not sure where to start? Try:",
     quickPrompts: [
       "I'll take annual leave next Mon–Tue for family matters",

@@ -49,15 +49,26 @@ const API_ORIGIN = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/, '');
  * 讀後端外觀（依 apiKey 對應租戶）。失敗或未帶 key 回 {}。
  * 與 data-* 合併由呼叫端處理：data-* 優先。
  */
-export async function fetchAppearance(): Promise<TenantAppearance> {
-  if (!embedConfig.apiKey) return {};
+export interface WidgetConfig {
+  appearance: TenantAppearance;
+  /** 知識庫服務是否啟用（決定要不要顯示知識庫推薦用詞）；無 key/失敗時預設 true */
+  knowledgeEnabled: boolean;
+}
+
+export async function fetchAppearance(): Promise<WidgetConfig> {
+  if (!embedConfig.apiKey) return { appearance: {}, knowledgeEnabled: true };
   try {
     const url = `${API_ORIGIN}/api/v1/widget/config?key=${encodeURIComponent(embedConfig.apiKey)}`;
     const res = await fetch(url);
-    if (!res.ok) return {};
-    const json = (await res.json()) as { data?: { appearance?: TenantAppearance } };
-    return json.data?.appearance ?? {};
+    if (!res.ok) return { appearance: {}, knowledgeEnabled: true };
+    const json = (await res.json()) as {
+      data?: { appearance?: TenantAppearance; knowledgeEnabled?: boolean };
+    };
+    return {
+      appearance: json.data?.appearance ?? {},
+      knowledgeEnabled: json.data?.knowledgeEnabled ?? true,
+    };
   } catch {
-    return {};
+    return { appearance: {}, knowledgeEnabled: true };
   }
 }

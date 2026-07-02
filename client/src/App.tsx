@@ -151,6 +151,7 @@ export default function App() {
   // 側欄（已填欄位／送出結果）收合：桌機向右收、手機向上收（CSS 依斷點處理方向）
   const [paneOpen, setPaneOpen] = useState(false); // 表單明細預設收合
   const [pickerOpen, setPickerOpen] = useState(true); // 「要辦理什麼？」可收合，預設展開
+  const [knowledgeEnabled, setKnowledgeEnabled] = useState(true); // 知識庫服務是否啟用（依租戶）
   // 主題優先序：data-theme（宿主明確）> 嵌入時略過本地記憶（避免與第一方 App 共用 localStorage 互相干擾，
   // 改由租戶 theme/預設決定）> 第一方 App 才讀本地記憶 > 預設淺色。後端 theme 於下方 effect 補上。
   const [theme, setTheme] = useState<Theme>(
@@ -188,8 +189,9 @@ export default function App() {
   // 共通原則：使用者／宿主的明確選擇（URL data-* 或本地記憶）優先，租戶設定只作後備預設。
   useEffect(() => {
     let cancelled = false;
-    void fetchAppearance().then((a) => {
+    void fetchAppearance().then(({ appearance: a, knowledgeEnabled: ke }) => {
       if (cancelled) return;
+      setKnowledgeEnabled(ke);
       // 主色：寫 --primary-color / --primary-color-rgb（applyPrimaryColor 處理 hex→rgb）
       if (a.primaryColor) applyPrimaryColor(a.primaryColor);
       // AI 名稱：後端名稱僅在沒有 data-* 覆寫（後台預覽）時採用，不蓋掉宿主明確指定
@@ -492,6 +494,9 @@ export default function App() {
   // 開場引導用的範例提示：取目前選取表單的範例語句（純動態，依辦理項目而定）；對話開始後就不再顯示
   const selectedForm = forms.find((f) => f.formId === selectedFormId);
   const quickPrompts = selectedForm?.examples ?? [];
+  // 知識庫推薦用詞：僅在知識庫服務啟用時顯示（i18n 陣列）
+  const kbPromptsRaw = t('app.knowledgePrompts', { returnObjects: true });
+  const knowledgePrompts = knowledgeEnabled && Array.isArray(kbPromptsRaw) ? (kbPromptsRaw as string[]) : [];
 
   // 建議回覆：只取「最新一則 agent 訊息」附帶的建議，作為可一鍵送出的快捷按鈕
   const lastMsg = messages[messages.length - 1];
@@ -692,8 +697,8 @@ export default function App() {
             )}
           </div>
 
-          {/* 表單類型選單：對話開始前常駐顯示，選中高亮；切換項目一鍵即可 */}
-          {!convId && !busy && forms.length > 1 && (
+          {/* 辦理項目選單：表單（選擇）+ 知識庫推薦用詞（直接詢問）；對話開始前顯示 */}
+          {!convId && !busy && (forms.length > 1 || knowledgePrompts.length > 0) && (
             <div className="form-picker">
               <div className="form-picker-hint flex w-full items-center justify-between">
                 <span>{t('app.formPickerHint')}</span>
@@ -725,19 +730,35 @@ export default function App() {
                   </svg>
                 </button>
               </div>
-              {pickerOpen &&
-                forms.map((f) => (
-                  <button
-                    key={f.formId}
-                    type="button"
-                    className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
-                    onClick={() => setSelectedFormId(f.formId)}
-                    title={f.description}
-                    aria-pressed={selectedFormId === f.formId}
-                  >
-                    {f.title}
-                  </button>
-                ))}
+              {pickerOpen && (
+                <>
+                  {forms.length > 1 &&
+                    forms.map((f) => (
+                      <button
+                        key={f.formId}
+                        type="button"
+                        className={`form-chip${selectedFormId === f.formId ? ' active' : ''}`}
+                        onClick={() => setSelectedFormId(f.formId)}
+                        title={f.description}
+                        aria-pressed={selectedFormId === f.formId}
+                      >
+                        {f.title}
+                      </button>
+                    ))}
+                  {/* 知識庫推薦用詞：點擊直接以該問句發問（路由到知識庫服務） */}
+                  {knowledgePrompts.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      className="quick-chip"
+                      onClick={() => sendQuick(p)}
+                      title={p}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           )}
 
@@ -802,6 +823,8 @@ export default function App() {
           </form>
         </div>
 
+        {/* 無表單服務（forms 為空）時不顯示「表單明細」側欄 */}
+        {forms.length > 0 && (
         <aside className={`side-pane${paneOpen ? '' : ' collapsed'}`}>
           <button
             type="button"
@@ -868,6 +891,7 @@ export default function App() {
           )}
           </div>
         </aside>
+        )}
       </div>
 
       {showForm && formDef && (
