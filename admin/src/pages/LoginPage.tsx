@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="login-card">
         <div className="login-brand">
           <div className="brand-mark" style={{ width: 44, height: 44, borderRadius: 13 }}>
-            OA
+            <img src="/hy_logo.png" alt="凌網資訊" />
           </div>
           <div>
             <div className="login-title">管理後台</div>

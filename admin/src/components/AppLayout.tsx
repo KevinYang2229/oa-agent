@@ -36,7 +36,9 @@ export default function AppLayout({
 
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">OA</div>
+          <div className="brand-mark">
+            <img src="/hy_logo.png" alt="凌網資訊" />
+          </div>
           <div>
             <div className="brand-name">OA Agent</div>
             <div className="brand-sub">管理後台</div>
