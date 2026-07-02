@@ -31,7 +31,7 @@ function loadCases(): EvalCase[] {
 
 async function main(): Promise<void> {
   const cases = loadCases();
-  console.log(`評測 ${cases.length} 題（索引來源見 KNOWLEDGE_INDEX_PATH）\n`);
+  console.log(`評測 ${cases.length} 題（索引來源見 KNOWLEDGE_INDEX_DIR 下的租戶索引檔）\n`);
 
   const rr: number[] = [];
   const h1: number[] = [];

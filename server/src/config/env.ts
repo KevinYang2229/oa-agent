@@ -72,12 +72,10 @@ const envSchema = z.object({
   // embedding 用 OpenAI（Claude 無原生 embedding），需 OPENAI_API_KEY；索引與查詢共用此模型
   // 精準度優先 → 預設 text-embedding-3-large（3072 維）；要省成本可改 text-embedding-3-small
   EMBEDDING_MODEL: z.string().default('text-embedding-3-large'),
-  // 由 ingest 腳本產生的靜態向量索引檔路徑（相對 server 目錄）；不存在時知識服務退回 stub FAQ
-  KNOWLEDGE_INDEX_PATH: z.string().default('data/knowledge-index.json'),
-  // 兩階段檢索：先向量取候選池，再用 LLM（LLM_ROUTER_MODEL/Haiku）重排出最相關前幾筆
-  KNOWLEDGE_RERANK: z.coerce.boolean().default(true),
   // 每租戶索引檔存放目錄（相對 server 目錄）；檔名為 knowledge-index.<tenantId>.json
   KNOWLEDGE_INDEX_DIR: z.string().default('data'),
+  // 兩階段檢索：先向量取候選池，再用 LLM（LLM_ROUTER_MODEL/Haiku）重排出最相關前幾筆
+  KNOWLEDGE_RERANK: z.coerce.boolean().default(true),
 
   // ---- OA 連接器（MVP 預設 stub；http 為真 OA 連接器）----
   OA_CONNECTOR: z.enum(['stub', 'http']).default('stub'),
